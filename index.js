@@ -14,6 +14,7 @@ const HOST = process.env.HOST || "127.0.0.1";
 const PORT = process.env.PORT || 3000;
 
 const app = express();
+app.use(helmet());
 app.use(cors());
 app.use(express.json());
 
