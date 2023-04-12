@@ -2,6 +2,7 @@ if (process.env.NODE_ENV !== "production") require("dotenv").config();
 
 const express = require("express");
 const cors = require("cors");
+// Import routes
 const usersRouter = require("./routes/users.routes");
 const subscribeRouter = require("./routes/subscribe.routes");
 const schoolsRouter = require("./routes/schools.routes");
@@ -16,18 +17,18 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-app.get("/api", (req, res) => {
+app.get("/api", (_req, res) => {
 	res.json({ message: "Welcome to the Ecoly API" });
 });
 
-app.all("/api/users", usersRouter);
-app.all("/api/subscribe", subscribeRouter);
-app.all("/api/schools", schoolsRouter);
-app.all("/api/news", newsRouter);
-app.all("/api/meetings", meetingsRouter);
-app.all("/api/activities", activitiesRouter);
+app.use("/api/users", usersRouter);
+app.use("/api/subscribe", subscribeRouter);
+app.use("/api/schools", schoolsRouter);
+app.use("/api/news", newsRouter);
+app.use("/api/meetings", meetingsRouter);
+app.use("/api/activities", activitiesRouter);
 
-app.all("*", (req, res) => {
+app.use((_req, res) => {
 	res.status(404).json({ message: "Invalid route" });
 });
 
