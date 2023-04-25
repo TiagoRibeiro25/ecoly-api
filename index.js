@@ -2,6 +2,7 @@ if (process.env.NODE_ENV !== "production") require("dotenv").config();
 
 const express = require("express");
 const cors = require("cors");
+const helmet = require("helmet");
 // Import routes
 const usersRouter = require("./routes/users.routes");
 const subscribeRouter = require("./routes/subscribe.routes");
