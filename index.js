@@ -1,8 +1,11 @@
 if (process.env.NODE_ENV !== "production") require("dotenv").config();
-
 const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
+const colors = require("colors");
+const morgan = require("morgan");
+const resetDB = require("./data/resetDB");
+
 // Import routes
 const usersRouter = require("./routes/users.routes");
 const subscribeRouter = require("./routes/subscribe.routes");
@@ -17,6 +20,7 @@ const PORT = process.env.PORT || 3000;
 const app = express();
 app.use(helmet());
 app.use(cors());
+app.use(morgan("dev"));
 app.use(express.json());
 
 app.get("/api", (_req, res) => {
@@ -34,6 +38,11 @@ app.use((_req, res) => {
 	res.status(404).json({ message: "Invalid route" });
 });
 
-app.listen(PORT, HOST, () => {
-	console.log(`Server is running on http://${HOST}:${PORT}`);
+app.listen(PORT, HOST, async () => {
+	await resetDB(); // Reset the database
+	console.log(
+		colors.green("-> ") +
+			colors.cyan("Server is running on ") +
+			colors.green(`http://${HOST}:${PORT}\n`)
+	);
 });

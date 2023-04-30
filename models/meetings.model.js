@@ -37,7 +37,7 @@ module.exports = function(sequelize, DataTypes) {
     },
     ata: {
       type: DataTypes.TEXT,
-      allowNull: false
+      allowNull: true
     }
   }, {
     sequelize,
