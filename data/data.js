@@ -1,6 +1,9 @@
 const base64Data = require("./base64");
 
 module.exports = {
+	/**
+	 * @type {Array<{ title: string }>}
+	 * */
 	roles: [
 		{ title: "unsigned" }, // id: 1
 		{ title: "admin" }, // id: 2
@@ -8,6 +11,9 @@ module.exports = {
 		{ title: "professor" }, // id: 4
 	],
 
+	/**
+	 * @type {Array<{ name: string }>}
+	 * */
 	schools: [
 		{ name: "ESMAD" }, // id: 1
 		{ name: "ESAG" }, // id: 2
@@ -23,6 +29,19 @@ module.exports = {
 		{ name: "UTL" }, // id: 12
 	],
 
+	/**
+	 * @type {Array<{
+	 *  email: string,
+	 *  name: string,
+	 *  password: string,
+	 *  photo: string,
+	 *  role_id: number,
+	 *  school_id: number,
+	 *  internal_id?: string,
+	 *  course?: string,
+	 *  year?: number
+	 * }>}
+	 */
 	users: [
 		{
 			email: "Admin@esmad.ipp.pt",
@@ -116,6 +135,9 @@ module.exports = {
 		},
 	],
 
+	/**
+	 * @type {Array<{title: string, description: string, img: string}>}
+	 */
 	badges: [
 		{
 			title: "Novato das atividades",
@@ -159,6 +181,9 @@ module.exports = {
 		},
 	],
 
+	/**
+	 * @type {Array<{user_id: number, badge_id: number, is_highlight: boolean}>}
+	 */
 	user_badge: [
 		//* User 1
 		{
@@ -275,6 +300,9 @@ module.exports = {
 		},
 	],
 
+	/**
+	 * @type {Array<{creator_id: number, title: string, content: string, date_created: string}>}
+	 */
 	news: [
 		{
 			creator_id: 1,
@@ -327,6 +355,9 @@ module.exports = {
 		},
 	],
 
+	/**
+	 * @type {Array<{new_id: number, img: string}>}
+	 */
 	new_image: [
 		{
 			new_id: 1,
@@ -398,6 +429,9 @@ module.exports = {
 		},
 	],
 
+	/**
+	 * @type {Array<{email: string}>}
+	 */
 	news_letter: [
 		{ email: "Admin@esmad.ipp.pt" },
 		{ email: "User@esmad.ipp.pt" },
@@ -405,6 +439,15 @@ module.exports = {
 		{ email: "joaquim.honesto@email.pt" },
 	],
 
+	/**
+	 * @type {Array<{
+	 *  school_id: number,
+	 *  creator_id: number,
+	 *  date: string,
+	 *  description: string,
+	 *  room: string,
+	 *  ata?: string}>}
+	 */
 	meetings: [
 		{
 			school_id: 1,
@@ -452,11 +495,17 @@ module.exports = {
 		},
 	],
 
+	/**
+	 * @type {Array<{meeting_id: number, img: string}>}
+	 */
 	meeting_ata_image: [
 		{ meeting_id: 1, img: base64Data.ataImg1 },
 		{ meeting_id: 1, img: base64Data.ataImg2 },
 	],
 
+	/**
+	 * @type {Array<{name: string, is_active: boolean}>}
+	 */
 	theme: [
 		{ name: "Mar", is_active: true },
 		{ name: "Espaços Exteriores", is_active: true },
@@ -467,6 +516,26 @@ module.exports = {
 		{ name: "Outro", is_active: true },
 	],
 
+	/**
+	 * @type {Array<{
+	 *  creator_id: number,
+	 *  school_id: number,
+	 *  theme_id: number,
+	 *  title: string,
+	 *  complexity: number,
+	 *  initial_date: string,
+	 *  final_date: string,
+	 *  objective: string,
+	 *  diagnostic: string,
+	 *  meta: string,
+	 *  resources: string,
+	 *  participants: string,
+	 *  evaluation_indicator: string,
+	 *  evaluation_method: string,
+	 *  is_finished: boolean,
+	 *  report?: string,
+	 * }>}
+	 */
 	activities: [
 		{
 			creator_id: 1,
@@ -563,6 +632,9 @@ module.exports = {
 		},
 	],
 
+	/**
+	 * @type {Array<{activity_id: number, img: string}>}
+	 */
 	activity_image: [
 		{ activity_id: 1, img: base64Data.activityImg1 },
 		{ activity_id: 1, img: base64Data.activityImg2 },
@@ -574,6 +646,9 @@ module.exports = {
 		{ activity_id: 5, img: base64Data.activityImg8 },
 	],
 
+	/**
+	 * @type {Array<{activity_id: number, img: string}>}
+	 */
 	activity_report_image: [
 		{ activity_id: 4, img: base64Data.activityReportImg1 },
 		{ activity_id: 4, img: base64Data.activityReportImg2 },
@@ -581,6 +656,9 @@ module.exports = {
 		{ activity_id: 5, img: base64Data.activityReportImg4 },
 	],
 
+	/**
+	 * @type {Array<{user_id: number, date: string}>}
+	 */
 	seeds: [
 		{ user_id: 1, amount: 25, date: "2023-02-23" },
 		{ user_id: 1, amount: 50, date: "2023-03-20" },

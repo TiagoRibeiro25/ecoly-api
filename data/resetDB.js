@@ -2,6 +2,11 @@ const colors = require("colors");
 const db = require("../models/db");
 const create = require("./createData");
 
+/**
+ * @description Deletes all data from the database
+ * @returns {Promise<void>}
+ * @throws {Error}
+ */
 async function deleteData() {
 	try {
 		const start = new Date();
@@ -18,6 +23,11 @@ async function deleteData() {
 	}
 }
 
+/**
+ * @description Resets the database by deleting all data and creating new data
+ * @returns {Promise<void>}
+ * @throws {Error}
+ */
 const resetDB = async () => {
 	console.log(colors.green("-> ") + colors.cyan("Resetting database...\n"));
 
