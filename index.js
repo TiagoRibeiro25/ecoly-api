@@ -39,7 +39,7 @@ app.use((_req, res) => {
 });
 
 app.listen(PORT, HOST, async () => {
-	await resetDB(); // Reset the database
+	// await resetDB(); // Reset the database
 	console.log(
 		colors.green("-> ") +
 			colors.cyan("Server is running on ") +

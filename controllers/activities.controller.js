@@ -2,30 +2,50 @@ const db = require("../models/db");
 const { Op, ValidationError } = require("sequelize");
 const Activities = db.activities;
 const activity_images = db.activity_image;
+// const activity_reports = db.;
 
 // TODO => add Auhtentication (Token auth_key) when creating activities
 // TODO => add 401 Unauthorized error when creating activities with invalid auth_key
 // TODO => add 403 Forbidden error without auth_key
-exports.createActivity = async (req, res) => {
+// TODO => read auth_key for authentication => checking each user is creating the activity (creator_id, school_id)
+exports.addActivity = async (req, res) => {
 	try {
-		const { fields } = req.query;
+
 		const activity = await Activities.create(req.body);
 
-        
-		// add blocks of code for the authenticaion validations
+		// add blocks of code for the authentication validations
 		//
 		//
-		 if (fields === "activities") {
+
+		// if the body includes images add to the activity_images
+		if (req.body.images) {
+			const images = req.body.images;
+			images.forEach(async (image) => {
+				await activity_images.create({
+					activity_id: activity.id,
+					img: image,
+				});
+			});
+
 			return res.status(201).json({
 				message: "Activity added",
-				activity,
 			});
 		}
 	} catch (err) {
 		if (err instanceof ValidationError) {
-			return res.status(400).json({
-				error: err.errors.map((e) => e.message),
-			});
+				if(Object.keys(req.body).length === 0){
+					return res.status(400).json({
+						error: "body cannot be empty",
+					});
+				}
+				// else check if the body includes the required fields otherwise return null errors
+				else{
+					return res.status(400).json({
+						// for each error in the errors array return the error message
+						error: err.errors.map((error) => error.message),
+
+					});
+				}
 		}
 
 		return res.status(500).json({
@@ -33,4 +53,3 @@ exports.createActivity = async (req, res) => {
 		});
 	}
 };
-
