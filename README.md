@@ -42,3 +42,11 @@ or
 ``` bash
 npm run dev
 ```
+
+### Testing
+
+To run the tests, create a tests.env file in the root directory of the project. The tests.env file should contain the configuration variables for the application. See the tests.env.example file for the required variables. After creating the tests.env file, run the following command to start the tests
+
+``` bash
+npm test
+```
