@@ -4,7 +4,6 @@ const Users = db.users;
 const Badges = db.badges;
 
 /**
- *
  * @param { Array<{ id: number, user_id: number, amount: number, date: string}> } seeds
  * @returns {{ monthSeeds: number, totalSeeds: number }}
  */
@@ -29,7 +28,6 @@ function getSeedsMonthAndTotal(seeds) {
 }
 
 /**
- *
  * @param { Array<{ id: number, user_id: number, badge_id: number, is_highlight: boolean }> } unlockedBadges
  * @returns {Promise<{
  * 	highlighted?: number,
@@ -118,11 +116,10 @@ exports.getUser = async (req, res) => {
 
 		res.status(200).send({ success: true, data: result });
 	} catch (err) {
-		console.log(colors.red("\n\n-> ") + colors.yellow(err) + "\n");
-
 		if (err.message === "not_found") {
 			res.status(404).send({ success: false, message: `User with id ${id} not found.` });
 		} else {
+			console.log(colors.red("\n\n-> ") + colors.yellow(err) + "\n");
 			res.status(500).send({ success: false, message: `Error retrieving user with id ${id}.` });
 		}
 	}
