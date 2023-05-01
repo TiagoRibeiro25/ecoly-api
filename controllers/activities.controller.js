@@ -54,35 +54,3 @@ exports.addActivity = async (req, res) => {
 		});
 	}
 };
-
-exports.deleteActivity = async (req, res) => {
-	try {
-		const { id } = req.params;
-		// remove the images of the activity also when removing the activity
-		await activity_images.destroy({
-			where: {
-				activity_id: id,
-			},
-		});
-
-		const activity = await Activities.destroy({
-			where: {
-				id: id,
-			},
-		});
-
-		if (activity === 0) {
-			return res.status(404).json({
-				error: "Activity not found",
-			});
-		}
-
-		return res.status(200).json({
-			message: "Activity deleted",
-		});
-	} catch (err) {
-		return res.status(500).json({
-			error: err.message || "Something went wrong. Please try again later.",
-		});
-	}
-};
