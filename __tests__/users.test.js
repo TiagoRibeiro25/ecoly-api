@@ -43,6 +43,11 @@ describe("GET /api/users/:id", () => {
 			const response = await supertest(app).get("/api/users/0");
 			expect(response.type).toBe("application/json");
 		});
+
+		test("should respond with a message", async () => {
+			const response = await supertest(app).get("/api/users/0");
+			expect(response.body.message).toBe("User with id 0 not found.");
+		});
 	});
 });
 
