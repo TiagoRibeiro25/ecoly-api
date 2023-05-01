@@ -4,7 +4,8 @@
 	"description": "Ecoly API",
 	"main": "server.js",
 	"scripts": {
-		"test": "jest",
+		"test": "npm run clear && jest",
+		"clear": "clear || cls",
 		"dev": "nodemon --exec \"cls && node\" server.js",
 		"start": "node server.js"
 	},
