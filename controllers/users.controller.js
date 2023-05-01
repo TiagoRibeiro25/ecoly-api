@@ -126,11 +126,9 @@ exports.getUser = async (req, res) => {
 		// add users unlock percentage to the badges
 		for (const badge of result.badges.unlocked) {
 			badge.percentageUnlocked = await getBadgeCompletionPercentage(badge.id);
-			console.log(badge.percentageUnlocked);
 		}
 		for (const badge of result.badges.locked) {
 			badge.percentageUnlocked = await getBadgeCompletionPercentage(badge.id);
-			console.log(badge.percentageUnlocked);
 		}
 
 		res.status(200).send({ success: true, data: result });
