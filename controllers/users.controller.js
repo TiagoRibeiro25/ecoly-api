@@ -27,6 +27,15 @@ function getSeedsMonthAndTotal(seeds) {
 	return { monthSeeds, totalSeeds };
 }
 
+/** @param {number} badgeId */
+async function getBadgeCompletionPercentage(badgeId) {
+	// get the total number of users that have the badge
+	const totalUsers = await db.user_badge.count({ where: { badge_id: badgeId } });
+	// get total number of users that exist
+	const totalUsersExist = await db.users.count();
+	return Math.round((totalUsers / totalUsersExist) * 100);
+}
+
 /**
  * @param { Array<{ id: number, user_id: number, badge_id: number, is_highlight: boolean }> } unlockedBadges
  * @returns {Promise<{
@@ -113,6 +122,16 @@ exports.getUser = async (req, res) => {
 		// add badges
 		const unlockedBadges = await user.getUser_badges();
 		result.badges = await getBadgesInfo(unlockedBadges);
+
+		// add users unlock percentage to the badges
+		for (const badge of result.badges.unlocked) {
+			badge.percentageUnlocked = await getBadgeCompletionPercentage(badge.id);
+			console.log(badge.percentageUnlocked);
+		}
+		for (const badge of result.badges.locked) {
+			badge.percentageUnlocked = await getBadgeCompletionPercentage(badge.id);
+			console.log(badge.percentageUnlocked);
+		}
 
 		res.status(200).send({ success: true, data: result });
 	} catch (err) {
