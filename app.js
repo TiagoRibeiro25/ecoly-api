@@ -18,7 +18,7 @@ app.use(express.json());
 if (process.env.ENABLE_LOG === "true") app.use(morgan("dev"));
 
 app.get("/api", (_req, res) => {
-	res.json({ message: "Welcome to the Ecoly API" });
+	res.json({ success: true, message: "Welcome to the Ecoly API" });
 });
 
 app.use("/api/users", usersRouter);
@@ -29,7 +29,7 @@ app.use("/api/meetings", meetingsRouter);
 app.use("/api/activities", activitiesRouter);
 
 app.use((_req, res) => {
-	res.status(404).json({ message: "Invalid route" });
+	res.status(404).json({ success: false, message: "Invalid route" });
 });
 
 module.exports = app;
