@@ -2,6 +2,13 @@ require("dotenv").config({ path: __dirname + "/../tests.env" });
 const supertest = require("supertest");
 const app = require("../app");
 const db = require("../models/db");
+const resetDB = require("../data/resetDB");
+
+// before all tests, reset the database (use on database tests only)
+beforeAll(async () => {
+	console.log = jest.fn();
+	await resetDB();
+});
 
 describe("GET /api/users/:id", () => {
 	describe("when the user exists", () => {
