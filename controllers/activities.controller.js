@@ -6,6 +6,7 @@ const Users = db.users;
 const Schools = db.schools;
 const Themes = db.theme;
 
+
 // TODO => add Auhtentication (Token auth_key) when creating activities
 // TODO => add 401 Unauthorized error when creating activities with invalid auth_key
 // TODO => add 403 Forbidden error without auth_key
@@ -55,10 +56,9 @@ exports.addActivity = async (req, res) => {
 	}
 };
 
-exports.getOneActivity = async (req, res) => {
-	const { id } = req.params;
+ async function getOneActivity(req, res) {
+		const id = 1;
 
-	try {
 		const activity = await Activities.findByPk(id, {
 			where: { id: id },
 			// get the activity theme name, the school name and the creator name  and the images of the activity in array
@@ -78,11 +78,11 @@ exports.getOneActivity = async (req, res) => {
 					as: "creator",
 					attributes: ["name"],
 				},
-				{
-					model: activity_images,
-					as: "activity_images",
-					attributes: ["img"],
-				},
+				// {
+				// 	model: activity_images,
+				// 	as: "activity_images",
+				// 	attributes: ["img"],
+				// },
 			],
 
 			// remove the school_id, theme_id and creator_id from the response
@@ -91,9 +91,8 @@ exports.getOneActivity = async (req, res) => {
 			},
 		});
 
-	} catch (err) {
-		return res.status(500).json({
-			error: err.message || "Something went wrong. Please try again later.",
-		});
+		console.log(JSON.stringify(activity, null, 4));
 	}
-};
+
+
+getOneActivity()

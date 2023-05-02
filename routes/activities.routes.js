@@ -5,7 +5,7 @@ const activitiesController = require("../controllers/activities.controller");
 
 
 // GET /api/activities/:id => find a specific activity (activity detail)
-router.get('/:id', activitiesController.getOneActivity);
+// router.get('/:id', activitiesController.getOneActivity);
 
 // POST /api/activities => add an activity / report / theme
 router.post("/", (req, res) => {
