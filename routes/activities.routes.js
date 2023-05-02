@@ -2,10 +2,8 @@ const express = require("express");
 const router = express.Router();
 const activitiesController = require("../controllers/activities.controller");
 
-
-
 // GET /api/activities/:id => find a specific activity (activity detail)
-// router.get('/:id', activitiesController.getOneActivity);
+router.get("/:id", activitiesController.getOneActivity);
 
 // POST /api/activities => add an activity / report / theme
 router.post("/", (req, res) => {
@@ -48,9 +46,11 @@ router.post("/", (req, res) => {
 	}
 });
 
-
 router.all("*", (req, res) => {
-	res.status(404).json({ message: "Invalid route" });
+	res.status(404).json({
+		success: false,
+		message: "Invalid route",
+	});
 });
 
 module.exports = router;
