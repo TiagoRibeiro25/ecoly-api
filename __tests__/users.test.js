@@ -6,7 +6,7 @@ const resetDB = require("../data/resetDB");
 
 // before all tests, reset the database (use on database tests only)
 beforeAll(async () => {
-	console.log = jest.fn();
+	// console.log = jest.fn();
 	await resetDB();
 });
 
@@ -198,6 +198,94 @@ describe("PUT /api/users/role/:id", () => {
 			const response = await supertest(app).put("/api/users/role/1").send({ role: "estudante" });
 			expect(response.statusCode).toBe(409);
 			expect(response.body.message).toBe("Role estudante already exists.");
+		});
+	});
+});
+
+describe("PATCH /api/users/:id/role", () => {
+	describe("when the user exists", () => {
+		test("should respond with a 200 status code", async () => {
+			const response = await supertest(app).patch("/api/users/1/role").send({ roleId: 3 });
+			expect(response.statusCode).toBe(200);
+
+			// change the user role back to the previous value
+			await db.users.update({ roleId: 2 }, { where: { id: 1 } });
+		});
+
+		test("should respond with a json", async () => {
+			const response = await supertest(app).patch("/api/users/1/role").send({ roleId: 3 });
+			expect(response.type).toBe("application/json");
+
+			// change the user role back to the previous value
+			await db.users.update({ roleId: 2 }, { where: { id: 1 } });
+		});
+
+		test("should respond with a message", async () => {
+			const response = await supertest(app).patch("/api/users/1/role").send({ roleId: 3 });
+			expect(response.body.message).toBe("User role updated successfully.");
+			expect(response.body.success).toBe(true);
+
+			// change the user role back to the previous value
+			await db.users.update({ roleId: 2 }, { where: { id: 1 } });
+		});
+	});
+
+	describe("when the user does not exist", () => {
+		test("should respond with a 404 status code", async () => {
+			const response = await supertest(app).patch("/api/users/0/role").send({ roleId: 3 });
+			expect(response.statusCode).toBe(404);
+		});
+
+		test("should respond with a json", async () => {
+			const response = await supertest(app).patch("/api/users/0/role").send({ roleId: 3 });
+			expect(response.type).toBe("application/json");
+		});
+
+		test("should respond with a message", async () => {
+			const response = await supertest(app).patch("/api/users/0/role").send({ roleId: 3 });
+			expect(response.body.message).toBe("User with id 0 not found.");
+			expect(response.body.success).toBe(false);
+		});
+	});
+
+	describe("when the role does not exist", () => {
+		test("should respond with a 404 status code", async () => {
+			const response = await supertest(app).patch("/api/users/1/role").send({ roleId: 0 });
+			expect(response.statusCode).toBe(404);
+		});
+
+		test("should respond with a json", async () => {
+			const response = await supertest(app).patch("/api/users/1/role").send({ roleId: 0 });
+			expect(response.type).toBe("application/json");
+		});
+
+		test("should respond with a message", async () => {
+			const response = await supertest(app).patch("/api/users/1/role").send({ roleId: 0 });
+			expect(response.body.message).toBe("Role with id 0 not found.");
+			expect(response.body.success).toBe(false);
+		});
+	});
+
+	describe("when the role id is invalid", () => {
+		test("should respond with a 400 status code", async () => {
+			const response = await supertest(app).patch("/api/users/1/role").send({ roleId: "test" });
+			expect(response.statusCode).toBe(400);
+		});
+
+		test("should respond with a json", async () => {
+			const response = await supertest(app).patch("/api/users/1/role").send({ roleId: "test" });
+			expect(response.type).toBe("application/json");
+		});
+
+		test("should respond with a message", async () => {
+			const response = await supertest(app).patch("/api/users/1/role").send({ roleId: "test" });
+			expect(response.body.message).toBe("Role id must be a number!");
+			expect(response.body.success).toBe(false);
+		});
+
+		test("role id should not be empty", async () => {
+			const response = await supertest(app).patch("/api/users/1/role").send({ roleId: "" });
+			expect(response.body.message).toBe("Role id can not be empty!");
 		});
 	});
 });
