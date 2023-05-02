@@ -22,7 +22,7 @@ module.exports = function (sequelize, DataTypes) {
 				allowNull: false,
 			},
 			photo: {
-				type: DataTypes.BLOB("long"),
+				type: DataTypes.TEXT("long"),
 				allowNull: false,
 			},
 			role_id: {

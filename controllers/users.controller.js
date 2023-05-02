@@ -50,29 +50,17 @@ async function getBadgesInfo(unlockedBadges) {
 		unlockedBadges.map(async (badge) => await badge.getBadge())
 	);
 
-	// convert badges img to base64
-	unlockedBadgesInfoArray.forEach((badge) => {
-		badge.img = badge.img.toString("base64");
-	});
-
 	/** @type number | undefined */
 	const highlightBadgeId = unlockedBadges.find((badge) => badge.is_highlight)?.badge_id;
 
 	// get the rest of the badges
 	const badges = await Badges.findAll();
-	const badgesInfoArray = badges.map((badge) => badge.toJSON());
-	badgesInfoArray.forEach((badge) => {
+	const lockedBadgesInfoArray = badges.map((badge) => badge.toJSON());
+	lockedBadgesInfoArray.forEach((badge) => {
 		// if the badge is unlocked, delete it from the array
 		if (unlockedBadgesInfoArray.some((unlockedBadge) => unlockedBadge.id === badge.id)) {
-			badgesInfoArray.splice(badgesInfoArray.indexOf(badge), 1);
+			lockedBadgesInfoArray.splice(lockedBadgesInfoArray.indexOf(badge), 1);
 		}
-	});
-
-	// copy the array but convert the img to base64
-	const lockedBadgesInfoArray = badgesInfoArray.map((badge) => {
-		const copy = { ...badge };
-		copy.img = copy.img.toString("base64");
-		return copy;
 	});
 
 	if (highlightBadgeId) {
@@ -104,9 +92,6 @@ exports.getUser = async (req, res) => {
 		if (!result.internal_id) delete result.internal_id;
 		if (!result.course) delete result.course;
 		if (!result.year) delete result.year;
-
-		// convert image to base64
-		result.photo = result.photo.toString("base64");
 
 		// replace role_id with role name
 		delete result.role_id;
