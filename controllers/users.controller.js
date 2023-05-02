@@ -2,6 +2,7 @@ const colors = require("colors");
 const db = require("../models/db");
 const Users = db.users;
 const Badges = db.badges;
+const Roles = db.role;
 
 /**
  * @param { Array<{ id: number, user_id: number, amount: number, date: string}> } seeds
@@ -137,7 +138,82 @@ exports.getUser = async (req, res) => {
 			res.status(404).send({ success: false, message: `User with id ${id} not found.` });
 		} else {
 			console.log(colors.red("\n\n-> ") + colors.yellow(err) + "\n");
-			res.status(500).send({ success: false, message: `Error retrieving user with id ${id}.` });
+			res.status(500).send({
+				success: false,
+				message: `Error occurred while retrieving user with id ${id}.`,
+			});
+		}
+	}
+};
+
+exports.addRole = async (req, res) => {
+	//TODO: check if the user is an admin from the token
+
+	/** @type { string } */
+	const role = req.body.role?.trim().toLowerCase();
+
+	try {
+		// check if the role exists
+		const roleExists = await Roles.findOne({ where: { title: role } });
+		if (roleExists) throw new Error("role_exists");
+
+		// add the role
+		await Roles.create({ title: role });
+		res.status(201).send({ success: true, message: `Role ${role} added successfully.` });
+	} catch (err) {
+		if (err.message === "role_exists") {
+			res.status(409).send({
+				success: false,
+				message: `Role ${role} already exists.`,
+			});
+		} else {
+			console.log(colors.red("\n\n-> ") + colors.yellow(err) + "\n");
+			res.status(500).send({
+				success: false,
+				message: `Error occurred while adding a new role.`,
+			});
+		}
+	}
+};
+
+exports.editRole = async (req, res) => {
+	//TODO: check if the user is an admin from the token
+
+	/** @type {{ id: number}} */
+	const { id } = req.params;
+	/** @type { string } */
+	const role = req.body.role?.trim().toLowerCase();
+
+	try {
+		// check if the role exists
+		const roleExists = await Roles.findByPk(id);
+		if (!roleExists) throw new Error("role_not_found");
+
+		// check if there is another role with the same name
+		const roleExists2 = await Roles.findOne({ where: { title: role } });
+		if (roleExists2) throw new Error("role_exists");
+
+		// update the role
+		await Roles.update({ title: role }, { where: { id } });
+
+		res.status(200).send({ success: true, message: `Role updated successfully.` });
+	} catch (err) {
+		if (err.message === "role_not_found") {
+			res.status(404).send({
+				success: false,
+				message: `Role with id ${id} not found.`,
+			});
+		} else if (err.message === "role_exists") {
+			res.status(409).send({
+				success: false,
+				message: `Role ${role} already exists.`,
+			});
+		} else {
+			console.log(colors.red("\n\n-> ") + colors.yellow(err) + "\n");
+			res.status(500).send({
+				success: false,
+				message: `Error occurred while updating role with id ${id}.`,
+			});
 		}
 	}
 };
