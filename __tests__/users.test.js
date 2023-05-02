@@ -6,7 +6,7 @@ const resetDB = require("../data/resetDB");
 
 // before all tests, reset the database (use on database tests only)
 beforeAll(async () => {
-	// console.log = jest.fn();
+	console.log = jest.fn();
 	await resetDB();
 });
 
@@ -56,6 +56,57 @@ describe("GET /api/users/:id", () => {
 			expect(response.body.message).toBe("User with id 0 not found.");
 			expect(response.body.success).toBe(false);
 		});
+	});
+});
+
+describe("GET /api/users", () => {
+	test("should respond with a 200 status code", async () => {
+		const response = await supertest(app).get("/api/users");
+		expect(response.statusCode).toBe(200);
+	});
+
+	test("should respond with a json", async () => {
+		const response = await supertest(app).get("/api/users");
+		expect(response.type).toBe("application/json");
+	});
+
+	test("should respond with a users array", async () => {
+		const response = await supertest(app).get("/api/users");
+		expect(response.body.data).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					id: expect.any(Number),
+					name: expect.any(String),
+					email: expect.any(String),
+					role: expect.any(String),
+					school: expect.any(String),
+				}),
+			])
+		);
+	});
+});
+
+describe("GET /api/users/role", () => {
+	test("should respond with a 200 status code", async () => {
+		const response = await supertest(app).get("/api/users/role");
+		expect(response.statusCode).toBe(200);
+	});
+
+	test("should respond with a json", async () => {
+		const response = await supertest(app).get("/api/users/role");
+		expect(response.type).toBe("application/json");
+	});
+
+	test("should respond with a roles array", async () => {
+		const response = await supertest(app).get("/api/users/role");
+		expect(response.body.data).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					id: expect.any(Number),
+					title: expect.any(String),
+				}),
+			])
+		);
 	});
 });
 
