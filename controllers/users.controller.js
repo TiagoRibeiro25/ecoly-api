@@ -146,6 +146,42 @@ exports.getUser = async (req, res) => {
 	}
 };
 
+exports.getUsers = async (req, res) => {
+	//TODO: check if the user is an admin from the token
+
+	try {
+		const users = await Users.findAll();
+		/** @type { Array<{id: number, name: string, email: string, role: string, school: string}>} */
+		const result = [];
+
+		for (const user of users) {
+			result.push({
+				id: user.id,
+				name: user.name,
+				email: user.email,
+				role: (await user.getRole()).title,
+				school: (await user.getSchool()).name,
+			});
+		}
+
+		res.status(200).json({ success: true, data: result });
+	} catch (err) {
+		console.log(colors.red("\n\n-> ") + colors.yellow(err) + "\n");
+		res.status(500).json({ success: false, message: "Error occurred while retrieving users." });
+	}
+};
+
+exports.getRoles = async (_req, res) => {
+	try {
+		/** @type { Array<{ id: number, title: string }> } */
+		const roles = await Roles.findAll();
+		res.status(200).json({ success: true, data: roles });
+	} catch (err) {
+		console.log(colors.red("\n\n-> ") + colors.yellow(err) + "\n");
+		res.status(500).json({ success: false, message: "Error occurred while retrieving roles." });
+	}
+};
+
 exports.addRole = async (req, res) => {
 	//TODO: check if the user is an admin from the token
 
