@@ -6,6 +6,13 @@ const Users = db.users;
 const Schools = db.schools;
 const Themes = db.theme;
 
+function fixDate(date) {
+	const Date = date.toISOString().split("T")[0];
+
+	const reverseDate = Date.split("-").reverse().join("-");
+
+	return reverseDate;
+}
 
 // TODO => add Auhtentication (Token auth_key) when creating activities
 // TODO => add 401 Unauthorized error when creating activities with invalid auth_key
@@ -31,6 +38,7 @@ exports.addActivity = async (req, res) => {
 			});
 
 			return res.status(201).json({
+				sucess: true,
 				message: "Activity added",
 			});
 		}
@@ -38,12 +46,14 @@ exports.addActivity = async (req, res) => {
 		if (err instanceof ValidationError) {
 			if (Object.keys(req.body).length === 0) {
 				return res.status(400).json({
+					sucess: false,
 					error: "body cannot be empty",
 				});
 			}
 			// else check if the body includes the required fields otherwise return null errors
 			else {
 				return res.status(400).json({
+					sucess: false,
 					// for each error in the errors array return the error message
 					error: err.errors.map((error) => error.message),
 				});
@@ -51,14 +61,16 @@ exports.addActivity = async (req, res) => {
 		}
 
 		return res.status(500).json({
+			sucess: false,
 			error: err.message || "Something went wrong. Please try again later.",
 		});
 	}
 };
 
- async function getOneActivity(req, res) {
-		const id = 1;
+exports.getOneActivity = async (req, res) => {
+	const { id } = req.params;
 
+	try {
 		const activity = await Activities.findByPk(id, {
 			where: { id: id },
 			// get the activity theme name, the school name and the creator name  and the images of the activity in array
@@ -76,13 +88,13 @@ exports.addActivity = async (req, res) => {
 				{
 					model: Users,
 					as: "creator",
-					attributes: ["name"],
+					attributes: ["id", "name"],
 				},
-				// {
-				// 	model: activity_images,
-				// 	as: "activity_images",
-				// 	attributes: ["img"],
-				// },
+				{
+					model: activity_images,
+					as: "activity_images",
+					attributes: ["img"],
+				},
 			],
 
 			// remove the school_id, theme_id and creator_id from the response
@@ -91,8 +103,51 @@ exports.addActivity = async (req, res) => {
 			},
 		});
 
-		console.log(JSON.stringify(activity, null, 4));
+		if(isNaN(id)){
+			return res.status(400).json({
+				sucess: false,
+				error: "invalid id",
+			});
+		}
+
+		if(!activity){
+			return res.status(404).json({
+				sucess: false,
+				error: `activity with id ${id} doesn´t exist`,
+			});
+		}		
+
+		const response = {
+			id: activity.id,
+			creator: {
+				id: activity.creator.id,
+				name: activity.creator.name,
+			},
+			is_finished: activity.is_finished,
+			school: activity.school.name,
+			theme: activity.theme.name,
+			title: activity.title,
+			complexity: activity.complexity,
+			initial_date: fixDate(activity.initial_date),
+			final_date: fixDate(activity.final_date),
+			objective: activity.objective,
+			diagnostic: activity.diagnostic,
+			meta: activity.meta,
+			resources: activity.resources,
+			participants: activity.participants,
+			evaluation_indicator: activity.evaluation_indicator,
+			evaluation_method: activity.evaluation_method,
+			images: activity.activity_images.map((image) => image.img),
+		};
+		return res.status(200).json({
+			sucess: true,
+			data: response,
+		});
+
+	} catch (err) {
+		return res.status(500).json({
+			sucess: false,
+			error: err.message || "Something went wrong. Please try again later.",
+		});
 	}
-
-
-getOneActivity()
+};
