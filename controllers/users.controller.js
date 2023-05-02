@@ -132,13 +132,13 @@ exports.getUser = async (req, res) => {
 			badge.percentageUnlocked = await getBadgeCompletionPercentage(badge.id);
 		}
 
-		res.status(200).send({ success: true, data: result });
+		res.status(200).json({ success: true, data: result });
 	} catch (err) {
 		if (err.message === "not_found") {
-			res.status(404).send({ success: false, message: `User with id ${id} not found.` });
+			res.status(404).json({ success: false, message: `User with id ${id} not found.` });
 		} else {
 			console.log(colors.red("\n\n-> ") + colors.yellow(err) + "\n");
-			res.status(500).send({
+			res.status(500).json({
 				success: false,
 				message: `Error occurred while retrieving user with id ${id}.`,
 			});
@@ -159,16 +159,16 @@ exports.addRole = async (req, res) => {
 
 		// add the role
 		await Roles.create({ title: role });
-		res.status(201).send({ success: true, message: `Role ${role} added successfully.` });
+		res.status(201).json({ success: true, message: `Role ${role} added successfully.` });
 	} catch (err) {
 		if (err.message === "role_exists") {
-			res.status(409).send({
+			res.status(409).json({
 				success: false,
 				message: `Role ${role} already exists.`,
 			});
 		} else {
 			console.log(colors.red("\n\n-> ") + colors.yellow(err) + "\n");
-			res.status(500).send({
+			res.status(500).json({
 				success: false,
 				message: `Error occurred while adding a new role.`,
 			});
@@ -196,21 +196,21 @@ exports.editRole = async (req, res) => {
 		// update the role
 		await Roles.update({ title: role }, { where: { id } });
 
-		res.status(200).send({ success: true, message: `Role updated successfully.` });
+		res.status(200).json({ success: true, message: `Role updated successfully.` });
 	} catch (err) {
 		if (err.message === "role_not_found") {
-			res.status(404).send({
+			res.status(404).json({
 				success: false,
 				message: `Role with id ${id} not found.`,
 			});
 		} else if (err.message === "role_exists") {
-			res.status(409).send({
+			res.status(409).json({
 				success: false,
 				message: `Role ${role} already exists.`,
 			});
 		} else {
 			console.log(colors.red("\n\n-> ") + colors.yellow(err) + "\n");
-			res.status(500).send({
+			res.status(500).json({
 				success: false,
 				message: `Error occurred while updating role with id ${id}.`,
 			});
