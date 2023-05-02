@@ -2,11 +2,15 @@ const express = require("express");
 const router = express.Router();
 const activitiesController = require("../controllers/activities.controller");
 
+
+
+// GET /api/activities/:id => find a specific activity (activity detail)
+router.get('/:id', activitiesController.getOneActivity);
+
 // POST /api/activities => add an activity / report / theme
 router.post("/", (req, res) => {
 	// if there is no query
 	if (Object.keys(req.query).length === 0) {
-		console.log(Object.keys(req.query).length);
 		return res.status(400).json({
 			error: `you must provide a query fields`,
 		});
@@ -43,6 +47,7 @@ router.post("/", (req, res) => {
 		// return activitiesController.addTheme(req, res);
 	}
 });
+
 
 router.all("*", (req, res) => {
 	res.status(404).json({ message: "Invalid route" });

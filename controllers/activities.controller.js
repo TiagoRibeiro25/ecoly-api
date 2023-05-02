@@ -2,7 +2,9 @@ const db = require("../models/db");
 const { Op, ValidationError } = require("sequelize");
 const Activities = db.activities;
 const activity_images = db.activity_image;
-// const activity_reports = db.;
+const Users = db.users;
+const Schools = db.schools;
+const Themes = db.theme;
 
 // TODO => add Auhtentication (Token auth_key) when creating activities
 // TODO => add 401 Unauthorized error when creating activities with invalid auth_key
@@ -19,15 +21,13 @@ exports.addActivity = async (req, res) => {
 		// if the body includes images add to the activity_images
 		if (req.body.images) {
 			const images = req.body.images; // array of images
-			// convert the images to base64
-			const base64Images = images.map((image) => Buffer.from(image, "base64"));
-			// add the images to the activity_images table
-			await activity_images.bulkCreate(
-				base64Images.map((image) => ({
+			// for each image in the array add the activity_id and the image to the activity_images table
+			images.forEach((image) => {
+				activity_images.create({
 					activity_id: activity.id,
 					img: image,
-				}))
-			);
+				});
+			});
 
 			return res.status(201).json({
 				message: "Activity added",
@@ -49,6 +49,49 @@ exports.addActivity = async (req, res) => {
 			}
 		}
 
+		return res.status(500).json({
+			error: err.message || "Something went wrong. Please try again later.",
+		});
+	}
+};
+
+exports.getOneActivity = async (req, res) => {
+	const { id } = req.params;
+
+	try {
+		const activity = await Activities.findByPk(id, {
+			where: { id: id },
+			// get the activity theme name, the school name and the creator name  and the images of the activity in array
+			include: [
+				{
+					model: Themes,
+					as: "theme",
+					attributes: ["name"],
+				},
+				{
+					model: Schools,
+					as: "school",
+					attributes: ["name"],
+				},
+				{
+					model: Users,
+					as: "creator",
+					attributes: ["name"],
+				},
+				{
+					model: activity_images,
+					as: "activity_images",
+					attributes: ["img"],
+				},
+			],
+
+			// remove the school_id, theme_id and creator_id from the response
+			attributes: {
+				exclude: ["school_id", "theme_id", "creator_id", "report"],
+			},
+		});
+
+	} catch (err) {
 		return res.status(500).json({
 			error: err.message || "Something went wrong. Please try again later.",
 		});
