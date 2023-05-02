@@ -217,3 +217,42 @@ exports.editRole = async (req, res) => {
 		}
 	}
 };
+
+exports.editUserRole = async (req, res) => {
+	//TODO: check if the user is an admin from the token
+	//TODO: verify if the user sending the request is not the same as the one being edited
+
+	/** @type {{id :number}} */
+	const { id } = req.params;
+	/** @type {{ role: number }} */
+	const { roleId } = req.body;
+
+	try {
+		// check if the user exists
+		const user = await Users.findByPk(id);
+		if (!user) throw new Error("user_not_found");
+
+		// check if the role exists
+		const roleExists = await Roles.findOne({ where: { id: roleId } });
+		if (!roleExists) throw new Error("role_not_found");
+
+		// update the user role
+		await Users.update({ role_id: roleId }, { where: { id } });
+
+		res.status(200).json({ success: true, message: `User role updated successfully.` });
+	} catch (err) {
+		if (err.message === "user_not_found") {
+			return res.status(404).json({ success: false, message: `User with id ${id} not found.` });
+		}
+		if (err.message === "role_not_found") {
+			return res
+				.status(404)
+				.json({ success: false, message: `Role with id ${roleId} not found.` });
+		}
+		console.log(colors.red("\n\n-> ") + colors.yellow(err) + "\n");
+		res.status(500).json({
+			success: false,
+			message: `Error occurred while updating user role with id ${id}.`,
+		});
+	}
+};
