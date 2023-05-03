@@ -46,11 +46,4 @@ router.post("/", (req, res) => {
 	}
 });
 
-router.all("*", (req, res) => {
-	res.status(404).json({
-		success: false,
-		message: "Invalid route",
-	});
-});
-
 module.exports = router;
