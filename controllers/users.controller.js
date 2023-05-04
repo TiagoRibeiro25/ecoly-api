@@ -1,3 +1,5 @@
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcryptjs");
 const colors = require("colors");
 const db = require("../models/db");
 const Users = db.users;
@@ -77,13 +79,25 @@ exports.getUser = async (req, res) => {
 	const { id } = req.params;
 
 	try {
-		/** @type {{ id: number, internal_id: string, name: string, email: string, password: string, photo: Buffer, role_id: number, school_id: number, course?: string, year?: number }} */
+		/** @type {{ id: number, name: string, email: string, password: string, photo: string, role_id: number, school_id: number, internal_id?: string, course?: string, year?: number }} */
 		const user = await Users.findByPk(id);
 		if (!user) throw new Error("not_found");
 		const result = user.toJSON();
 
-		//TODO: check if this is the current logged user
-		result.isLoggedUser = false;
+		// check if there's a token in the request
+		const token = req.headers["x-access-token"] || req.headers.authorization;
+
+		if (token) {
+			// verify the token
+			jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+				if (err) {
+					result.isLoggedUser = false;
+				} else {
+					// check if the user is the same as the one in the token
+					result.isLoggedUser = decoded.id === id;
+				}
+			});
+		} else result.isLoggedUser = false;
 
 		// remove password
 		delete result.password;
