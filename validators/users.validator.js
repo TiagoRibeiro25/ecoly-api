@@ -20,7 +20,7 @@ exports.validateBodyLogin = (req, res, next) => {
 exports.validateBodyRegister = (req, res, next) => {
 	const { name, email, password, schoolId, internalId, course, year } = req.body;
 
-	if (!name || !email || !password || !schoolId) {
+	if (!name || !email || !password || (!schoolId && schoolId !== 0)) {
 		return res.status(400).json({ success: false, message: "Missing fields!" });
 	}
 
@@ -29,27 +29,27 @@ exports.validateBodyRegister = (req, res, next) => {
 	}
 
 	if (typeof name !== "string") {
-		return res.status(400).json({ success: false, message: "Name must be a string!" });
+		return res.status(400).json({ success: false, message: "Invalid name!" });
 	}
 
 	if (typeof password !== "string") {
-		return res.status(400).json({ success: false, message: "Password must be a string!" });
+		return res.status(400).json({ success: false, message: "Invalid password!" });
 	}
 
 	if (typeof schoolId !== "number") {
-		return res.status(400).json({ success: false, message: "School id must be a number!" });
+		return res.status(400).json({ success: false, message: "Invalid school id!" });
 	}
 
 	if (internalId && typeof internalId !== "string") {
-		return res.status(400).json({ success: false, message: "Internal id must be a string!" });
+		return res.status(400).json({ success: false, message: "Invalid internal id!" });
 	}
 
 	if (internalId && course && typeof course !== "string") {
-		return res.status(400).json({ success: false, message: "Course must be a string!" });
+		return res.status(400).json({ success: false, message: "Invalid course!" });
 	}
 
 	if (internalId && course && year && typeof year !== "number") {
-		return res.status(400).json({ success: false, message: "Year must be a number!" });
+		return res.status(400).json({ success: false, message: "Invalid year!" });
 	}
 
 	next();

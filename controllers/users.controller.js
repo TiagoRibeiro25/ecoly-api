@@ -75,7 +75,6 @@ async function getBadgesInfo(unlockedBadges) {
 	return { unlocked: unlockedBadgesInfoArray, locked: lockedBadgesInfoArray };
 }
 
-//TODO: Add tests
 exports.login = async (req, res) => {
 	try {
 		const { email, password } = req.body;
@@ -108,7 +107,6 @@ exports.login = async (req, res) => {
 	}
 };
 
-//TODO: Add tests
 exports.register = async (req, res) => {
 	const { name, email, password, schoolId, internalId, course, year } = req.body;
 

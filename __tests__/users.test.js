@@ -810,6 +810,298 @@ describe("POST /api/users/login", () => {
 	});
 });
 
+describe("POST /api/users", () => {
+	const validUser = {
+		name: "User",
+		email: "novo.user@email.pt",
+		password: "Esmad_2223",
+		schoolId: 3,
+		internalId: "123456789",
+		course: "Curso de Teste",
+		year: 1,
+	};
+	describe("when the user does not exist", () => {
+		test("should respond with a 201 status code", async () => {
+			const response = await supertest(app).post("/api/users").send(validUser);
+			expect(response.statusCode).toBe(201);
+
+			// delete user
+			await db.users.destroy({ where: { email: validUser.email } });
+		});
+
+		test("should respond with a json", async () => {
+			const response = await supertest(app).post("/api/users").send(validUser);
+			expect(response.type).toBe("application/json");
+
+			// delete user
+			await db.users.destroy({ where: { email: validUser.email } });
+		});
+
+		test("should respond with a message", async () => {
+			const response = await supertest(app).post("/api/users").send(validUser);
+			const lastUser = await db.users.findOne({ order: [["id", "DESC"]] });
+			expect(response.body.message).toBe("Account created with success - " + lastUser.id);
+
+			// delete user
+			await db.users.destroy({ where: { email: validUser.email } });
+		});
+	});
+
+	describe("when the user already exists", () => {
+		test("should respond with a 409 status code", async () => {
+			const response = await supertest(app).post("/api/users").send(validUser);
+			expect(response.statusCode).toBe(201);
+
+			const response2 = await supertest(app).post("/api/users").send(validUser);
+			expect(response2.statusCode).toBe(409);
+
+			// delete user
+			await db.users.destroy({ where: { email: validUser.email } });
+		});
+
+		test("should respond with a json", async () => {
+			const response = await supertest(app).post("/api/users").send(validUser);
+			expect(response.type).toBe("application/json");
+
+			const response2 = await supertest(app).post("/api/users").send(validUser);
+			expect(response2.type).toBe("application/json");
+
+			// delete user
+			await db.users.destroy({ where: { email: validUser.email } });
+		});
+
+		test("should respond with a message", async () => {
+			const response = await supertest(app).post("/api/users").send(validUser);
+			const lastUser = await db.users.findOne({ order: [["id", "DESC"]] });
+			expect(response.body.message).toBe("Account created with success - " + lastUser.id);
+
+			const response2 = await supertest(app).post("/api/users").send(validUser);
+			expect(response2.body.message).toBe("There's already an account with that email.");
+
+			// delete user
+			await db.users.destroy({ where: { email: validUser.email } });
+		});
+	});
+
+	describe("when the user is not valid", () => {
+		describe("When some field is missing", () => {
+			test("should respond with a 400 status code", async () => {
+				const response = await supertest(app).post("/api/users").send({
+					name: "User",
+				});
+				expect(response.statusCode).toBe(400);
+			});
+
+			test("should respond with a json", async () => {
+				const response = await supertest(app).post("/api/users").send({
+					name: "User",
+				});
+				expect(response.type).toBe("application/json");
+			});
+
+			test("should respond with a message", async () => {
+				const response = await supertest(app).post("/api/users").send({
+					name: "User",
+				});
+				expect(response.body.message).toBe("Missing fields!");
+			});
+		});
+
+		describe("When the email is not valid", () => {
+			test("should respond with a 400 status code", async () => {
+				const response = await supertest(app).post("/api/users").send({
+					name: "User",
+					email: "UserEsmad.ipp.pt",
+					password: "Esmad_2223",
+					schoolId: 3,
+				});
+				expect(response.statusCode).toBe(400);
+			});
+
+			test("should respond with a json", async () => {
+				const response = await supertest(app).post("/api/users").send({
+					name: "User",
+					email: "UserEsmad.ipp.pt",
+					password: "Esmad_2223",
+					schoolId: 3,
+				});
+				expect(response.statusCode).toBe(400);
+			});
+
+			test("should respond with a message", async () => {
+				const response = await supertest(app).post("/api/users").send({
+					name: "User",
+					email: "UserEsmad.ipp.pt",
+					password: "Esmad_2223",
+					schoolId: 3,
+				});
+				expect(response.body.message).toBe("Invalid email!");
+			});
+		});
+
+		describe("When there's already an user with the same email", () => {
+			test("should respond with a 409 status code", async () => {
+				const response = await supertest(app).post("/api/users").send({
+					name: "User",
+					email: "User@esmad.ipp.pt",
+					password: "Esmad_2223",
+					schoolId: 3,
+				});
+				expect(response.statusCode).toBe(409);
+			});
+
+			test("should respond with a json", async () => {
+				const response = await supertest(app).post("/api/users").send({
+					name: "User",
+					email: "User@esmad.ipp.pt",
+					password: "Esmad_2223",
+					schoolId: 3,
+				});
+				expect(response.type).toBe("application/json");
+			});
+
+			test("should respond with a message", async () => {
+				const response = await supertest(app).post("/api/users").send({
+					name: "User",
+					email: "User@esmad.ipp.pt",
+					password: "Esmad_2223",
+					schoolId: 3,
+				});
+				expect(response.body.message).toBe("There's already an account with that email.");
+			});
+		});
+
+		describe("when the name is not valid", () => {
+			test("should respond with a 400 status code", async () => {
+				const response = await supertest(app).post("/api/users").send({
+					name: 123,
+					email: "novo.user@email.pt",
+					password: "123",
+					schoolId: 3,
+				});
+				expect(response.statusCode).toBe(400);
+			});
+
+			test("should respond with a json", async () => {
+				const response = await supertest(app).post("/api/users").send({
+					name: 123,
+					email: "novo.user@email.pt",
+					password: "123",
+					schoolId: 3,
+				});
+				expect(response.type).toBe("application/json");
+			});
+
+			test("should respond with a message", async () => {
+				const response = await supertest(app).post("/api/users").send({
+					name: 123,
+					email: "novo.user@email.pt",
+					password: "123",
+					schoolId: 3,
+				});
+				expect(response.body.message).toBe("Invalid name!");
+			});
+		});
+
+		describe("when the password is not valid", () => {
+			test("should respond with a 400 status code", async () => {
+				const response = await supertest(app).post("/api/users").send({
+					name: "Novo User",
+					email: "novo.user@email.pt",
+					password: 123,
+					schoolId: 3,
+				});
+				expect(response.statusCode).toBe(400);
+			});
+
+			test("should respond with a json", async () => {
+				const response = await supertest(app).post("/api/users").send({
+					name: "Novo User",
+					email: "novo.user@email.pt",
+					password: 123,
+					schoolId: 3,
+				});
+				expect(response.type).toBe("application/json");
+			});
+
+			test("should respond with a message", async () => {
+				const response = await supertest(app).post("/api/users").send({
+					name: "Novo User",
+					email: "novo.user@email.pt",
+					password: 123,
+					schoolId: 3,
+				});
+				expect(response.body.message).toBe("Invalid password!");
+			});
+		});
+
+		describe("when the school id is not valid", () => {
+			describe("when the school id is not a number", () => {
+				test("should respond with a 400 status code", async () => {
+					const response = await supertest(app).post("/api/users").send({
+						name: "Novo User",
+						email: "novo.user@email.pt",
+						password: "123",
+						schoolId: "lol",
+					});
+					expect(response.statusCode).toBe(400);
+				});
+
+				test("should respond with a json", async () => {
+					const response = await supertest(app).post("/api/users").send({
+						name: "Novo User",
+						email: "novo.user@email.pt",
+						password: "123",
+						schoolId: "lol",
+					});
+					expect(response.type).toBe("application/json");
+				});
+
+				test("should respond with a message", async () => {
+					const response = await supertest(app).post("/api/users").send({
+						name: "Novo User",
+						email: "novo.user@email.pt",
+						password: "123",
+						schoolId: "lol",
+					});
+					expect(response.body.message).toBe("Invalid school id!");
+				});
+			});
+			describe("when the school id doesn't exist", () => {
+				test("should respond with a 404 status code", async () => {
+					const response = await supertest(app).post("/api/users").send({
+						name: "Novo User",
+						email: "novo.user@email.pt",
+						password: "123",
+						schoolId: 0,
+					});
+					expect(response.statusCode).toBe(404);
+				});
+
+				test("should respond with a json", async () => {
+					const response = await supertest(app).post("/api/users").send({
+						name: "Novo User",
+						email: "novo.user@email.pt",
+						password: "123",
+						schoolId: 0,
+					});
+					expect(response.type).toBe("application/json");
+				});
+
+				test("should respond with a message", async () => {
+					const response = await supertest(app).post("/api/users").send({
+						name: "Novo User",
+						email: "novo.user@email.pt",
+						password: "123",
+						schoolId: 0,
+					});
+					expect(response.body.message).toBe("School not found.");
+				});
+			});
+		});
+	});
+});
+
 // After all tests have finished, close the DB connection
 afterAll(async () => {
 	await db.sequelize.close();
