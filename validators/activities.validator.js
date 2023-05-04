@@ -7,7 +7,7 @@ exports.validateQueries = (req, res, next) => {
 
 	const fieldsValid = ["activity", "theme", "report", "activities", "themes", "reports"];
 	const filterValid = ["finished", "unfinished", "recent"];
-
+//sad
 	let responseSent = false; // Flag variable to track whether a response has been sent (to fix the error of headers already sent)
 
 	// if there is no valid query
