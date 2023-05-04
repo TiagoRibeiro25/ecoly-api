@@ -1,6 +1,7 @@
 const colors = require("colors");
 const db = require("../models/db");
 const data = require("./data");
+const bcrypt = require("bcryptjs");
 
 async function roles() {
 	try {
@@ -31,6 +32,10 @@ async function schools() {
 async function users() {
 	try {
 		const start = new Date();
+
+		// Hash the passwords
+		data.users.forEach((user) => (user.password = bcrypt.hashSync(user.password, 10)));
+
 		await db.users.bulkCreate(data.users);
 		const end = new Date();
 		console.log(colors.blue("Users created successfully - ") + colors.green(end - start + "ms"));
