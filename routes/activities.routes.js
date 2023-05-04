@@ -1,15 +1,20 @@
 const express = require("express");
 const router = express.Router();
 const activitiesController = require("../controllers/activities.controller");
-const activitiesValidation = require("../validators/activities.validator");
+const activitiesValidator = require("../validators/activities.validator");
 
-// GET /api/activities?search => search activities
-router.get("/", activitiesValidation.validateQueries, activitiesController.searchActivities);
+
+// GET /api/activities
+router.route("/").get(
+	activitiesValidator.validateQueries,
+	activitiesValidator.foundQuery,
+	activitiesController.getAllActivities,
+	activitiesController.searchActivities
+);
+
 
 // GET /api/activities/:id => find a specific activity (activity detail)
 router.get("/:id", activitiesController.getOneActivity);
-
-
 
 // TODO => add validation Queries middleware
 // POST /api/activities => add an activity / report / theme
@@ -44,12 +49,14 @@ router.post("/", (req, res) => {
 	// 	return res.status(400).json({
 	// 		error: `invalid value for query fields`,
 	// 	});
-	// } 
+	// }
 	if (req.query.fields === "activities") {
 		return activitiesController.addActivity(req, res);
-	}  if (req.query.fields === "report") {
+	}
+	if (req.query.fields === "report") {
 		// return activitiesController.addReport(req, res);
-	}  if (req.query.fields === "theme") {
+	}
+	if (req.query.fields === "theme") {
 		// return activitiesController.addTheme(req, res);
 	}
 });
