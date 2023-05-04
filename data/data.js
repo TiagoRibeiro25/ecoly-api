@@ -133,6 +133,14 @@ module.exports = {
 			role_id: 4,
 			school_id: 1,
 		},
+		{
+			email: "not.a.bot@email.com",
+			name: "Not a Bot",
+			password: "123",
+			photo: base64Data.profilePicture,
+			role_id: 1,
+			school_id: 2,
+		},
 	],
 
 	/**
