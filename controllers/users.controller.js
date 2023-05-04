@@ -75,8 +75,8 @@ async function getBadgesInfo(unlockedBadges) {
 	return { unlocked: unlockedBadgesInfoArray, locked: lockedBadgesInfoArray };
 }
 
+//TODO: Add tests
 exports.login = async (req, res) => {
-	//TODO: Add tests
 	try {
 		const { email, password } = req.body;
 
@@ -105,6 +105,52 @@ exports.login = async (req, res) => {
 		}
 		console.log(colors.red(err));
 		res.status(500).send({ success: false, message: "Error logging in." });
+	}
+};
+
+//TODO: Add tests
+exports.register = async (req, res) => {
+	const { name, email, password, schoolId, internalId, course, year } = req.body;
+
+	try {
+		// check if there's already a user with the same email
+		const user = await Users.findOne({ where: { email } });
+		if (user) throw new Error("email_already_exists");
+
+		// check if the school exists
+		const school = await db.schools.findByPk(schoolId);
+		if (!school) throw new Error("school_not_found");
+
+		// create the user
+		const newUser = await Users.create({
+			name,
+			email,
+			password: bcrypt.hashSync(password, 10),
+			photo: "https://api.dicebear.com/5.x/personas/svg?seed=ecoly_user",
+			role_id: 1,
+			school_id: school.id,
+			...(internalId && { internal_id: internalId }),
+			...(course && { course }),
+			...(year && { year }),
+		});
+
+		res.status(201).json({
+			success: true,
+			message: "Account created with success - " + newUser.id,
+		});
+	} catch (err) {
+		if (err.message === "email_already_exists") {
+			return res
+				.status(409)
+				.send({ success: false, message: "There's already an account with that email." });
+		}
+
+		if (err.message === "school_not_found") {
+			return res.status(404).send({ success: false, message: "School not found." });
+		}
+
+		console.log(colors.red("\n\n-> ") + colors.yellow(err) + "\n");
+		res.status(500).send({ success: false, message: "Error creating account." });
 	}
 };
 

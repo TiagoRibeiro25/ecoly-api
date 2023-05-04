@@ -17,6 +17,44 @@ exports.validateBodyLogin = (req, res, next) => {
 	next();
 };
 
+exports.validateBodyRegister = (req, res, next) => {
+	const { name, email, password, schoolId, internalId, course, year } = req.body;
+
+	if (!name || !email || !password || !schoolId) {
+		return res.status(400).json({ success: false, message: "Missing fields!" });
+	}
+
+	if (!validateEmail(email)) {
+		return res.status(400).json({ success: false, message: "Invalid email!" });
+	}
+
+	if (typeof name !== "string") {
+		return res.status(400).json({ success: false, message: "Name must be a string!" });
+	}
+
+	if (typeof password !== "string") {
+		return res.status(400).json({ success: false, message: "Password must be a string!" });
+	}
+
+	if (typeof schoolId !== "number") {
+		return res.status(400).json({ success: false, message: "School id must be a number!" });
+	}
+
+	if (internalId && typeof internalId !== "string") {
+		return res.status(400).json({ success: false, message: "Internal id must be a string!" });
+	}
+
+	if (internalId && course && typeof course !== "string") {
+		return res.status(400).json({ success: false, message: "Course must be a string!" });
+	}
+
+	if (internalId && course && year && typeof year !== "number") {
+		return res.status(400).json({ success: false, message: "Year must be a number!" });
+	}
+
+	next();
+};
+
 exports.validateBodyRoleName = (req, res, next) => {
 	/** @type {{role :string}} */
 	const { role } = req.body;

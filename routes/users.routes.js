@@ -6,7 +6,8 @@ const usersValidator = require("../validators/users.validator");
 
 router
 	.route("/")
-	.get(authController.verifyToken, authController.verifyIsAdmin, usersController.getUsers);
+	.get(authController.verifyToken, authController.verifyIsAdmin, usersController.getUsers)
+	.post(usersValidator.validateBodyRegister, usersController.register);
 
 router.route("/login").post(usersValidator.validateBodyLogin, usersController.login);
 
