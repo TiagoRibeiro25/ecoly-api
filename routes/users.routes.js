@@ -2,18 +2,41 @@ const express = require("express");
 const router = express.Router();
 const authController = require("../controllers/auth.controller");
 const usersController = require("../controllers/users.controller");
-const usersMiddleware = require("../middleware/users.middleware");
+const usersValidator = require("../validators/users.validator");
+
+router
+	.route("/")
+	.get(authController.verifyToken, authController.verifyIsAdmin, usersController.getUsers);
+
+router.route("/login").post(usersValidator.validateBodyLogin, usersController.login);
 
 router
 	.route("/role")
-	.get(usersController.getRoles)
-	.post(usersMiddleware.validateBodyRoleName, usersController.addRole);
+	.get(authController.verifyToken, authController.verifyIsAdmin, usersController.getRoles)
+	.post(
+		authController.verifyToken,
+		authController.verifyIsAdmin,
+		usersValidator.validateBodyRoleName,
+		usersController.addRole
+	);
 
-router.route("/role/:id").put(usersMiddleware.validateBodyRoleName, usersController.editRole);
+router
+	.route("/role/:id")
+	.put(
+		authController.verifyToken,
+		authController.verifyIsAdmin,
+		usersValidator.validateBodyRoleName,
+		usersController.editRole
+	);
 
-router.route("/:id/role").patch(usersMiddleware.validateBodyRoleId, usersController.editUserRole);
-
-router.route("/").get(usersController.getUsers);
+router
+	.route("/:id/role")
+	.patch(
+		authController.verifyToken,
+		authController.verifyIsAdmin,
+		usersValidator.validateBodyRoleId,
+		usersController.editUserRole
+	);
 
 router.route("/:id").get(usersController.getUser);
 

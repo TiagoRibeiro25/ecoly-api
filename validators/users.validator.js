@@ -1,3 +1,22 @@
+const validateEmail = require("../utils/validateEmail");
+
+exports.validateBodyLogin = (req, res, next) => {
+	/** @type {{email :string, password :string}} */
+	const { email, password } = req.body;
+
+	// validate the email
+	if (!email || !validateEmail(email)) {
+		return res.status(400).json({ success: false, message: "Invalid email!" });
+	}
+
+	// check if the password is empty
+	if (!password) {
+		return res.status(400).json({ success: false, message: "Password can not be empty!" });
+	}
+
+	next();
+};
+
 exports.validateBodyRoleName = (req, res, next) => {
 	/** @type {{role :string}} */
 	const { role } = req.body;

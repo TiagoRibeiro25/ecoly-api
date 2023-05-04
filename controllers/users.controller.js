@@ -75,6 +75,39 @@ async function getBadgesInfo(unlockedBadges) {
 	return { unlocked: unlockedBadgesInfoArray, locked: lockedBadgesInfoArray };
 }
 
+exports.login = async (req, res) => {
+	//TODO: Add tests
+	try {
+		const { email, password } = req.body;
+
+		// check if the user exists
+		const user = await Users.findOne({ where: { email } });
+		if (!user) throw new Error("not_found");
+
+		// check if the password is correct
+		const passwordIsValid = bcrypt.compareSync(password, user.password);
+		if (!passwordIsValid) throw new Error("invalid_password");
+
+		// generate token
+		const token = jwt.sign(
+			{ userId: user.id, roleId: user.role_id, schoolId: user.school_id },
+			process.env.JWT_SECRET,
+			{ expiresIn: 86400 } // 24 hours
+		);
+
+		res.status(200).send({ success: true, data: { auth_key: token } });
+	} catch (err) {
+		if (err.message === "not_found") {
+			return res.status(404).send({ success: false, message: "User not found." });
+		}
+		if (err.message === "invalid_password") {
+			return res.status(401).send({ success: false, message: "Invalid password." });
+		}
+		console.log(colors.red(err));
+		res.status(500).send({ success: false, message: "Error logging in." });
+	}
+};
+
 exports.getUser = async (req, res) => {
 	const { id } = req.params;
 
@@ -85,18 +118,20 @@ exports.getUser = async (req, res) => {
 		const result = user.toJSON();
 
 		// check if there's a token in the request
-		const token = req.headers["x-access-token"] || req.headers.authorization;
+		let token = req.headers["x-access-token"] || req.headers.authorization;
+		token = token?.replace("Bearer ", "");
 
 		if (token) {
-			// verify the token
-			jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
-				if (err) {
-					result.isLoggedUser = false;
-				} else {
-					// check if the user is the same as the one in the token
-					result.isLoggedUser = decoded.id === id;
-				}
-			});
+			try {
+				// verify the token
+				const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+				// check if the user is the same as the one in the token
+				result.isLoggedUser = +decoded.userId === +id;
+			} catch (err) {
+				// if the token is invalid, return the user without the isLoggedUser field
+				result.isLoggedUser = false;
+			}
 		} else result.isLoggedUser = false;
 
 		// remove password
@@ -145,9 +180,7 @@ exports.getUser = async (req, res) => {
 	}
 };
 
-exports.getUsers = async (req, res) => {
-	//TODO: check if the user is an admin from the token
-
+exports.getUsers = async (_req, res) => {
 	try {
 		const users = await Users.findAll();
 		/** @type { Array<{id: number, name: string, email: string, role: string, school: string}>} */
@@ -182,8 +215,6 @@ exports.getRoles = async (_req, res) => {
 };
 
 exports.addRole = async (req, res) => {
-	//TODO: check if the user is an admin from the token
-
 	/** @type { string } */
 	const role = req.body.role?.trim().toLowerCase();
 
@@ -212,8 +243,6 @@ exports.addRole = async (req, res) => {
 };
 
 exports.editRole = async (req, res) => {
-	//TODO: check if the user is an admin from the token
-
 	/** @type {{ id: number}} */
 	const { id } = req.params;
 	/** @type { string } */
@@ -254,9 +283,6 @@ exports.editRole = async (req, res) => {
 };
 
 exports.editUserRole = async (req, res) => {
-	//TODO: check if the user is an admin from the token
-	//TODO: verify if the user sending the request is not the same as the one being edited
-
 	/** @type {{id :number}} */
 	const { id } = req.params;
 	/** @type {{ role: number }} */
@@ -266,6 +292,9 @@ exports.editUserRole = async (req, res) => {
 		// check if the user exists
 		const user = await Users.findByPk(id);
 		if (!user) throw new Error("user_not_found");
+
+		// check if the user is trying edit his own role
+		if (+req.tokenData.userId === +id) throw new Error("user_editing_himself");
 
 		// check if the role exists
 		const roleExists = await Roles.findOne({ where: { id: roleId } });
@@ -279,11 +308,17 @@ exports.editUserRole = async (req, res) => {
 		if (err.message === "user_not_found") {
 			return res.status(404).json({ success: false, message: `User with id ${id} not found.` });
 		}
+
+		if (err.message === "user_editing_himself") {
+			return res.status(403).json({ success: false, message: `You can't edit your own role.` });
+		}
+
 		if (err.message === "role_not_found") {
 			return res
 				.status(404)
 				.json({ success: false, message: `Role with id ${roleId} not found.` });
 		}
+
 		console.log(colors.red("\n\n-> ") + colors.yellow(err) + "\n");
 		res.status(500).json({
 			success: false,
