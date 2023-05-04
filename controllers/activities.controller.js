@@ -5,6 +5,7 @@ const activity_images = db.activity_image;
 const Users = db.users;
 const Schools = db.schools;
 const Themes = db.theme;
+const badges = db.badges; //for the unlocked badges
 
 function fixDate(date) {
 	const Date = date.toISOString().split("T")[0];
@@ -73,6 +74,9 @@ exports.getOneActivity = async (req, res) => {
 	try {
 		const activity = await Activities.findByPk(id, {
 			// get the activity theme name, the school name and the creator name  and the images of the activity in array
+			where : {
+				is_finished: false
+			},
 			include: [
 				{
 					model: Themes,
@@ -113,6 +117,13 @@ exports.getOneActivity = async (req, res) => {
 			return res.status(404).json({
 				success: false,
 				error: `activity with id ${id} not found`,
+			});
+		}
+
+		if(activity.is_finished === true){
+			return res.status(404).json({
+				success: false,
+				error: `activity with id ${id} is finished`,
 			});
 		}
 
@@ -225,8 +236,6 @@ exports.searchActivities = async (req, res) => {
 			success: true,
 			data: response,
 		});
-
-
 	} catch (err) {
 		return res.status(500).json({
 			success: false,
@@ -234,3 +243,76 @@ exports.searchActivities = async (req, res) => {
 		});
 	}
 };
+
+exports.getAllActivities = async (req, res) => {
+	try {
+		const activities = await Activities.findAll({
+			include: [
+				{
+					model: Themes,
+					as: "theme",
+					attributes: ["name"],
+				},
+				{
+					model: Schools,
+					as: "school",
+					attributes: ["name"],
+				},
+				{
+					model: Users,
+					as: "creator",
+					attributes: ["id", "name"],
+				},
+				{
+					model: activity_images,
+					as: "activity_images",
+					attributes: ["img"],
+				},
+			],
+
+			// remove the school_id, theme_id and creator_id from the response
+			attributes: {
+				exclude: ["school_id", "theme_id", "creator_id", "report"],
+			},
+		});
+
+		const response = activities.map((activity) => {
+			return {
+				id: activity.id,
+				creator: {
+					id: activity.creator.id,
+					name: activity.creator.name,
+				},
+				is_finished: activity.is_finished,
+				school: activity.school.name,
+				theme: activity.theme.name,
+				title: activity.title,
+				complexity: activity.complexity,
+				initial_date: fixDate(activity.initial_date),
+				final_date: fixDate(activity.final_date),
+				objective: activity.objective,
+				diagnostic: activity.diagnostic,
+				meta: activity.meta,
+				resources: activity.resources,
+				participants: activity.participants,
+				evaluation_indicator: activity.evaluation_indicator,
+				evaluation_method: activity.evaluation_method,
+				images: activity.activity_images.map((image) => image.img),
+			};
+		});
+
+		return res.status(200).json({
+			success: true,
+			data: response,
+		});
+	} catch (err) {
+		console.log("err");
+		return res.status(500).json({
+			success: false,
+			error: err.message || "Something went wrong. Please try again later.",
+		});
+	}
+};
+
+
+	
