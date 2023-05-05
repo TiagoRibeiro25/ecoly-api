@@ -1,4 +1,5 @@
 const db = require("../models/db");
+const colors = require("colors");
 const { Op, ValidationError } = require("sequelize");
 const Activities = db.activities;
 const activity_images = db.activity_image;
@@ -74,9 +75,6 @@ exports.getOneActivity = async (req, res) => {
 	try {
 		const activity = await Activities.findByPk(id, {
 			// get the activity theme name, the school name and the creator name  and the images of the activity in array
-			where : {
-				is_finished: false
-			},
 			include: [
 				{
 					model: Themes,
@@ -120,13 +118,6 @@ exports.getOneActivity = async (req, res) => {
 			});
 		}
 
-		if(activity.is_finished === true){
-			return res.status(404).json({
-				success: false,
-				error: `activity with id ${id} is finished`,
-			});
-		}
-
 		const response = {
 			id: activity.id,
 			creator: {
@@ -154,9 +145,10 @@ exports.getOneActivity = async (req, res) => {
 			data: response,
 		});
 	} catch (err) {
+		console.log(colors.red(`${err.message}`));
 		return res.status(500).json({
 			success: false,
-			error: err.message || "Something went wrong. Please try again later.",
+			error: "We apologize, but our system is currently experiencing some issues. Please try again later.",
 		});
 	}
 };
@@ -203,7 +195,7 @@ exports.searchActivities = async (req, res) => {
 		if (activities.length === 0) {
 			return res.status(404).json({
 				success: false,
-				error: `There is no activities found with that title`,
+				error: `no activities found with title ${formatVal}`,
 			});
 		}
 
@@ -237,9 +229,10 @@ exports.searchActivities = async (req, res) => {
 			data: response,
 		});
 	} catch (err) {
+		console.log(colors.red(`${err.message}`));
 		return res.status(500).json({
 			success: false,
-			error: err.message || "Something went wrong. Please try again later.",
+			error: "We apologize, but our system is currently experiencing some issues. Please try again later.",
 		});
 	}
 };
@@ -306,13 +299,152 @@ exports.getAllActivities = async (req, res) => {
 			data: response,
 		});
 	} catch (err) {
-		console.log("err");
+		console.log(colors.red(`${err.message}`));
 		return res.status(500).json({
 			success: false,
-			error: err.message || "Something went wrong. Please try again later.",
+			error: "We apologize, but our system is currently experiencing some issues. Please try again later.",
 		});
 	}
 };
 
+exports.getFinishedActivities = async (req, res) => {
+	try {
+		const activities = await Activities.findAll({
+			where: {
+				is_finished: true,
+			},
+			include: [
+				{
+					model: Themes,
+					as: "theme",
+					attributes: ["name"],
+				},
+				{
+					model: Schools,
+					as: "school",
+					attributes: ["name"],
+				},
+				{
+					model: Users,
+					as: "creator",
+					attributes: ["id", "name"],
+				},
+				{
+					model: activity_images,
+					as: "activity_images",
+					attributes: ["img"],
+				},
+			],
+			attributes: {
+				exclude: ["school_id", "theme_id", "creator_id", "report"],
+			},
+		});
 
-	
+		const response = activities.map((activity) => {
+			return {
+				id: activity.id,
+				creator: {
+					id: activity.creator.id,
+					name: activity.creator.name,
+				},
+				// is_finished: activity.is_finished,
+				school: activity.school.name,
+				theme: activity.theme.name,
+				title: activity.title,
+				complexity: activity.complexity,
+				initial_date: fixDate(activity.initial_date),
+				final_date: fixDate(activity.final_date),
+				objective: activity.objective,
+				diagnostic: activity.diagnostic,
+				meta: activity.meta,
+				resources: activity.resources,
+				participants: activity.participants,
+				evaluation_indicator: activity.evaluation_indicator,
+				evaluation_method: activity.evaluation_method,
+				images: activity.activity_images.map((image) => image.img),
+			};
+		});
+
+		return res.status(200).json({
+			success: true,
+			data: response,
+		});
+	} catch (err) {
+		console.log(colors.red(`${err.message}`));
+		return res.status(500).json({
+			success: false,
+			error: "We apologize, but our system is currently experiencing some issues. Please try again later.",
+		});
+	}
+};
+
+exports.getUnfinishedActivities = async (req, res) => {
+	try {
+		const activities = await Activities.findAll({
+			where: {
+				is_finished: false,
+			},
+			include: [
+				{
+					model: Themes,
+					as: "theme",
+					attributes: ["name"],
+				},
+				{
+					model: Schools,
+					as: "school",
+					attributes: ["name"],
+				},
+				{
+					model: Users,
+					as: "creator",
+					attributes: ["id", "name"],
+				},
+				{
+					model: activity_images,
+					as: "activity_images",
+					attributes: ["img"],
+				},
+			],
+			attributes: {
+				exclude: ["school_id", "theme_id", "creator_id", "report"],
+			},
+		});
+
+		const response = activities.map((activity) => {
+			return {
+				id: activity.id,
+				creator: {
+					id: activity.creator.id,
+					name: activity.creator.name,
+				},
+				// is_finished: activity.is_finished,
+				school: activity.school.name,
+				theme: activity.theme.name,
+				title: activity.title,
+				complexity: activity.complexity,
+				initial_date: fixDate(activity.initial_date),
+				final_date: fixDate(activity.final_date),
+				objective: activity.objective,
+				diagnostic: activity.diagnostic,
+				meta: activity.meta,
+				resources: activity.resources,
+				participants: activity.participants,
+				evaluation_indicator: activity.evaluation_indicator,
+				evaluation_method: activity.evaluation_method,
+				images: activity.activity_images.map((image) => image.img),
+			};
+		});
+
+		return res.status(200).json({
+			success: true,
+			data: response,
+		});
+	} catch (err) {
+		console.log(colors.red(`${err.message}`));
+		return res.status(500).json({
+			success: false,
+			error: "We apologize, but our system is currently experiencing some issues. Please try again later.",
+		});
+	}
+};
