@@ -19,12 +19,6 @@ exports.validateQueries = (req, res, next) => {
 	// Check if all queries are valid
 	const queriesAreValid = ObjectKeys.every((key) => validQueries.includes(key));
 
-	// Check if all fields are valid
-	const fieldsAreValid = ObjectKeys.every((key) => fieldsValid.includes(req.query.fields));
-
-	// Check if all filters are valid
-	const filtersAreValid = ObjectKeys.every((key) => filterValid.includes(req.query.filter));
-
 	// Check if all queries are valid
 	if (!queriesAreValid) {
 		const invalidQueries = ObjectKeys.filter((key) => !validQueries.includes(key)).map(
@@ -73,6 +67,24 @@ exports.validateQueries = (req, res, next) => {
 		});
 	}
 
+	// Check if all queries are valid
+	const invalidFields = ObjectKeys.filter((key) => !fieldsValid.includes(req.query[key])).map(
+		(key) => `${req.query.fields} is a invalid value for fields parameter`
+	);
+
+	// Check if all queries are valid
+	if (req.query.fields && invalidFields) {
+		if (invalidFields.length == 1) {
+			// returns only one error without array
+			responseSent = true;
+			console.log(colors.red("Invalid fields value"));
+			return res.status(400).json({
+				success: false,
+				error: invalidFields[0],
+			});
+		}
+	}
+
 
 	if (!responseSent) {
 		// Call next() only if no response has been sent (if passed all validations)
@@ -114,7 +126,7 @@ exports.foundQuery = (req, res, next) => {
 		return activitiesController.getRecentSchoolActivities(req, res);
 	}
 
-	if(req.query.fields === "reports"){
+	if (req.query.fields === "reports") {
 		return activitiesController.getReports(req, res);
 	}
 

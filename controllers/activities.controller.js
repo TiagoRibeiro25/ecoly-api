@@ -7,6 +7,7 @@ const Users = db.users;
 const Schools = db.schools;
 const Themes = db.theme;
 const badges = db.badges; //for the unlocked badges
+const userBadges = db.user_badge; //for the unlocked badges
 
 function fixDate(date) {
 	const Date = date.toISOString().split("T")[0];
