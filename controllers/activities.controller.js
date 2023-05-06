@@ -261,6 +261,7 @@ exports.getAllActivities = async (req, res) => {
 };
 
 exports.getFinishedActivities = async (req, res) => {
+	console.log(colors.green("Finished Activities"));
 	try {
 		const activities = await Activities.findAll({
 			where: {
@@ -332,6 +333,7 @@ exports.getFinishedActivities = async (req, res) => {
 };
 
 exports.getUnfinishedActivities = async (req, res) => {
+		console.log(colors.green("Unfinished Activities"));
 	try {
 		const activities = await Activities.findAll({
 			where: {

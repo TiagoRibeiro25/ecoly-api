@@ -51,5 +51,5 @@ router
 		activitiesController.deleteActivity,
 		activitiesController.deleteTheme
 	);
-
+	
 module.exports = router;
