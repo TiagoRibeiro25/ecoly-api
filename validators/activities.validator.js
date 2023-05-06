@@ -73,15 +73,15 @@ exports.validateQueries = (req, res, next) => {
 		(key) => key === "fields" && !fieldsValid.includes(req.query[key])
 	).map((key) => `${req.query.fields} is a invalid value for the fields parameter`);
 
-	// if (invalidFields.length > 0) {
-	// 	// returns only one error without array
-	// 	responseSent = true;
-	// 	console.log(colors.red("Invalid fields value"));
-	// 	return res.status(400).json({
-	// 		success: false,
-	// 		error: invalidFields[0],
-	// 	});
-	// }
+	if (invalidFields.length > 0) {
+		// returns only one error without array
+		responseSent = true;
+		console.log(colors.red("Invalid fields value"));
+		return res.status(400).json({
+			success: false,
+			error: invalidFields[0],
+		});
+	}
 
 	// Check if filter parameter is valid
 	const invalidFilter = ObjectKeys.filter(
@@ -143,34 +143,18 @@ exports.validateQueries = (req, res, next) => {
 		});
 	}
 
-	// // accept only themes and activities for the fields parameter
-	// if (req.query.fields && req.query.fields !== "activities" && req.query.fields !== "themes") {
-	// 	console.log(ObjectKeys);
-	// 	responseSent = true;
-	// 	console.log(
-	// 		colors.red(
-	// 			"Invalid fields value : accept only themes and activities for the fields parameter"
-	// 		)
-	// 	);
-	// 	return res.status(400).json({
-	// 		success: false,
-	// 		error: `${req.query.fields} is a invalid value for the fields parameter`,
-	// 	});
-	// }
-
-
-	// check if are repeated queries in the request
-	const repeatedQueries = ObjectKeys.filter((key) => ObjectKeys.includes(key)).map(
-		(key) => `${key} is repeated`
-	);
-
-	if (repeatedQueries.length > 0) {
-		// returns only one error without array
+	// accept only themes and activities for the fields parameter
+	if (req.method === 'GET' && req.query.fields && req.query.fields !== "activities" && req.query.fields !== "themes") {
+		console.log(ObjectKeys);
 		responseSent = true;
-		console.log(colors.red("Repeated queries"));
+		console.log(
+			colors.red(
+				"Invalid fields value : accept only themes and activities for the fields parameter"
+			)
+		);
 		return res.status(400).json({
 			success: false,
-			error: repeatedQueries[0],
+			error: `${req.query.fields} is a invalid value for the fields parameter`,
 		});
 	}
 
