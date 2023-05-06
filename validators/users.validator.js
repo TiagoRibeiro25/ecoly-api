@@ -90,3 +90,55 @@ exports.validateBodyRoleId = (req, res, next) => {
 
 	next();
 };
+
+//TODO: fix this validator
+exports.validateBodyEditUserInfo = (req, res, next) => {
+	const validFields = ["email", "password", "internalId", "course", "year", "highlightBadgeId"];
+	const fields = req.query.fields ? req.query.fields.split(",") : [];
+
+	const validateField = (field, validator) => {
+		return fields.includes(field) && !validator(req.body[field]);
+	};
+
+	const validators = {
+		email: (value) => {
+			return typeof value !== "string" || value.trim().length === 0 || !validateEmail(value);
+		},
+		password: (value) => {
+			return typeof value !== "string" || value.trim().length === 0;
+		},
+		internalId: (value) => {
+			return typeof value !== "string" || value.trim().length === 0;
+		},
+		course: (value) => {
+			return typeof value !== "string" || value.trim().length === 0;
+		},
+		year: (value) => {
+			return typeof value !== "number" && value !== null && value !== undefined;
+		},
+		highlightBadgeId: (value) => {
+			return typeof value !== "number" && value !== null && value !== undefined;
+		},
+	};
+
+	const invalidField = Object.keys(validators).find((field) =>
+		validateField(field, validators[field])
+	);
+
+	console.log(invalidField); //? error: it's always undefined (why?)
+
+	if (fields.length === 0 || !validFields.some((field) => fields.includes(field))) {
+		return res.status(400).json({ success: false, message: "Invalid fields!" });
+	}
+
+	if (invalidField) {
+		return res.status(400).json({ success: false, message: `Invalid ${invalidField}!` });
+	}
+
+	// remove invalid fields
+	req.body = Object.fromEntries(
+		Object.entries(req.body).filter(([key]) => validFields.includes(key))
+	);
+
+	next();
+};
