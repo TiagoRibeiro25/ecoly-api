@@ -7,7 +7,12 @@ const usersValidator = require("../validators/users.validator");
 router
 	.route("/")
 	.get(authController.verifyToken, authController.verifyIsAdmin, usersController.getUsers)
-	.post(usersValidator.validateBodyRegister, usersController.register);
+	.post(usersValidator.validateBodyRegister, usersController.register)
+	.patch(
+		authController.verifyToken,
+		usersValidator.validateBodyEditUserInfo,
+		usersController.editUserInfo
+	);
 
 router.route("/login").post(usersValidator.validateBodyLogin, usersController.login);
 

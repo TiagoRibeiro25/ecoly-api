@@ -370,3 +370,64 @@ exports.editUserRole = async (req, res) => {
 		});
 	}
 };
+
+exports.editUserInfo = async (req, res) => {
+	/** @type { number } */
+	const id = req.tokenData.userId;
+
+	try {
+		// if there's a key "email" in the request body, check if there's another user with the same email
+		if (req.body.email) {
+			// if there's 1 user with the same email, check if it's the same user
+			const user = await Users.findOne({ where: { email: req.body.email } });
+			if (user && user.id !== id) throw new Error("email_exists");
+
+			// update the user
+			await Users.update({ email: req.body.email }, { where: { id } });
+		}
+
+		// if there's a key "password", hash it
+		if (req.body.password) {
+			req.body.password = bcrypt.hashSync(req.body.password, 10);
+
+			await Users.update({ password: req.body.password }, { where: { id } });
+		}
+
+		// if there's an highlightedBadgeId, check if the user has that badge
+		if (req.body.highlightedBadgeId) {
+			const userBadge = db.user_badge.findOne({
+				where: { user_id: id, badge_id: req.body.highlightedBadgeId },
+			});
+
+			if (!userBadge) throw new Error("user_badge_not_found");
+
+			// update the user badge
+			await db.user_badge.update(
+				{ is_highlight: true },
+				{ where: { user_id: id, badge_id: req.body.highlightedBadgeId } }
+			);
+
+			// update the other user badges (remove the previous highlighted badge)
+			await db.user_badge.update(
+				{ is_highlight: false },
+				{ where: { user_id: id, badge_id: { [Op.ne]: req.body.highlightedBadgeId } } }
+			);
+		}
+
+		res.status(200).json({ success: true, message: `User info updated successfully.` });
+	} catch (err) {
+		if (err.message === "email_exists") {
+			return res.status(409).json({ success: false, message: `Email already in use!` });
+		}
+
+		if (err.message === "user_badge_not_found") {
+			return res.status(404).json({ success: false, message: `User badge not found.` });
+		}
+
+		console.log(colors.red("\n\n-> ") + colors.yellow(err) + "\n");
+		res.status(500).json({
+			success: false,
+			message: `Error occurred while updating user info with id ${id}.`,
+		});
+	}
+};
