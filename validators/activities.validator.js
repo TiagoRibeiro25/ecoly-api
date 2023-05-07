@@ -165,11 +165,11 @@ exports.validateQueries = (req, res, next) => {
 };
 
 exports.foundQuery = (req, res, next) => {
-	if (req.query.search) {
+	if (req.method === "GET" && req.query.search) {
 		return activitiesController.searchActivities(req, res);
 	}
 
-	if (req.query.fields === "activities" && req.query.schoolId) {
+	if (req.method === "GET" && req.query.fields === "activities" && req.query.schoolId) {
 		if (req.query.filter === "finished") {
 			return activitiesController.getFinishedSchoolActivities(req, res);
 		}
@@ -182,22 +182,30 @@ exports.foundQuery = (req, res, next) => {
 		return activitiesController.getSchoolActivities(req, res);
 	}
 
-	if (req.query.fields === "activities" && req.query.filter === "finished") {
+	if (
+		req.method === "GET" &&
+		req.query.fields === "activities" &&
+		req.query.filter === "finished"
+	) {
 		return activitiesController.getFinishedActivities(req, res);
 	}
 
-	if (req.query.fields === "activities" && req.query.filter === "unfinished") {
+	if (
+		req.method === "GET" &&
+		req.query.fields === "activities" &&
+		req.query.filter === "unfinished"
+	) {
 		return activitiesController.getUnfinishedActivities(req, res);
 	}
 
-	if (req.query.fields === "activities" && req.query.filter === "recent") {
+	if (req.method === "GET" && req.query.fields === "activities" && req.query.filter === "recent") {
 		return activitiesController.getRecentActivities(req, res);
 	}
 
-	if (req.query.fields === "reports") {
+	if (req.method === "GET" && req.query.fields === "reports") {
 		return activitiesController.getReports(req, res);
 	}
-	if (req.query.fields === "themes") {
+	if (req.method === "GET" && req.query.fields === "themes") {
 		return activitiesController.getThemes(req, res);
 	}
 	if (req.method === "POST" && req.query.fields === "activity") {
