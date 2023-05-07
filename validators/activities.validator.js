@@ -69,47 +69,42 @@ exports.validateQueries = (req, res, next) => {
 	}
 
 	// Check if fields parameter is valid
-	const invalidFields = ObjectKeys.filter(
-		(key) => key === "fields" && !fieldsValid.includes(req.query[key])
-	).map((key) => `${req.query.fields} is a invalid value for the fields parameter`);
-
-	if (invalidFields.length > 0) {
-		// returns only one error without array
-		responseSent = true;
-		console.log(colors.red("Invalid fields value"));
-		return res.status(400).json({
-			success: false,
-			error: invalidFields[0],
-		});
-	}
+	const invalidFields = Object.keys(req.query)
+		.filter((key) => key === "fields" && !fieldsValid.includes(req.query[key]))
+		.map((key) => `${req.query.fields} is an invalid value for the fields parameter`);
 
 	// Check if filter parameter is valid
-	const invalidFilter = ObjectKeys.filter(
-		(key) => key === "filter" && !filterValid.includes(req.query[key])
-	).map((key) => `${req.query.filter} is a invalid value for the filter parameter`);
+	const invalidFilter = Object.keys(req.query)
+		.filter((key) => key === "filter" && !filterValid.includes(req.query[key]))
+		.map((key) => `${req.query.filter} is an invalid value for the filter parameter`);
 
-	if (invalidFilter.length > 0) {
-		// returns only one error without array
+	// Check if schoolId parameter is valid
+	const invalidSchoolId = Object.keys(req.query)
+		.filter((key) => key === "schoolId" && !schoolIdValid.includes(parseInt(req.query[key])))
+		.map((key) => `${req.query.schoolId} is an invalid value for the schoolId parameter`);
+
+	// Combine all invalid parameters
+	const allInvalidParams = [...invalidFields, ...invalidFilter, ...invalidSchoolId];
+
+	// Return all possible errors as an array
+	if (allInvalidParams.length > 1) {
 		responseSent = true;
-		console.log(colors.red("Invalid filter value"));
+		console.log(colors.red("Invalid parameters"));
 		return res.status(400).json({
 			success: false,
-			error: invalidFilter[0],
+			error: allInvalidParams,
 		});
 	}
 
-	const invalidSchoolId = ObjectKeys.filter(
-		(key) => key === "schoolId" && !schoolIdValid.includes(parseInt(req.query[key]))
-	).map((key) => `${req.query.schoolId} is a invalid value for the schoolId parameter`);
-
-	if (invalidSchoolId.length > 0) {
+	if(allInvalidParams.length == 1) {
 		responseSent = true;
-		console.log(colors.red("Invalid schoolId value"));
+		console.log(colors.red("Invalid parameter"));
 		return res.status(400).json({
 			success: false,
-			error: invalidSchoolId[0],
+			error: allInvalidParams[0],
 		});
 	}
+
 
 	// if fields is valid with activities but is missing schoolId or filter parameter
 	if (
@@ -144,7 +139,12 @@ exports.validateQueries = (req, res, next) => {
 	}
 
 	// accept only themes and activities for the fields parameter
-	if (req.method === 'GET' && req.query.fields && req.query.fields !== "activities" && req.query.fields !== "themes") {
+	if (
+		req.method === "GET" &&
+		req.query.fields &&
+		req.query.fields !== "activities" &&
+		req.query.fields !== "themes"
+	) {
 		console.log(ObjectKeys);
 		responseSent = true;
 		console.log(

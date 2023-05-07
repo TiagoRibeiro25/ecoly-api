@@ -17,6 +17,7 @@ function fixDate(date) {
 	return reverseDate;
 }
 
+
 // TODO => add Authentication (Token auth_key) when creating activities
 // TODO => add 401 Unauthorized error when creating activities with invalid auth_key
 // TODO => add 403 Forbidden error without auth_key
@@ -294,6 +295,7 @@ exports.getFinishedActivities = async (req, res) => {
 			},
 		});
 
+
 		const response = activities.map((activity) => {
 			return {
 				id: activity.id,
@@ -318,6 +320,9 @@ exports.getFinishedActivities = async (req, res) => {
 				images: activity.activity_images.map((image) => image.img),
 			};
 		});
+
+		console.log(response);
+
 
 		return res.status(200).json({
 			success: true,
@@ -391,6 +396,8 @@ exports.getUnfinishedActivities = async (req, res) => {
 			};
 		});
 
+		console.log(response);
+
 		return res.status(200).json({
 			success: true,
 			data: response,
@@ -404,7 +411,6 @@ exports.getUnfinishedActivities = async (req, res) => {
 	}
 };
 
-// testing purposes only
 exports.getRecentActivities = async (req, res) => {
 	console.log(colors.green("Recent Activities"));
 
@@ -437,7 +443,7 @@ exports.getRecentActivities = async (req, res) => {
 			},
 		});
 
-		const response = activities.map((activity) => {
+		const response = activities.slice(-3).map((activity) => {
 			return {
 				id: activity.id,
 				creator: {
@@ -462,11 +468,11 @@ exports.getRecentActivities = async (req, res) => {
 			};
 		});
 
-		console.log(response.slice(-3));
-		// return the last 3 activities
+		console.log(response);
+
 		return res.status(200).json({
 			success: true,
-			data: response.slice(-3),
+			data: response,
 		});
 	} catch (err) {
 		console.log(colors.red(`${err.message}`));
