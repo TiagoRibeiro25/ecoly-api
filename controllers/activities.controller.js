@@ -17,7 +17,6 @@ function fixDate(date) {
 	return reverseDate;
 }
 
-
 // TODO => add Authentication (Token auth_key) when creating activities
 // TODO => add 401 Unauthorized error when creating activities with invalid auth_key
 // TODO => add 403 Forbidden error without auth_key
@@ -295,7 +294,6 @@ exports.getFinishedActivities = async (req, res) => {
 			},
 		});
 
-
 		const response = activities.map((activity) => {
 			return {
 				id: activity.id,
@@ -303,7 +301,7 @@ exports.getFinishedActivities = async (req, res) => {
 					id: activity.creator.id,
 					name: activity.creator.name,
 				},
-				// is_finished: activity.is_finished,
+				is_finished: activity.is_finished,
 				school: activity.school.name,
 				theme: activity.theme.name,
 				title: activity.title,
@@ -320,9 +318,6 @@ exports.getFinishedActivities = async (req, res) => {
 				images: activity.activity_images.map((image) => image.img),
 			};
 		});
-
-		console.log(response);
-
 
 		return res.status(200).json({
 			success: true,
@@ -378,7 +373,7 @@ exports.getUnfinishedActivities = async (req, res) => {
 					id: activity.creator.id,
 					name: activity.creator.name,
 				},
-				// is_finished: activity.is_finished,
+				is_finished: activity.is_finished,
 				school: activity.school.name,
 				theme: activity.theme.name,
 				title: activity.title,
@@ -395,8 +390,6 @@ exports.getUnfinishedActivities = async (req, res) => {
 				images: activity.activity_images.map((image) => image.img),
 			};
 		});
-
-		console.log(response);
 
 		return res.status(200).json({
 			success: true,
@@ -468,8 +461,6 @@ exports.getRecentActivities = async (req, res) => {
 			};
 		});
 
-		console.log(response);
-
 		return res.status(200).json({
 			success: true,
 			data: response,
@@ -519,11 +510,24 @@ exports.getSchoolActivities = async (req, res) => {
 			},
 		});
 
-		// not found school
-		if (activities.length === 0) {
+		// check if the school exists in the database
+		const school = await Schools.findOne({
+			where: {
+				id: schoolId,
+			},
+		});
+
+		if (!school) {
 			return res.status(404).json({
 				success: false,
 				error: "School not found.",
+			});
+		}
+
+		if (activities.length === 0) {
+			return res.status(404).json({
+				success: false,
+				error: "No activities found for this school.",
 			});
 		}
 
@@ -551,8 +555,6 @@ exports.getSchoolActivities = async (req, res) => {
 				images: activity.activity_images.map((image) => image.img),
 			};
 		});
-
-		console.log(response);
 
 		return res.status(200).json({
 			success: true,
@@ -604,11 +606,23 @@ exports.getFinishedSchoolActivities = async (req, res) => {
 			},
 		});
 
-		// not found school
-		if (activities.length === 0) {
+		const school = await Schools.findOne({
+			where: {
+				id: schoolId,
+			},
+		});
+
+		if (!school) {
 			return res.status(404).json({
 				success: false,
 				error: "School not found.",
+			});
+		}
+
+		if (activities.length === 0) {
+			return res.status(404).json({
+				success: false,
+				error: "No activities finished found for this school.",
 			});
 		}
 
@@ -636,8 +650,6 @@ exports.getFinishedSchoolActivities = async (req, res) => {
 				images: activity.activity_images.map((image) => image.img),
 			};
 		});
-
-		console.log(response);
 
 		return res.status(200).json({
 			success: true,
@@ -689,11 +701,23 @@ exports.getUnfinishedSchoolActivities = async (req, res) => {
 			},
 		});
 
-		// not found school
-		if (activities.length === 0) {
+		const school = await Schools.findOne({
+			where: {
+				id: schoolId,
+			},
+		});
+
+		if (!school) {
 			return res.status(404).json({
 				success: false,
 				error: "School not found.",
+			});
+		}
+
+		if (activities.length === 0) {
+			return res.status(404).json({
+				success: false,
+				error: "All activities are finished for this school.",
 			});
 		}
 
@@ -721,8 +745,6 @@ exports.getUnfinishedSchoolActivities = async (req, res) => {
 				images: activity.activity_images.map((image) => image.img),
 			};
 		});
-
-		console.log(response);
 
 		return res.status(200).json({
 			success: true,
@@ -773,15 +795,27 @@ exports.getRecentSchoolActivities = async (req, res) => {
 			},
 		});
 
-		// not found school
-		if (activities.length === 0) {
+		const school = await Schools.findOne({
+			where: {
+				id: schoolId,
+			},
+		});
+
+		if (!school) {
 			return res.status(404).json({
 				success: false,
 				error: "School not found.",
 			});
 		}
 
-		const response = activities.map((activity) => {
+		if (activities.length === 0) {
+			return res.status(404).json({
+				success: false,
+				error: "No activities found for this school.",
+			});
+		}
+
+		const response = activities.slice(-3).map((activity) => {
 			return {
 				id: activity.id,
 				creator: {
@@ -806,11 +840,9 @@ exports.getRecentSchoolActivities = async (req, res) => {
 			};
 		});
 
-		console.log(response.slice(0, 3));
-
 		return res.status(200).json({
 			success: true,
-			data: response.slice(0, 3),
+			data: response,
 		});
 	} catch (err) {
 		console.log(colors.red(`${err.message}`));
@@ -819,7 +851,6 @@ exports.getRecentSchoolActivities = async (req, res) => {
 			error: "We apologize, but our system is currently experiencing some issues. Please try again later.",
 		});
 	}
-
 };
 
 exports.getReports = async (req, res) => {
@@ -828,11 +859,33 @@ exports.getReports = async (req, res) => {
 
 exports.getThemes = async (req, res) => {
 	console.log(colors.green("Themes"));
+	try {
+		const themes = await Themes.findAll({
+			attributes: ["id", "name"],
+		});
+		if (themes)
+			return res.status(200).json({
+				success: true,
+				data: themes,
+			});
+	} catch (err) {
+		console.log(colors.red(`${err.message}`));
+		return res.status(500).json({
+			success: false,
+			error: "We apologize, but our system is currently experiencing some issues. Please try again later.",
+		});
+	}
 };
 
 exports.addActivity = async (req, res) => {
 	console.log(colors.yellow("Adding activity..."));
 	try {
+		// Get the last inserted activity ID
+		const lastActivity = await Activities.findOne({
+			order: [["id", "DESC"]],
+		});
+
+		// Create the new activity
 		const activity = await Activities.create(req.body);
 
 		// add blocks of code for the authentication validations
@@ -888,8 +941,38 @@ exports.finishActivity = async (req, res) => {
 	console.log(colors.green("Finish Activity"));
 };
 
+// for testing purposes
 exports.deleteActivity = async (req, res) => {
 	console.log(colors.green("Delete Activity"));
+
+	const { id } = req.params;
+
+	try {
+		// delete the images from the activity_images table
+		await activity_images.destroy({
+			where: {
+				activity_id: id,
+			},
+		});
+
+		// delete the activity
+		await Activities.destroy({
+			where: {
+				id: id,
+			},
+		});
+
+		return res.status(200).json({
+			success: true,
+			message: "Activity deleted",
+		});
+	} catch (err) {
+		console.log(colors.red(`${err.message}`));
+		return res.status(500).json({
+			success: false,
+			error: "We apologize, but our system is currently experiencing some issues. Please try again later.",
+		});
+	}
 };
 
 exports.deleteTheme = async (req, res) => {
