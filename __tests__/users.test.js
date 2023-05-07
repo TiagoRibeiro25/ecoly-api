@@ -10,13 +10,12 @@ let unsignedToken = "";
 
 // before all tests, reset the database (use on database tests only)
 beforeAll(async () => {
-	// console.log = jest.fn();
-	await resetDB();
+	await resetDB(false);
 
 	// generate tokens for the tests
-	adminToken = await getToken("admin");
-	userToken = await getToken("user");
-	unsignedToken = await getToken("unsigned");
+	adminToken = await getToken("admin", false);
+	userToken = await getToken("user", false);
+	unsignedToken = await getToken("unsigned", false);
 }, 10000);
 
 describe("GET /api/users/:id", () => {

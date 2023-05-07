@@ -3,25 +3,31 @@ const db = require("../models/db");
 const data = require("./data");
 const bcrypt = require("bcryptjs");
 
-async function roles() {
+async function roles(logging) {
 	try {
 		const start = new Date();
 		await db.role.bulkCreate(data.roles);
 		const end = new Date();
-		console.log(colors.blue("Roles created successfully - ") + colors.green(end - start + "ms"));
+		if (logging) {
+			console.log(
+				colors.blue("Roles created successfully - ") + colors.green(end - start + "ms")
+			);
+		}
 	} catch (err) {
 		throw new Error(colors.red("An error occurred while creating roles:\n") + colors.yellow(err));
 	}
 }
 
-async function schools() {
+async function schools(logging) {
 	try {
 		const start = new Date();
 		await db.schools.bulkCreate(data.schools);
 		const end = new Date();
-		console.log(
-			colors.blue("Schools created successfully - ") + colors.green(end - start + "ms")
-		);
+		if (logging) {
+			console.log(
+				colors.blue("Schools created successfully - ") + colors.green(end - start + "ms")
+			);
+		}
 	} catch (err) {
 		throw new Error(
 			colors.red("An error occurred while creating schools:\n") + colors.yellow(err)
@@ -29,7 +35,7 @@ async function schools() {
 	}
 }
 
-async function users() {
+async function users(logging) {
 	try {
 		const start = new Date();
 
@@ -38,18 +44,27 @@ async function users() {
 
 		await db.users.bulkCreate(data.users);
 		const end = new Date();
-		console.log(colors.blue("Users created successfully - ") + colors.green(end - start + "ms"));
+
+		if (logging) {
+			console.log(
+				colors.blue("Users created successfully - ") + colors.green(end - start + "ms")
+			);
+		}
 	} catch (err) {
 		throw new Error(colors.red("An error occurred while creating users:\n") + colors.yellow(err));
 	}
 }
 
-async function badges() {
+async function badges(logging) {
 	try {
 		const start = new Date();
 		await db.badges.bulkCreate(data.badges);
 		const end = new Date();
-		console.log(colors.blue("Badges created successfully - ") + colors.green(end - start + "ms"));
+		if (logging) {
+			console.log(
+				colors.blue("Badges created successfully - ") + colors.green(end - start + "ms")
+			);
+		}
 	} catch (err) {
 		throw new Error(
 			colors.red("An error occurred while creating badges:\n") + colors.yellow(err)
@@ -57,14 +72,16 @@ async function badges() {
 	}
 }
 
-async function userBadge() {
+async function userBadge(logging) {
 	try {
 		const start = new Date();
 		await db.user_badge.bulkCreate(data.user_badge);
 		const end = new Date();
-		console.log(
-			colors.blue("User_badge created successfully - ") + colors.green(end - start + "ms")
-		);
+		if (logging) {
+			console.log(
+				colors.blue("User_badge created successfully - ") + colors.green(end - start + "ms")
+			);
+		}
 	} catch (err) {
 		throw new Error(
 			colors.red("An error occurred while creating user_badge:\n") + colors.yellow(err)
@@ -72,25 +89,31 @@ async function userBadge() {
 	}
 }
 
-async function news() {
+async function news(logging) {
 	try {
 		const start = new Date();
 		await db.news.bulkCreate(data.news);
 		const end = new Date();
-		console.log(colors.blue("News created successfully - ") + colors.green(end - start + "ms"));
+		if (logging) {
+			console.log(
+				colors.blue("News created successfully - ") + colors.green(end - start + "ms")
+			);
+		}
 	} catch (err) {
 		throw new Error(colors.red("An error occurred while creating news:\n") + colors.yellow(err));
 	}
 }
 
-async function newImg() {
+async function newImg(logging) {
 	try {
 		const start = new Date();
 		await db.new_image.bulkCreate(data.new_image);
 		const end = new Date();
-		console.log(
-			colors.blue("New_img created successfully - ") + colors.green(end - start + "ms")
-		);
+		if (logging) {
+			console.log(
+				colors.blue("New_img created successfully - ") + colors.green(end - start + "ms")
+			);
+		}
 	} catch (err) {
 		throw new Error(
 			colors.red("An error occurred while creating new_img:\n") + colors.yellow(err)
@@ -98,14 +121,16 @@ async function newImg() {
 	}
 }
 
-async function newsLetter() {
+async function newsLetter(logging) {
 	try {
 		const start = new Date();
 		await db.news_letter.bulkCreate(data.news_letter);
 		const end = new Date();
-		console.log(
-			colors.blue("News_letter created successfully - ") + colors.green(end - start + "ms")
-		);
+		if (logging) {
+			console.log(
+				colors.blue("News_letter created successfully - ") + colors.green(end - start + "ms")
+			);
+		}
 	} catch (err) {
 		throw new Error(
 			colors.red("An error occurred while creating news_letter:\n") + colors.yellow(err)
@@ -113,14 +138,16 @@ async function newsLetter() {
 	}
 }
 
-async function meetings() {
+async function meetings(logging) {
 	try {
 		const start = new Date();
 		await db.meetings.bulkCreate(data.meetings);
 		const end = new Date();
-		console.log(
-			colors.blue("Meetings created successfully - ") + colors.green(end - start + "ms")
-		);
+		if (logging) {
+			console.log(
+				colors.blue("Meetings created successfully - ") + colors.green(end - start + "ms")
+			);
+		}
 	} catch (err) {
 		throw new Error(
 			colors.red("An error occurred while creating meetings:\n") + colors.yellow(err)
@@ -128,14 +155,17 @@ async function meetings() {
 	}
 }
 
-async function meetingAtaImage() {
+async function meetingAtaImage(logging) {
 	try {
 		const start = new Date();
 		await db.meeting_ata_image.bulkCreate(data.meeting_ata_image);
 		const end = new Date();
-		console.log(
-			colors.blue("Meeting_ata_image created successfully - ") + colors.green(end - start + "ms")
-		);
+		if (logging) {
+			console.log(
+				colors.blue("Meeting_ata_image created successfully - ") +
+					colors.green(end - start + "ms")
+			);
+		}
 	} catch (err) {
 		throw new Error(
 			colors.red("An error occurred while creating meeting_ata_image:\n") + colors.yellow(err)
@@ -143,25 +173,31 @@ async function meetingAtaImage() {
 	}
 }
 
-async function theme() {
+async function theme(logging) {
 	try {
 		const start = new Date();
 		await db.theme.bulkCreate(data.theme);
 		const end = new Date();
-		console.log(colors.blue("Theme created successfully - ") + colors.green(end - start + "ms"));
+		if (logging) {
+			console.log(
+				colors.blue("Theme created successfully - ") + colors.green(end - start + "ms")
+			);
+		}
 	} catch (err) {
 		throw new Error(colors.red("An error occurred while creating theme:\n") + colors.yellow(err));
 	}
 }
 
-async function activities() {
+async function activities(logging) {
 	try {
 		const start = new Date();
 		await db.activities.bulkCreate(data.activities);
 		const end = new Date();
-		console.log(
-			colors.blue("Activities created successfully - ") + colors.green(end - start + "ms")
-		);
+		if (logging) {
+			console.log(
+				colors.blue("Activities created successfully - ") + colors.green(end - start + "ms")
+			);
+		}
 	} catch (err) {
 		throw new Error(
 			colors.red("An error occurred while creating activities:\n") + colors.yellow(err)
@@ -169,14 +205,16 @@ async function activities() {
 	}
 }
 
-async function activityImage() {
+async function activityImage(logging) {
 	try {
 		const start = new Date();
 		await db.activity_image.bulkCreate(data.activity_image);
 		const end = new Date();
-		console.log(
-			colors.blue("Activity_image created successfully - ") + colors.green(end - start + "ms")
-		);
+		if (logging) {
+			console.log(
+				colors.blue("Activity_image created successfully - ") + colors.green(end - start + "ms")
+			);
+		}
 	} catch (err) {
 		throw new Error(
 			colors.red("An error occurred while creating activity_image:\n") + colors.yellow(err)
@@ -184,15 +222,17 @@ async function activityImage() {
 	}
 }
 
-async function activityReportImage() {
+async function activityReportImage(logging) {
 	try {
 		const start = new Date();
 		await db.activity_report_image.bulkCreate(data.activity_report_image);
 		const end = new Date();
-		console.log(
-			colors.blue("Activity_report_image created successfully - ") +
-				colors.green(end - start + "ms")
-		);
+		if (logging) {
+			console.log(
+				colors.blue("Activity_report_image created successfully - ") +
+					colors.green(end - start + "ms")
+			);
+		}
 	} catch (err) {
 		throw new Error(
 			colors.red("An error occurred while creating activity_report_image:\n") +
@@ -201,12 +241,16 @@ async function activityReportImage() {
 	}
 }
 
-async function seeds() {
+async function seeds(logging) {
 	try {
 		const start = new Date();
 		await db.seeds.bulkCreate(data.seeds);
 		const end = new Date();
-		console.log(colors.blue("Seeds created successfully - ") + colors.green(end - start + "ms"));
+		if (logging) {
+			console.log(
+				colors.blue("Seeds created successfully - ") + colors.green(end - start + "ms")
+			);
+		}
 	} catch (err) {
 		throw new Error(colors.red("An error occurred while creating seeds:\n") + colors.yellow(err));
 	}

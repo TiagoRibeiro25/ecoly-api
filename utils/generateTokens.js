@@ -2,9 +2,12 @@ const colors = require("colors");
 const db = require("../models/db");
 const jwt = require("jsonwebtoken");
 
-/** @param {"admin" | "user" | "unsigned"} userType */
-async function getToken(userType) {
-	console.log(`Generating token for ${userType}`.yellow);
+/**
+ *  @param {"admin" | "user" | "unsigned"} userType - the type of user to generate the token for
+ *  @param {boolean} logging - logs the events to the console
+ */
+async function getToken(userType, logging = true) {
+	if (logging) console.log(`Generating token for ${userType}`.yellow);
 
 	const emails = {
 		admin: "Admin@esmad.ipp.pt",
@@ -23,7 +26,7 @@ async function getToken(userType) {
 		{ expiresIn: 60 * 5 } // 5 minutes
 	);
 
-	console.log(`Token generated for ${userType}`.green);
+	if (logging) console.log(`Token generated for ${userType}`.green);
 
 	return token;
 }
