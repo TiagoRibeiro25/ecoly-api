@@ -6,7 +6,7 @@ const HOST = process.env.HOST || "127.0.0.1";
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, HOST, async () => {
-	// await require("./data/resetDB")(); // Reset the database
+	// await require("./data/resetDB")(true); // Reset the database
 	console.log(
 		colors.green("-> ") +
 			colors.cyan("Server is running on ") +

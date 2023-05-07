@@ -125,7 +125,7 @@ exports.validateBodyEditUserInfo = (req, res, next) => {
 		validateField(field, validators[field])
 	);
 
-	console.log(invalidField); //? error: it's always undefined (why?)
+	console.log(invalidField); //! error: it's always undefined (why?)
 
 	if (fields.length === 0 || !validFields.some((field) => fields.includes(field))) {
 		return res.status(400).json({ success: false, message: "Invalid fields!" });
