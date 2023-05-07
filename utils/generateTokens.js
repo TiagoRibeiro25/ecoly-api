@@ -20,7 +20,7 @@ async function getToken(userType) {
 	const token = jwt.sign(
 		{ userId: user.id, roleId: user.role_id, schoolId: user.school_id },
 		process.env.JWT_SECRET,
-		{ expiresIn: 60 * 3 } // 3 minutes
+		{ expiresIn: 60 * 5 } // 5 minutes
 	);
 
 	console.log(`Token generated for ${userType}`.green);
