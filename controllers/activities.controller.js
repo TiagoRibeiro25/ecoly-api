@@ -17,6 +17,7 @@ function fixDate(date) {
 	return reverseDate;
 }
 
+
 // TODO => add Authentication (Token auth_key) when creating activities
 // TODO => add 401 Unauthorized error when creating activities with invalid auth_key
 // TODO => add 403 Forbidden error without auth_key
@@ -294,6 +295,7 @@ exports.getFinishedActivities = async (req, res) => {
 			},
 		});
 
+
 		const response = activities.map((activity) => {
 			return {
 				id: activity.id,
@@ -319,6 +321,9 @@ exports.getFinishedActivities = async (req, res) => {
 			};
 		});
 
+		console.log(response);
+
+
 		return res.status(200).json({
 			success: true,
 			data: response,
@@ -333,7 +338,7 @@ exports.getFinishedActivities = async (req, res) => {
 };
 
 exports.getUnfinishedActivities = async (req, res) => {
-		console.log(colors.green("Unfinished Activities"));
+	console.log(colors.green("Unfinished Activities"));
 	try {
 		const activities = await Activities.findAll({
 			where: {
@@ -391,6 +396,8 @@ exports.getUnfinishedActivities = async (req, res) => {
 			};
 		});
 
+		console.log(response);
+
 		return res.status(200).json({
 			success: true,
 			data: response,
@@ -404,25 +411,415 @@ exports.getUnfinishedActivities = async (req, res) => {
 	}
 };
 
-// testing purposes only
 exports.getRecentActivities = async (req, res) => {
 	console.log(colors.green("Recent Activities"));
+
+	try {
+		const activities = await Activities.findAll({
+			include: [
+				{
+					model: Themes,
+					as: "theme",
+					attributes: ["name"],
+				},
+				{
+					model: Schools,
+					as: "school",
+					attributes: ["name"],
+				},
+				{
+					model: Users,
+					as: "creator",
+					attributes: ["id", "name"],
+				},
+				{
+					model: activity_images,
+					as: "activity_images",
+					attributes: ["img"],
+				},
+			],
+			attributes: {
+				exclude: ["school_id", "theme_id", "creator_id", "report"],
+			},
+		});
+
+		const response = activities.slice(-3).map((activity) => {
+			return {
+				id: activity.id,
+				creator: {
+					id: activity.creator.id,
+					name: activity.creator.name,
+				},
+				is_finished: activity.is_finished,
+				school: activity.school.name,
+				theme: activity.theme.name,
+				title: activity.title,
+				complexity: activity.complexity,
+				initial_date: fixDate(activity.initial_date),
+				final_date: fixDate(activity.final_date),
+				objective: activity.objective,
+				diagnostic: activity.diagnostic,
+				meta: activity.meta,
+				resources: activity.resources,
+				participants: activity.participants,
+				evaluation_indicator: activity.evaluation_indicator,
+				evaluation_method: activity.evaluation_method,
+				images: activity.activity_images.map((image) => image.img),
+			};
+		});
+
+		console.log(response);
+
+		return res.status(200).json({
+			success: true,
+			data: response,
+		});
+	} catch (err) {
+		console.log(colors.red(`${err.message}`));
+		return res.status(500).json({
+			success: false,
+			error: "We apologize, but our system is currently experiencing some issues. Please try again later.",
+		});
+	}
 };
 
 exports.getSchoolActivities = async (req, res) => {
 	console.log(colors.green("School Activities"));
+	const { schoolId } = req.query;
+
+	try {
+		const activities = await Activities.findAll({
+			where: {
+				school_id: schoolId,
+			},
+			include: [
+				{
+					model: Themes,
+					as: "theme",
+					attributes: ["name"],
+				},
+				{
+					model: Schools,
+					as: "school",
+					attributes: ["name"],
+				},
+				{
+					model: Users,
+					as: "creator",
+					attributes: ["id", "name"],
+				},
+				{
+					model: activity_images,
+					as: "activity_images",
+					attributes: ["img"],
+				},
+			],
+			attributes: {
+				exclude: ["school_id", "theme_id", "creator_id", "report"],
+			},
+		});
+
+		// not found school
+		if (activities.length === 0) {
+			return res.status(404).json({
+				success: false,
+				error: "School not found.",
+			});
+		}
+
+		const response = activities.map((activity) => {
+			return {
+				id: activity.id,
+				creator: {
+					id: activity.creator.id,
+					name: activity.creator.name,
+				},
+				is_finished: activity.is_finished,
+				school: activity.school.name,
+				theme: activity.theme.name,
+				title: activity.title,
+				complexity: activity.complexity,
+				initial_date: fixDate(activity.initial_date),
+				final_date: fixDate(activity.final_date),
+				objective: activity.objective,
+				diagnostic: activity.diagnostic,
+				meta: activity.meta,
+				resources: activity.resources,
+				participants: activity.participants,
+				evaluation_indicator: activity.evaluation_indicator,
+				evaluation_method: activity.evaluation_method,
+				images: activity.activity_images.map((image) => image.img),
+			};
+		});
+
+		console.log(response);
+
+		return res.status(200).json({
+			success: true,
+			data: response,
+		});
+	} catch (err) {
+		console.log(colors.red(`${err.message}`));
+		return res.status(500).json({
+			success: false,
+			error: "We apologize, but our system is currently experiencing some issues. Please try again later.",
+		});
+	}
 };
 
 exports.getFinishedSchoolActivities = async (req, res) => {
 	console.log(colors.green("Finished School Activities"));
+	const { schoolId } = req.query;
+
+	try {
+		const activities = await Activities.findAll({
+			where: {
+				school_id: schoolId,
+				is_finished: true,
+			},
+			include: [
+				{
+					model: Themes,
+					as: "theme",
+					attributes: ["name"],
+				},
+				{
+					model: Schools,
+					as: "school",
+					attributes: ["name"],
+				},
+				{
+					model: Users,
+					as: "creator",
+					attributes: ["id", "name"],
+				},
+				{
+					model: activity_images,
+					as: "activity_images",
+					attributes: ["img"],
+				},
+			],
+			attributes: {
+				exclude: ["school_id", "theme_id", "creator_id", "report"],
+			},
+		});
+
+		// not found school
+		if (activities.length === 0) {
+			return res.status(404).json({
+				success: false,
+				error: "School not found.",
+			});
+		}
+
+		const response = activities.map((activity) => {
+			return {
+				id: activity.id,
+				creator: {
+					id: activity.creator.id,
+					name: activity.creator.name,
+				},
+				is_finished: activity.is_finished,
+				school: activity.school.name,
+				theme: activity.theme.name,
+				title: activity.title,
+				complexity: activity.complexity,
+				initial_date: fixDate(activity.initial_date),
+				final_date: fixDate(activity.final_date),
+				objective: activity.objective,
+				diagnostic: activity.diagnostic,
+				meta: activity.meta,
+				resources: activity.resources,
+				participants: activity.participants,
+				evaluation_indicator: activity.evaluation_indicator,
+				evaluation_method: activity.evaluation_method,
+				images: activity.activity_images.map((image) => image.img),
+			};
+		});
+
+		console.log(response);
+
+		return res.status(200).json({
+			success: true,
+			data: response,
+		});
+	} catch (err) {
+		console.log(colors.red(`${err.message}`));
+		return res.status(500).json({
+			success: false,
+			error: "We apologize, but our system is currently experiencing some issues. Please try again later.",
+		});
+	}
 };
 
 exports.getUnfinishedSchoolActivities = async (req, res) => {
 	console.log(colors.green("Unfinished School Activities"));
+	const { schoolId } = req.query;
+
+	try {
+		const activities = await Activities.findAll({
+			where: {
+				school_id: schoolId,
+				is_finished: false,
+			},
+			include: [
+				{
+					model: Themes,
+					as: "theme",
+					attributes: ["name"],
+				},
+				{
+					model: Schools,
+					as: "school",
+					attributes: ["name"],
+				},
+				{
+					model: Users,
+					as: "creator",
+					attributes: ["id", "name"],
+				},
+				{
+					model: activity_images,
+					as: "activity_images",
+					attributes: ["img"],
+				},
+			],
+			attributes: {
+				exclude: ["school_id", "theme_id", "creator_id", "report"],
+			},
+		});
+
+		// not found school
+		if (activities.length === 0) {
+			return res.status(404).json({
+				success: false,
+				error: "School not found.",
+			});
+		}
+
+		const response = activities.map((activity) => {
+			return {
+				id: activity.id,
+				creator: {
+					id: activity.creator.id,
+					name: activity.creator.name,
+				},
+				is_finished: activity.is_finished,
+				school: activity.school.name,
+				theme: activity.theme.name,
+				title: activity.title,
+				complexity: activity.complexity,
+				initial_date: fixDate(activity.initial_date),
+				final_date: fixDate(activity.final_date),
+				objective: activity.objective,
+				diagnostic: activity.diagnostic,
+				meta: activity.meta,
+				resources: activity.resources,
+				participants: activity.participants,
+				evaluation_indicator: activity.evaluation_indicator,
+				evaluation_method: activity.evaluation_method,
+				images: activity.activity_images.map((image) => image.img),
+			};
+		});
+
+		console.log(response);
+
+		return res.status(200).json({
+			success: true,
+			data: response,
+		});
+	} catch (err) {
+		console.log(colors.red(`${err.message}`));
+		return res.status(500).json({
+			success: false,
+			error: "We apologize, but our system is currently experiencing some issues. Please try again later.",
+		});
+	}
 };
 
 exports.getRecentSchoolActivities = async (req, res) => {
 	console.log(colors.green("Recent School Activities"));
+	const { schoolId } = req.query;
+
+	try {
+		const activities = await Activities.findAll({
+			where: {
+				school_id: schoolId,
+			},
+			include: [
+				{
+					model: Themes,
+					as: "theme",
+					attributes: ["name"],
+				},
+				{
+					model: Schools,
+					as: "school",
+					attributes: ["name"],
+				},
+				{
+					model: Users,
+					as: "creator",
+					attributes: ["id", "name"],
+				},
+				{
+					model: activity_images,
+					as: "activity_images",
+					attributes: ["img"],
+				},
+			],
+			attributes: {
+				exclude: ["school_id", "theme_id", "creator_id", "report"],
+			},
+		});
+
+		// not found school
+		if (activities.length === 0) {
+			return res.status(404).json({
+				success: false,
+				error: "School not found.",
+			});
+		}
+
+		const response = activities.map((activity) => {
+			return {
+				id: activity.id,
+				creator: {
+					id: activity.creator.id,
+					name: activity.creator.name,
+				},
+				is_finished: activity.is_finished,
+				school: activity.school.name,
+				theme: activity.theme.name,
+				title: activity.title,
+				complexity: activity.complexity,
+				initial_date: fixDate(activity.initial_date),
+				final_date: fixDate(activity.final_date),
+				objective: activity.objective,
+				diagnostic: activity.diagnostic,
+				meta: activity.meta,
+				resources: activity.resources,
+				participants: activity.participants,
+				evaluation_indicator: activity.evaluation_indicator,
+				evaluation_method: activity.evaluation_method,
+				images: activity.activity_images.map((image) => image.img),
+			};
+		});
+
+		console.log(response.slice(0, 3));
+
+		return res.status(200).json({
+			success: true,
+			data: response.slice(0, 3),
+		});
+	} catch (err) {
+		console.log(colors.red(`${err.message}`));
+		return res.status(500).json({
+			success: false,
+			error: "We apologize, but our system is currently experiencing some issues. Please try again later.",
+		});
+	}
+
 };
 
 exports.getReports = async (req, res) => {
@@ -432,7 +829,6 @@ exports.getReports = async (req, res) => {
 exports.getThemes = async (req, res) => {
 	console.log(colors.green("Themes"));
 };
-
 
 exports.addActivity = async (req, res) => {
 	console.log(colors.yellow("Adding activity..."));
@@ -488,7 +884,7 @@ exports.addTheme = async (req, res) => {
 	console.log(colors.green("Add Theme"));
 };
 
-exports.finishActivity = async (req, res) =>{
+exports.finishActivity = async (req, res) => {
 	console.log(colors.green("Finish Activity"));
 };
 
