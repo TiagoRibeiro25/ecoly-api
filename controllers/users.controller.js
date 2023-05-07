@@ -30,7 +30,10 @@ function getSeedsMonthAndTotal(seeds) {
 	return { monthSeeds, totalSeeds };
 }
 
-/** @param {number} badgeId */
+/**
+ * @param {number} badgeId
+ * @returns {Promise<number>}
+ */
 async function getBadgeCompletionPercentage(badgeId) {
 	// get the total number of users that have the badge
 	const totalUsers = await db.user_badge.count({ where: { badge_id: badgeId } });
@@ -371,48 +374,50 @@ exports.editUserRole = async (req, res) => {
 	}
 };
 
+//TODO: Reduce cognitive complexity of this function
 exports.editUserInfo = async (req, res) => {
 	/** @type { number } */
 	const id = req.tokenData.userId;
+	const updates = {};
 
 	try {
-		// if there's a key "email" in the request body, check if there's another user with the same email
+		// email
 		if (req.body.email) {
-			// if there's 1 user with the same email, check if it's the same user
 			const user = await Users.findOne({ where: { email: req.body.email } });
 			if (user && user.id !== id) throw new Error("email_exists");
-
-			// update the user
-			await Users.update({ email: req.body.email }, { where: { id } });
+			updates.email = req.body.email;
 		}
 
-		// if there's a key "password", hash it
+		// password
 		if (req.body.password) {
 			req.body.password = bcrypt.hashSync(req.body.password, 10);
-
-			await Users.update({ password: req.body.password }, { where: { id } });
+			updates.password = req.body.password;
 		}
 
-		// if there's an highlightedBadgeId, check if the user has that badge
-		if (req.body.highlightedBadgeId) {
-			const userBadge = db.user_badge.findOne({
-				where: { user_id: id, badge_id: req.body.highlightedBadgeId },
-			});
+		// internal id
+		if (req.body.internalId) updates.internal_id = req.body.internalId;
 
+		// course and year
+		["course", "year"].forEach((key) => {
+			if (req.body[key]) updates[key] = req.body[key];
+		});
+
+		// highlighted badge
+		if (req.body.highlightBadgeId) {
+			const userBadge = await db.user_badge.findOne({
+				where: { user_id: id, badge_id: req.body.highlightBadgeId },
+			});
 			if (!userBadge) throw new Error("user_badge_not_found");
 
-			// update the user badge
-			await db.user_badge.update(
-				{ is_highlight: true },
-				{ where: { user_id: id, badge_id: req.body.highlightedBadgeId } }
-			);
-
-			// update the other user badges (remove the previous highlighted badge)
+			// remove highlight from all other badges
 			await db.user_badge.update(
 				{ is_highlight: false },
-				{ where: { user_id: id, badge_id: { [Op.ne]: req.body.highlightedBadgeId } } }
+				{ where: { user_id: id, badge_id: { [Op.ne]: req.body.highlightBadgeId } } }
 			);
 		}
+
+		// update the user
+		if (Object.keys(updates).length !== 0) await Users.update(updates, { where: { id } });
 
 		res.status(200).json({ success: true, message: `User info updated successfully.` });
 	} catch (err) {

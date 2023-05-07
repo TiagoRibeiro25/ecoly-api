@@ -1118,192 +1118,81 @@ describe("PATCH /api/users", () => {
 	});
 
 	describe("when the user is logged in", () => {
-		describe("when the fields are invalid", () => {
-			describe("when there are no fields", () => {
+		describe("when the inputs are invalid", () => {
+			describe("when there's no field", () => {
 				test("should respond with a 400 status code", async () => {
 					const response = await supertest(app)
 						.patch("/api/users")
-						.set("Authorization", `Bearer ${unsignedToken}`);
+						.set("Authorization", `Bearer ${unsignedToken}`)
+						.send({});
 					expect(response.statusCode).toBe(400);
 				});
 
 				test("should respond with a json", async () => {
 					const response = await supertest(app)
 						.patch("/api/users")
-						.set("Authorization", `Bearer ${unsignedToken}`);
+						.set("Authorization", `Bearer ${unsignedToken}`)
+						.send({});
 					expect(response.type).toBe("application/json");
 				});
 
 				test("should respond with a message", async () => {
 					const response = await supertest(app)
 						.patch("/api/users")
-						.set("Authorization", `Bearer ${unsignedToken}`);
-					expect(response.body.message).toBe("Invalid fields!");
+						.set("Authorization", `Bearer ${unsignedToken}`)
+						.send({});
+					expect(response.body.message).toBe("Missing fields!");
 				});
 			});
 
-			describe("when the field exist but there's no value in the body", () => {
-				describe("when the email field is empty", () => {
-					test("should respond with a 400 status code", async () => {
-						const response = await supertest(app)
-							.patch("/api/users?fields=email")
-							.set("Authorization", `Bearer ${unsignedToken}`);
-						expect(response.statusCode).toBe(400);
-					});
-
-					test("should respond with a json", async () => {
-						const response = await supertest(app)
-							.patch("/api/users?fields=email")
-							.set("Authorization", `Bearer ${unsignedToken}`);
-						expect(response.type).toBe("application/json");
-					});
-
-					test("should respond with a message", async () => {
-						const response = await supertest(app)
-							.patch("/api/users?fields=email")
-							.set("Authorization", `Bearer ${unsignedToken}`);
-						expect(response.body.message).toBe("Invalid email!");
-					});
+			describe("when there's an invalid field", () => {
+				test("should respond with a 400 status code", async () => {
+					const response = await supertest(app)
+						.patch("/api/users")
+						.set("Authorization", `Bearer ${unsignedToken}`)
+						.send({ invalid: "invalid" });
+					expect(response.statusCode).toBe(400);
 				});
 
-				describe("when the password field is empty", () => {
-					test("should respond with a 400 status code", async () => {
-						const response = await supertest(app)
-							.patch("/api/users?fields=password")
-							.set("Authorization", `Bearer ${unsignedToken}`);
-						expect(response.statusCode).toBe(400);
-					});
-
-					test("should respond with a json", async () => {
-						const response = await supertest(app)
-							.patch("/api/users?fields=password")
-							.set("Authorization", `Bearer ${unsignedToken}`);
-						expect(response.type).toBe("application/json");
-					});
-
-					test("should respond with a message", async () => {
-						const response = await supertest(app)
-							.patch("/api/users?fields=password")
-							.set("Authorization", `Bearer ${unsignedToken}`);
-						expect(response.body.message).toBe("Invalid password!");
-					});
+				test("should respond with a json", async () => {
+					const response = await supertest(app)
+						.patch("/api/users")
+						.set("Authorization", `Bearer ${unsignedToken}`)
+						.send({ invalid: "invalid" });
+					expect(response.type).toBe("application/json");
 				});
 
-				describe("when the internal id field is empty", () => {
-					test("should respond with a 400 status code", async () => {
-						const response = await supertest(app)
-							.patch("/api/users?fields=internalId")
-							.set("Authorization", `Bearer ${unsignedToken}`);
-						expect(response.statusCode).toBe(400);
-					});
-
-					test("should respond with a json", async () => {
-						const response = await supertest(app)
-							.patch("/api/users?fields=internalId")
-							.set("Authorization", `Bearer ${unsignedToken}`);
-						expect(response.type).toBe("application/json");
-					});
-
-					test("should respond with a message", async () => {
-						const response = await supertest(app)
-							.patch("/api/users?fields=internalId")
-							.set("Authorization", `Bearer ${unsignedToken}`);
-						expect(response.body.message).toBe("Invalid internal id!");
-					});
-				});
-
-				describe("when the course field is empty", () => {
-					test("should respond with a 400 status code", async () => {
-						const response = await supertest(app)
-							.patch("/api/users?fields=course")
-							.set("Authorization", `Bearer ${unsignedToken}`);
-						expect(response.statusCode).toBe(400);
-					});
-
-					test("should respond with a json", async () => {
-						const response = await supertest(app)
-							.patch("/api/users?fields=course")
-							.set("Authorization", `Bearer ${unsignedToken}`);
-						expect(response.type).toBe("application/json");
-					});
-
-					test("should respond with a message", async () => {
-						const response = await supertest(app)
-							.patch("/api/users?fields=course")
-							.set("Authorization", `Bearer ${unsignedToken}`);
-						expect(response.body.message).toBe("Invalid course!");
-					});
-				});
-
-				describe("when the year field is empty", () => {
-					test("should respond with a 400 status code", async () => {
-						const response = await supertest(app)
-							.patch("/api/users?fields=year")
-							.set("Authorization", `Bearer ${unsignedToken}`);
-						expect(response.statusCode).toBe(400);
-					});
-
-					test("should respond with a json", async () => {
-						const response = await supertest(app)
-							.patch("/api/users?fields=year")
-							.set("Authorization", `Bearer ${unsignedToken}`);
-						expect(response.type).toBe("application/json");
-					});
-
-					test("should respond with a message", async () => {
-						const response = await supertest(app)
-							.patch("/api/users?fields=year")
-							.set("Authorization", `Bearer ${unsignedToken}`);
-						expect(response.body.message).toBe("Invalid year!");
-					});
-				});
-
-				describe("when the highlight badge id field is empty", () => {
-					test("should respond with a 400 status code", async () => {
-						const response = await supertest(app)
-							.patch("/api/users?fields=highlightBadgeId")
-							.set("Authorization", `Bearer ${unsignedToken}`);
-						expect(response.statusCode).toBe(400);
-					});
-
-					test("should respond with a json", async () => {
-						const response = await supertest(app)
-							.patch("/api/users?fields=highlightBadgeId")
-							.set("Authorization", `Bearer ${unsignedToken}`);
-						expect(response.type).toBe("application/json");
-					});
-
-					test("should respond with a message", async () => {
-						const response = await supertest(app)
-							.patch("/api/users?fields=highlightBadgeId")
-							.set("Authorization", `Bearer ${unsignedToken}`);
-						expect(response.body.message).toBe("Invalid highlight badge!");
-					});
+				test("should respond with a message", async () => {
+					const response = await supertest(app)
+						.patch("/api/users")
+						.set("Authorization", `Bearer ${unsignedToken}`)
+						.send({ invalid: "invalid" });
+					expect(response.body.message).toBe("invalid is not a valid field!");
 				});
 			});
 
 			describe("when the email is not valid", () => {
 				test("should respond with a 400 status code", async () => {
 					const response = await supertest(app)
-						.patch("/api/users?fields=email")
+						.patch("/api/users/")
 						.set("Authorization", `Bearer ${unsignedToken}`)
-						.send({ email: 123 });
+						.send({ email: "novo.user" });
 					expect(response.statusCode).toBe(400);
 				});
 
 				test("should respond with a json", async () => {
 					const response = await supertest(app)
-						.patch("/api/users?fields=email")
+						.patch("/api/users/")
 						.set("Authorization", `Bearer ${unsignedToken}`)
-						.send({ name: 123 });
+						.send({ email: "novo.user" });
 					expect(response.type).toBe("application/json");
 				});
 
 				test("should respond with a message", async () => {
 					const response = await supertest(app)
-						.patch("/api/users?fields=email")
+						.patch("/api/users/")
 						.set("Authorization", `Bearer ${unsignedToken}`)
-						.send({ name: 123 });
+						.send({ email: "novo.user" });
 					expect(response.body.message).toBe("Invalid email!");
 				});
 			});
@@ -1311,7 +1200,7 @@ describe("PATCH /api/users", () => {
 			describe("when the password is not valid", () => {
 				test("should respond with a 400 status code", async () => {
 					const response = await supertest(app)
-						.patch("/api/users?fields=password")
+						.patch("/api/users/")
 						.set("Authorization", `Bearer ${unsignedToken}`)
 						.send({ password: 123 });
 					expect(response.statusCode).toBe(400);
@@ -1319,7 +1208,7 @@ describe("PATCH /api/users", () => {
 
 				test("should respond with a json", async () => {
 					const response = await supertest(app)
-						.patch("/api/users?fields=password")
+						.patch("/api/users/")
 						.set("Authorization", `Bearer ${unsignedToken}`)
 						.send({ password: 123 });
 					expect(response.type).toBe("application/json");
@@ -1327,7 +1216,7 @@ describe("PATCH /api/users", () => {
 
 				test("should respond with a message", async () => {
 					const response = await supertest(app)
-						.patch("/api/users?fields=password")
+						.patch("/api/users/")
 						.set("Authorization", `Bearer ${unsignedToken}`)
 						.send({ password: 123 });
 					expect(response.body.message).toBe("Invalid password!");
@@ -1337,49 +1226,49 @@ describe("PATCH /api/users", () => {
 			describe("when the internal id is not valid", () => {
 				test("should respond with a 400 status code", async () => {
 					const response = await supertest(app)
-						.patch("/api/users?fields=internalId")
+						.patch("/api/users/")
 						.set("Authorization", `Bearer ${unsignedToken}`)
-						.send({ internalId: 123 });
+						.send({ internalId: " " });
 					expect(response.statusCode).toBe(400);
 				});
 
 				test("should respond with a json", async () => {
 					const response = await supertest(app)
-						.patch("/api/users?fields=internalId")
+						.patch("/api/users/")
 						.set("Authorization", `Bearer ${unsignedToken}`)
-						.send({ internalId: 123 });
+						.send({ internalId: " " });
 					expect(response.type).toBe("application/json");
 				});
 
 				test("should respond with a message", async () => {
 					const response = await supertest(app)
-						.patch("/api/users?fields=internalId")
+						.patch("/api/users/")
 						.set("Authorization", `Bearer ${unsignedToken}`)
-						.send({ internalId: 123 });
-					expect(response.body.message).toBe("Invalid internal id!");
+						.send({ internalId: " " });
+					expect(response.body.message).toBe("Invalid internalId!");
 				});
 			});
 
 			describe("when the course is not valid", () => {
 				test("should respond with a 400 status code", async () => {
 					const response = await supertest(app)
-						.patch("/api/users?fields=course")
+						.patch("/api/users/")
 						.set("Authorization", `Bearer ${unsignedToken}`)
-						.send({ course: 123 });
+						.send({ course: " " });
 					expect(response.statusCode).toBe(400);
 				});
 
 				test("should respond with a json", async () => {
 					const response = await supertest(app)
-						.patch("/api/users?fields=course")
+						.patch("/api/users/")
 						.set("Authorization", `Bearer ${unsignedToken}`)
-						.send({ course: 123 });
+						.send({ course: " " });
 					expect(response.type).toBe("application/json");
 				});
 
 				test("should respond with a message", async () => {
 					const response = await supertest(app)
-						.patch("/api/users?fields=course")
+						.patch("/api/users/")
 						.set("Authorization", `Bearer ${unsignedToken}`)
 						.send({ course: 123 });
 					expect(response.body.message).toBe("Invalid course!");
@@ -1389,61 +1278,85 @@ describe("PATCH /api/users", () => {
 			describe("when the year is not valid", () => {
 				test("should respond with a 400 status code", async () => {
 					const response = await supertest(app)
-						.patch("/api/users?fields=year")
+						.patch("/api/users/")
 						.set("Authorization", `Bearer ${unsignedToken}`)
-						.send({ year: "LOL" });
+						.send({ year: "0" });
 					expect(response.statusCode).toBe(400);
 				});
 
 				test("should respond with a json", async () => {
 					const response = await supertest(app)
-						.patch("/api/users?fields=year")
+						.patch("/api/users/")
 						.set("Authorization", `Bearer ${unsignedToken}`)
-						.send({ year: "LOL" });
+						.send({ year: -1 });
 					expect(response.type).toBe("application/json");
 				});
 
 				test("should respond with a message", async () => {
 					const response = await supertest(app)
-						.patch("/api/users?fields=year")
+						.patch("/api/users/")
 						.set("Authorization", `Bearer ${unsignedToken}`)
-						.send({ year: "LOL" });
+						.send({ year: 25 });
 					expect(response.body.message).toBe("Invalid year!");
 				});
 			});
 
-			describe("when the highlight badge id is not valid", () => {
+			describe("when the badge id is not valid", () => {
 				test("should respond with a 400 status code", async () => {
 					const response = await supertest(app)
-						.patch("/api/users?fields=highlightBadgeId")
+						.patch("/api/users")
 						.set("Authorization", `Bearer ${unsignedToken}`)
-						.send({ highlightBadgeId: "LOL" });
+						.send({ highlightBadgeId: 0 });
 					expect(response.statusCode).toBe(400);
 				});
 
 				test("should respond with a json", async () => {
 					const response = await supertest(app)
-						.patch("/api/users?fields=highlightBadgeId")
+						.patch("/api/users")
 						.set("Authorization", `Bearer ${unsignedToken}`)
-						.send({ highlightBadgeId: "LOL" });
+						.send({ highlightBadgeId: 0 });
 					expect(response.type).toBe("application/json");
 				});
 
 				test("should respond with a message", async () => {
 					const response = await supertest(app)
-						.patch("/api/users?fields=highlightBadgeId")
+						.patch("/api/users")
 						.set("Authorization", `Bearer ${unsignedToken}`)
-						.send({ highlightBadgeId: "LOL" });
-					expect(response.body.message).toBe("Invalid highlight badge!");
+						.send({ highlightBadgeId: "hello world" });
+					expect(response.body.message).toBe("Invalid highlightBadgeId!");
 				});
 			});
-		});
 
-		describe("when the fields are valid", () => {
-			describe("when the email is already in use", () => {
+			describe("when the badge doesn't exist", () => {
+				test("should respond with a 404 status code", async () => {
+					const response = await supertest(app)
+						.patch("/api/users")
+						.set("Authorization", `Bearer ${unsignedToken}`)
+						.send({ highlightBadgeId: 999 });
+					expect(response.statusCode).toBe(404);
+				});
+
+				test("should respond with a json", async () => {
+					const response = await supertest(app)
+						.patch("/api/users")
+						.set("Authorization", `Bearer ${unsignedToken}`)
+						.send({ highlightBadgeId: 999 });
+					expect(response.type).toBe("application/json");
+				});
+
+				test("should respond with a message", async () => {
+					const response = await supertest(app)
+						.patch("/api/users")
+						.set("Authorization", `Bearer ${unsignedToken}`)
+						.send({ highlightBadgeId: 999 });
+					expect(response.body.message).toBe("User badge not found.");
+				});
+			});
+
+			describe("when there's a user with the new email", () => {
 				test("should respond with a 409 status code", async () => {
 					const response = await supertest(app)
-						.patch("/api/users?fields=email")
+						.patch("/api/users")
 						.set("Authorization", `Bearer ${unsignedToken}`)
 						.send({ email: "Admin@esmad.ipp.pt" });
 					expect(response.statusCode).toBe(409);
@@ -1451,72 +1364,45 @@ describe("PATCH /api/users", () => {
 
 				test("should respond with a json", async () => {
 					const response = await supertest(app)
-						.patch("/api/users?fields=email")
+						.patch("/api/users")
 						.set("Authorization", `Bearer ${unsignedToken}`)
 						.send({ email: "Admin@esmad.ipp.pt" });
-
 					expect(response.type).toBe("application/json");
 				});
 
 				test("should respond with a message", async () => {
 					const response = await supertest(app)
-						.patch("/api/users?fields=email")
+						.patch("/api/users")
 						.set("Authorization", `Bearer ${unsignedToken}`)
 						.send({ email: "Admin@esmad.ipp.pt" });
 					expect(response.body.message).toBe("Email already in use!");
 				});
 			});
+		});
 
-			describe("when the user doesn't have the badge unlocked", () => {
-				test("should respond with a 404 status code", async () => {
-					const response = await supertest(app)
-						.patch("/api/users?fields=highlightBadgeId")
-						.set("Authorization", `Bearer ${unsignedToken}`)
-						.send({ highlightBadgeId: 123 });
-					expect(response.statusCode).toBe(404);
-				});
-
-				test("should respond with a json", async () => {
-					const response = await supertest(app)
-						.patch("/api/users?fields=highlightBadgeId")
-						.set("Authorization", `Bearer ${unsignedToken}`)
-						.send({ highlightBadgeId: 123 });
-					expect(response.type).toBe("application/json");
-				});
-
-				test("should respond with a message", async () => {
-					const response = await supertest(app)
-						.patch("/api/users?fields=highlightBadgeId")
-						.set("Authorization", `Bearer ${unsignedToken}`)
-						.send({ highlightBadgeId: 123 });
-					expect(response.body.message).toBe("User badge not found.");
-				});
+		describe("when the fields are valid", () => {
+			test("should respond with a 200 status code", async () => {
+				const response = await supertest(app)
+					.patch("/api/users")
+					.set("Authorization", `Bearer ${unsignedToken}`)
+					.send({ email: "new.email@email.pt" });
+				expect(response.statusCode).toBe(200);
 			});
 
-			describe("when it is a valid request", () => {
-				test("should respond with a 200 status code", async () => {
-					const response = await supertest(app)
-						.patch("/api/users?fields=course")
-						.set("Authorization", `Bearer ${unsignedToken}`)
-						.send({ course: "LOL" });
-					expect(response.statusCode).toBe(200);
-				});
+			test("should respond with a json", async () => {
+				const response = await supertest(app)
+					.patch("/api/users")
+					.set("Authorization", `Bearer ${unsignedToken}`)
+					.send({ email: "new.email@email.pt" });
+				expect(response.type).toBe("application/json");
+			});
 
-				test("should respond with a json", async () => {
-					const response = await supertest(app)
-						.patch("/api/users?fields=course")
-						.set("Authorization", `Bearer ${unsignedToken}`)
-						.send({ course: "LOL" });
-					expect(response.type).toBe("application/json");
-				});
-
-				test("should respond with a message", async () => {
-					const response = await supertest(app)
-						.patch("/api/users?fields=course")
-						.set("Authorization", `Bearer ${unsignedToken}`)
-						.send({ course: "LOL" });
-					expect(response.body.message).toBe("User info updated successfully.");
-				});
+			test("should respond with a message", async () => {
+				const response = await supertest(app)
+					.patch("/api/users")
+					.set("Authorization", `Bearer ${unsignedToken}`)
+					.send({ email: "new.email@email.pt" });
+				expect(response.body.message).toBe("User info updated successfully.");
 			});
 		});
 	});

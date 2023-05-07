@@ -91,54 +91,32 @@ exports.validateBodyRoleId = (req, res, next) => {
 	next();
 };
 
-//TODO: fix this validator
 exports.validateBodyEditUserInfo = (req, res, next) => {
 	const validFields = ["email", "password", "internalId", "course", "year", "highlightBadgeId"];
-	const fields = req.query.fields ? req.query.fields.split(",") : [];
+	const fields = Object.keys(req.body);
 
-	const validateField = (field, validator) => {
-		return fields.includes(field) && !validator(req.body[field]);
-	};
+	if (fields.length === 0) {
+		return res.status(400).json({ success: false, message: "Missing fields!" });
+	}
 
 	const validators = {
-		email: (value) => {
-			return typeof value !== "string" || value.trim().length === 0 || !validateEmail(value);
-		},
-		password: (value) => {
-			return typeof value !== "string" || value.trim().length === 0;
-		},
-		internalId: (value) => {
-			return typeof value !== "string" || value.trim().length === 0;
-		},
-		course: (value) => {
-			return typeof value !== "string" || value.trim().length === 0;
-		},
-		year: (value) => {
-			return typeof value !== "number" && value !== null && value !== undefined;
-		},
-		highlightBadgeId: (value) => {
-			return typeof value !== "number" && value !== null && value !== undefined;
-		},
+		email: (email) => typeof email === "string" && validateEmail(email) && email.trim().length !== 0,
+		password: (password) => typeof password === "string" && password.trim().length !== 0,
+		internalId: (internalId) => typeof internalId === "string" && internalId.trim().length !== 0,
+		course: (course) => typeof course === "string" && course.trim().length !== 0,
+		year: (year) => typeof year === "number" && year >= 0 && year <= 5,
+		highlightBadgeId: (highlightBadgeId) => typeof highlightBadgeId === "number" && highlightBadgeId > 0,
 	};
 
-	const invalidField = Object.keys(validators).find((field) =>
-		validateField(field, validators[field])
-	);
-
-	console.log(invalidField); //! error: it's always undefined (why?)
-
-	if (fields.length === 0 || !validFields.some((field) => fields.includes(field))) {
-		return res.status(400).json({ success: false, message: "Invalid fields!" });
+	// check if the fields are valid
+	for (const field of fields) {
+		if (!validFields.includes(field)) {
+			return res.status(400).json({ success: false, message: `${field} is not a valid field!` });
+		}
+		if (!validators[field](req.body[field])) {
+			return res.status(400).json({ success: false, message: `Invalid ${field}!` });
+		}
 	}
-
-	if (invalidField) {
-		return res.status(400).json({ success: false, message: `Invalid ${invalidField}!` });
-	}
-
-	// remove invalid fields
-	req.body = Object.fromEntries(
-		Object.entries(req.body).filter(([key]) => validFields.includes(key))
-	);
 
 	next();
 };
