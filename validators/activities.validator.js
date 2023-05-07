@@ -7,7 +7,6 @@ exports.validateQueries = (req, res, next) => {
 
 	const fieldsValid = ["activity", "theme", "activities", "themes", "reports"];
 	const filterValid = ["finished", "unfinished", "recent"];
-	const schoolIdValid = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
 	const ObjectKeys = [];
 
@@ -80,7 +79,7 @@ exports.validateQueries = (req, res, next) => {
 
 	// Check if schoolId parameter is valid
 	const invalidSchoolId = Object.keys(req.query)
-		.filter((key) => key === "schoolId" && !schoolIdValid.includes(parseInt(req.query[key])))
+		.filter((key) => key === "schoolId" && isNaN(req.query[key]))
 		.map((key) => `${req.query.schoolId} is an invalid value for the schoolId parameter`);
 
 	// Combine all invalid parameters
@@ -96,7 +95,7 @@ exports.validateQueries = (req, res, next) => {
 		});
 	}
 
-	if(allInvalidParams.length == 1) {
+	if (allInvalidParams.length == 1) {
 		responseSent = true;
 		console.log(colors.red("Invalid parameter"));
 		return res.status(400).json({
@@ -104,7 +103,6 @@ exports.validateQueries = (req, res, next) => {
 			error: allInvalidParams[0],
 		});
 	}
-
 
 	// if fields is valid with activities but is missing schoolId or filter parameter
 	if (
@@ -118,23 +116,6 @@ exports.validateQueries = (req, res, next) => {
 		return res.status(400).json({
 			success: false,
 			error: "Missing parameters filter or schoolId",
-		});
-	}
-
-	if (
-		req.method === "GET" &&
-		req.query.fields === "activities" &&
-		req.query.schoolId &&
-		ObjectKeys.length > 2
-	) {
-		console.log(Object.keys(req.query));
-		responseSent = true;
-		console.log(
-			colors.red("you can´t use more queries when fields is activities and schoolId is present")
-		);
-		return res.status(400).json({
-			success: false,
-			error: "you can´t use more queries when fields is activities and schoolId is present",
 		});
 	}
 
@@ -155,6 +136,21 @@ exports.validateQueries = (req, res, next) => {
 		return res.status(400).json({
 			success: false,
 			error: `${req.query.fields} is a invalid value for the fields parameter`,
+		});
+	}
+
+	if (
+		req.method === "GET" &&
+		req.query.fields &&
+		req.query.schoolId &&
+		req.query.filter &&
+		Object.keys(req.query).indexOf("filter") > Object.keys(req.query).indexOf("schoolId")
+	) {
+		responseSent = true;
+		console.log(colors.red("Invalid query"));
+		return res.status(400).json({
+			success: false,
+			error: "filter parameter is only allowed before schoolId parameter",
 		});
 	}
 
