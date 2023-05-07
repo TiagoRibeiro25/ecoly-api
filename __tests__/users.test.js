@@ -20,7 +20,7 @@ beforeAll(async () => {
 }, 10000);
 
 describe("GET /api/users/:id", () => {
-	describe("when the user exists", async () => {
+	describe("when the user exists", () => {
 		test("should respond with a 200 status code", async () => {
 			const response = await supertest(app).get("/api/users/1");
 			expect(response.statusCode).toBe(200);
@@ -1144,7 +1144,7 @@ describe("PATCH /api/users", () => {
 			});
 
 			describe("when the field exist but there's no value in the body", () => {
-				describe("when the email field is empty", async () => {
+				describe("when the email field is empty", () => {
 					test("should respond with a 400 status code", async () => {
 						const response = await supertest(app)
 							.patch("/api/users?fields=email")
