@@ -14,7 +14,7 @@ exports.subscribe = async (req, res) => {
 			});
 		} else {
 			// Sign up for the newsletter
-			const subscriber = await news_letter.create({ email });
+			const subscriber = await db.news_letter.create({ email });
 			res.status(201).json({
 				success: true,
 				message: "Email subscribed successfully - " + subscriber.email,
@@ -31,7 +31,7 @@ exports.subscribe = async (req, res) => {
 exports.getAllSubscribedEmails = async (req, res) => {
 	try {
 		// Fetch all subscribed emails
-		const emails = await news_letter.findAll();
+		const emails = await db.news_letter.findAll();
 		res.status(200).json({
 			success: true,
 			emails,
@@ -49,7 +49,7 @@ exports.deleteSubscription = async (req, res) => {
 
 	try {
 		// Find the email to be deleted
-		const subscriber = await news_letter.findOne({ where: { email } });
+		const subscriber = await db.news_letter.findOne({ where: { email } });
 
 		if (!subscriber) {
 			res.status(404).json({
