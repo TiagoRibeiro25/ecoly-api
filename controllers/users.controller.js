@@ -42,6 +42,20 @@ async function getBadgeCompletionPercentage(badgeId) {
 	return Math.round((totalUsers / totalUsersExist) * 100);
 }
 
+function convertName(name) {
+	// trim
+	let newName = name.trim();
+	// replace spaces with underscores
+	newName = newName.replace(/\s/g, "_");
+	// remove special characters
+	newName = newName.replace(/[^\w\s]/gi, "");
+	// lowercase
+	newName = newName.toLowerCase();
+	// replace letters with accents with the same letter without accent
+	newName = newName.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+	return newName;
+}
+
 /**
  * @param { Array<{ id: number, user_id: number, badge_id: number, is_highlight: boolean }> } unlockedBadges
  * @returns {Promise<{
@@ -127,7 +141,7 @@ exports.register = async (req, res) => {
 			name,
 			email,
 			password: bcrypt.hashSync(password, 10),
-			photo: "https://api.dicebear.com/5.x/personas/svg?seed=ecoly_user",
+			photo: `https://api.dicebear.com/5.x/personas/svg?seed=${convertName(name)}`,
 			role_id: 1,
 			school_id: school.id,
 			...(internalId && { internal_id: internalId }),
