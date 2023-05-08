@@ -6,6 +6,11 @@ module.exports = function (sequelize, DataTypes) {
 			email: {
 				type: DataTypes.STRING(255),
 				allowNull: false,
+			},
+
+			delete_key: {
+				type: Sequelize.UUID,
+				defaultValue: Sequelize.UUIDV4,
 				primaryKey: true,
 			},
 		},
@@ -18,7 +23,7 @@ module.exports = function (sequelize, DataTypes) {
 					name: "PRIMARY",
 					unique: true,
 					using: "BTREE",
-					fields: [{ name: "email" }],
+					fields: [{ name: "delete_key" }],
 				},
 			],
 		}
