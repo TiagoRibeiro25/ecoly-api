@@ -1,5 +1,5 @@
 const db = require("../models/db");
-const news_letter = db.news_letter;
+const NewsLetter = db.news_letter;
 
 exports.subscribe = async (req, res) => {
 	const { email } = req.body;
@@ -7,7 +7,7 @@ exports.subscribe = async (req, res) => {
 	console.log(email);
 	try {
 		// Check if email already exists
-		const existingEmail = await news_letter.findOne({ where: { email } });
+		const existingEmail = await NewsLetter.findOne({ where: { email } });
 		if (existingEmail) {
 			res.status(409).json({
 				success: false,
@@ -15,7 +15,7 @@ exports.subscribe = async (req, res) => {
 			});
 		} else {
 			// Sign up for the newsletter
-			const subscriber = await news_letter.create({ email });
+			const subscriber = await NewsLetter.create({ email });
 			res.status(201).json({
 				success: true,
 				message: "Email subscribed successfully - " + subscriber.email,
@@ -32,7 +32,7 @@ exports.subscribe = async (req, res) => {
 exports.getAllSubscribedEmails = async (req, res) => {
 	try {
 		// Fetch all subscribed emails
-		const emails = await news_letter.findAll();
+		const emails = await NewsLetter.findAll();
 		res.status(200).json({
 			success: true,
 			emails,
@@ -50,7 +50,7 @@ exports.deleteSubscription = async (req, res) => {
 
 	try {
 		// Find the email to be deleted
-		const subscriber = await news_letter.findOne({ where: { email } });
+		const subscriber = await NewsLetter.findOne({ where: { email } });
 
 		if (!subscriber) {
 			res.status(404).json({
