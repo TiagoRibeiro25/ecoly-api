@@ -1,4 +1,4 @@
-const { news_letter } = require("../models/db");
+const db = require("../models/db");
 
 exports.subscribe = async (req, res) => {
 	const { email } = req.body;
@@ -6,7 +6,7 @@ exports.subscribe = async (req, res) => {
 	console.log(email);
 	try {
 		// Check if email already exists
-		const existingEmail = await news_letter.findOne({ where: { email } });
+		const existingEmail = await db.news_letter.findOne({ where: { email } });
 		if (existingEmail) {
 			res.status(409).json({
 				success: false,
