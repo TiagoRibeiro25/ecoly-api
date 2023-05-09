@@ -5,6 +5,7 @@ const db = require("../models/db");
 const Users = db.users;
 const Badges = db.badges;
 const Roles = db.role;
+const Schools = db.schools;
 
 /**
  * @param { Array<{ id: number, user_id: number, amount: number, date: string}> } seeds
@@ -241,11 +242,23 @@ exports.getUser = async (req, res) => {
 	}
 };
 
-exports.getUsers = async (_req, res) => {
+exports.getUsers = async (req, res) => {
+	// check if there's a query called filter
+	const { filter } = req.query;
+	let userSchoolName = null;
+
 	try {
+		if (filter === "school") {
+			// get name of the school
+			const school = await Schools.findByPk(req.tokenData.schoolId);
+			if (!school) throw new Error("school_not_found");
+
+			userSchoolName = school.name;
+		}
+
 		const users = await Users.findAll();
 		/** @type { Array<{id: number, name: string, email: string, role: string, school: string}>} */
-		const result = [];
+		let result = [];
 
 		for (const user of users) {
 			result.push({
@@ -257,8 +270,18 @@ exports.getUsers = async (_req, res) => {
 			});
 		}
 
+		// filter users by school
+		if (userSchoolName) result = result.filter((user) => user.school === userSchoolName);
+
 		res.status(200).json({ success: true, data: result });
 	} catch (err) {
+		if (err.message === "no_token_provided") {
+			return res.status(401).json({ success: false, message: "No token provided." });
+		}
+		if (err.message === "school_not_found") {
+			return res.status(404).json({ success: false, message: "School not found." });
+		}
+
 		console.log(colors.red("\n\n-> ") + colors.yellow(err) + "\n");
 		res.status(500).json({ success: false, message: "Error occurred while retrieving users." });
 	}
