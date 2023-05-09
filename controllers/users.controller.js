@@ -1,7 +1,9 @@
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const colors = require("colors");
+const sendEmail = require("../utils/emailSender");
 const db = require("../models/db");
+const contactMembersTemplate = require("../utils/contactMembersTemplate");
 const Users = db.users;
 const Badges = db.badges;
 const Roles = db.role;
@@ -476,5 +478,25 @@ exports.editUserInfo = async (req, res) => {
 			success: false,
 			message: `Error occurred while updating user info with id ${id}.`,
 		});
+	}
+};
+
+//TODO: Make tests for this function
+exports.contactMembers = async (req, res) => {
+	/** @type {{ to: {name: string, email: string}[], content: string }} */
+	const { to, content } = req.body;
+
+	try {
+		const from = (await Users.findByPk(req.tokenData.userId)).email; // get the email from the user logged in
+		const subject = "ECOLY - Mensagem de um membro da comunidade";
+		const body = contactMembersTemplate(content);
+
+		const result = await sendEmail(from, to, subject, body);
+		if (!result) throw new Error("email_not_sent");
+
+		res.status(200).json({ success: true, message: `Email sent successfully.` });
+	} catch (err) {
+		console.log(colors.red("\n\n-> ") + colors.yellow(err) + "\n");
+		res.status(500).json({ success: false, message: `Error occurred while sending email.` });
 	}
 };

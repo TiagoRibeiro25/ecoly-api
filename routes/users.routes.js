@@ -17,6 +17,15 @@ router
 router.route("/login").post(usersValidator.validateBodyLogin, usersController.login);
 
 router
+	.route("/contact")
+	.post(
+		authController.verifyToken,
+		authController.verifyIsVerified,
+		usersValidator.validateBodyContactMembers,
+		usersController.contactMembers
+	);
+
+router
 	.route("/role")
 	.get(authController.verifyToken, authController.verifyIsAdmin, usersController.getRoles)
 	.post(

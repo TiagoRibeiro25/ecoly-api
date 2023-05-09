@@ -100,12 +100,14 @@ exports.validateBodyEditUserInfo = (req, res, next) => {
 	}
 
 	const validators = {
-		email: (email) => typeof email === "string" && validateEmail(email) && email.trim().length !== 0,
+		email: (email) =>
+			typeof email === "string" && validateEmail(email) && email.trim().length !== 0,
 		password: (password) => typeof password === "string" && password.trim().length !== 0,
 		internalId: (internalId) => typeof internalId === "string" && internalId.trim().length !== 0,
 		course: (course) => typeof course === "string" && course.trim().length !== 0,
 		year: (year) => typeof year === "number" && year >= 0 && year <= 5,
-		highlightBadgeId: (highlightBadgeId) => typeof highlightBadgeId === "number" && highlightBadgeId > 0,
+		highlightBadgeId: (highlightBadgeId) =>
+			typeof highlightBadgeId === "number" && highlightBadgeId > 0,
 	};
 
 	// check if the fields are valid
@@ -116,6 +118,32 @@ exports.validateBodyEditUserInfo = (req, res, next) => {
 		if (!validators[field](req.body[field])) {
 			return res.status(400).json({ success: false, message: `Invalid ${field}!` });
 		}
+	}
+
+	next();
+};
+
+exports.validateBodyContactMembers = (req, res, next) => {
+	/** @type {{ to: {name: string, email: string}[], content: string }} */
+	const { to, content } = req.body;
+
+	if (!to || !content) {
+		return res.status(400).json({ success: false, message: "Missing fields!" });
+	}
+
+	// validate the emails
+	if (
+		!Array.isArray(to) ||
+		to.length === 0 ||
+		!to.every((user) => validateEmail(user.email)) ||
+		!to.every((user) => typeof user.name === "string")
+	) {
+		return res.status(400).json({ success: false, message: "Invalid Users!" });
+	}
+
+	// validate the content
+	if (typeof content !== "string" || content.trim().length === 0) {
+		return res.status(400).json({ success: false, message: "Invalid message!" });
 	}
 
 	next();
