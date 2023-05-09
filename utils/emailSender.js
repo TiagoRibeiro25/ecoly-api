@@ -3,10 +3,10 @@ const colors = require("colors");
 
 /**
  * Sends an email message.
- * @param {string} from
- * @param {Array<{name: string, email: string}>} toEmails
- * @param {string} subject
- * @param {string} body
+ * @param {string} from - the email address of the sender (or the name of the sender)
+ * @param {Array<{name: string, email: string}>} toEmails - the names and email addresses of the recipients
+ * @param {string} subject - the subject of the email
+ * @param {string} body - the body of the email (html is supported)
  */
 async function sendEmail(from, toEmails, subject, body) {
 	const uri = process.env.SEND_EMAIL_URI;
