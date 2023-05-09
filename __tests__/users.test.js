@@ -1408,6 +1408,165 @@ describe("PATCH /api/users", () => {
 	});
 });
 
+describe("POST /api/users/contact", () => {
+	describe("when the user is not authenticated", () => {
+		test("should respond with a 401 status code", async () => {
+			const response = await supertest(app).post("/api/users/contact");
+			expect(response.statusCode).toBe(401);
+		});
+
+		test("should respond with a json", async () => {
+			const response = await supertest(app).post("/api/users/contact");
+			expect(response.type).toBe("application/json");
+		});
+
+		test("should respond with a message", async () => {
+			const response = await supertest(app).post("/api/users/contact");
+			expect(response.body.message).toBe("Unauthorized!");
+		});
+	});
+
+	describe("when the user is not verified", () => {
+		test("should respond with a 403 status code", async () => {
+			const response = await supertest(app)
+				.post("/api/users/contact")
+				.set("Authorization", `Bearer ${unsignedToken}`);
+			expect(response.statusCode).toBe(403);
+		});
+
+		test("should respond with a json", async () => {
+			const response = await supertest(app)
+				.post("/api/users/contact")
+				.set("Authorization", `Bearer ${unsignedToken}`);
+			expect(response.type).toBe("application/json");
+		});
+
+		test("should respond with a message", async () => {
+			const response = await supertest(app)
+				.post("/api/users/contact")
+				.set("Authorization", `Bearer ${unsignedToken}`);
+			expect(response.body.message).toBe("Require Verified Role!");
+		});
+	});
+
+	describe("when the user is verified", () => {
+		describe("when the fields are invalid", () => {
+			describe("when no fields are sent", () => {
+				test("should respond with a 400 status code", async () => {
+					const response = await supertest(app)
+						.post("/api/users/contact")
+						.set("Authorization", `Bearer ${userToken}`);
+					expect(response.statusCode).toBe(400);
+				});
+
+				test("should respond with a json", async () => {
+					const response = await supertest(app)
+						.post("/api/users/contact")
+						.set("Authorization", `Bearer ${userToken}`);
+					expect(response.type).toBe("application/json");
+				});
+
+				test("should respond with a message", async () => {
+					const response = await supertest(app)
+						.post("/api/users/contact")
+						.set("Authorization", `Bearer ${userToken}`);
+					expect(response.body.message).toBe("Missing fields!");
+				});
+			});
+
+			describe("when the destination field is invalid", () => {
+				test("should respond with a 400 status code", async () => {
+					const response = await supertest(app)
+						.post("/api/users/contact")
+						.set("Authorization", `Bearer ${userToken}`)
+						.send({ to: "Cat", content: "Hello World" });
+					expect(response.statusCode).toBe(400);
+				});
+
+				test("should respond with a json", async () => {
+					const response = await supertest(app)
+						.post("/api/users/contact")
+						.set("Authorization", `Bearer ${userToken}`)
+						.send({ to: [], content: "Hello World" });
+					expect(response.type).toBe("application/json");
+				});
+
+				test("should respond with a message", async () => {
+					const response = await supertest(app)
+						.post("/api/users/contact")
+						.set("Authorization", `Bearer ${userToken}`)
+						.send({
+							to: [{ name: 123, email: "not an email" }],
+							content: "Hello World",
+						});
+					expect(response.body.message).toBe("Invalid Users!");
+				});
+			});
+
+			describe("when the content field is invalid", () => {
+				test("should respond with a 400 status code", async () => {
+					const response = await supertest(app)
+						.post("/api/users/contact")
+						.set("Authorization", `Bearer ${userToken}`)
+						.send({ to: [{ name: "Cat", email: "cat@email.com" }] });
+					expect(response.statusCode).toBe(400);
+				});
+
+				test("should respond with a json", async () => {
+					const response = await supertest(app)
+						.post("/api/users/contact")
+						.set("Authorization", `Bearer ${userToken}`)
+						.send({ to: [{ name: "Cat", email: "cat@email.com" }], content: 123 });
+					expect(response.type).toBe("application/json");
+				});
+
+				test("should respond with a message", async () => {
+					const response = await supertest(app)
+						.post("/api/users/contact")
+						.set("Authorization", `Bearer ${userToken}`)
+						.send({ to: [{ name: "Cat", email: "cat@email.com" }], content: " " });
+					expect(response.body.message).toBe("Invalid Message!");
+				});
+			});
+		});
+
+		describe("when the fields are valid", () => {
+			test("should respond with a 200 status code", async () => {
+				const response = await supertest(app)
+					.post("/api/users/contact")
+					.set("Authorization", `Bearer ${userToken}`)
+					.send({
+						to: [{ name: "Ecoly Example", email: "ecoly.example.example@email.pt" }],
+						content: "Hello World",
+					});
+				expect(response.statusCode).toBe(200);
+			});
+
+			test("should respond with a json", async () => {
+				const response = await supertest(app)
+					.post("/api/users/contact")
+					.set("Authorization", `Bearer ${userToken}`)
+					.send({
+						to: [{ name: "Ecoly Example", email: "ecoly.example.example@email.pt" }],
+						content: "Hello World",
+					});
+				expect(response.type).toBe("application/json");
+			});
+
+			test("should respond with a message", async () => {
+				const response = await supertest(app)
+					.post("/api/users/contact")
+					.set("Authorization", `Bearer ${userToken}`)
+					.send({
+						to: [{ name: "Ecoly Example", email: "ecoly.example.example@email.pt" }],
+						content: "Hello World",
+					});
+				expect(response.body.message).toBe("Email sent successfully.");
+			});
+		});
+	});
+});
+
 afterAll(async () => {
 	// close the db connection
 	await db.sequelize.close();
