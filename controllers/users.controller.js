@@ -6,6 +6,7 @@ const Users = db.users;
 const Badges = db.badges;
 const Roles = db.role;
 const Schools = db.schools;
+const UserBadge = db.user_badge;
 
 /**
  * @param { Array<{ id: number, user_id: number, amount: number, date: string}> } seeds
@@ -37,9 +38,9 @@ function getSeedsMonthAndTotal(seeds) {
  */
 async function getBadgeCompletionPercentage(badgeId) {
 	// get the total number of users that have the badge
-	const totalUsers = await db.user_badge.count({ where: { badge_id: badgeId } });
+	const totalUsers = await UserBadge.count({ where: { badge_id: badgeId } });
 	// get total number of users that exist
-	const totalUsersExist = await db.users.count();
+	const totalUsersExist = await Users.count();
 	return Math.round((totalUsers / totalUsersExist) * 100);
 }
 
@@ -134,7 +135,7 @@ exports.register = async (req, res) => {
 		if (user) throw new Error("email_already_exists");
 
 		// check if the school exists
-		const school = await db.schools.findByPk(schoolId);
+		const school = await Schools.findByPk(schoolId);
 		if (!school) throw new Error("school_not_found");
 
 		// create the user
@@ -441,13 +442,13 @@ exports.editUserInfo = async (req, res) => {
 
 		// highlighted badge
 		if (req.body.highlightBadgeId) {
-			const userBadge = await db.user_badge.findOne({
+			const userBadge = await UserBadge.findOne({
 				where: { user_id: id, badge_id: req.body.highlightBadgeId },
 			});
 			if (!userBadge) throw new Error("user_badge_not_found");
 
 			// remove highlight from all other badges
-			await db.user_badge.update(
+			await UserBadge.update(
 				{ is_highlight: false },
 				{ where: { user_id: id, badge_id: { [Op.ne]: req.body.highlightBadgeId } } }
 			);
