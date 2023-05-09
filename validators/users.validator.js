@@ -136,14 +136,14 @@ exports.validateBodyContactMembers = (req, res, next) => {
 		!Array.isArray(to) ||
 		to.length === 0 ||
 		!to.every((user) => validateEmail(user.email)) ||
-		!to.every((user) => typeof user.name === "string")
+		!to.every((user) => typeof user.name === "string" && user.name.trim().length !== 0)
 	) {
 		return res.status(400).json({ success: false, message: "Invalid Users!" });
 	}
 
 	// validate the content
 	if (typeof content !== "string" || content.trim().length === 0) {
-		return res.status(400).json({ success: false, message: "Invalid message!" });
+		return res.status(400).json({ success: false, message: "Invalid Message!" });
 	}
 
 	next();
