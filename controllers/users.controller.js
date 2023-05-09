@@ -481,7 +481,6 @@ exports.editUserInfo = async (req, res) => {
 	}
 };
 
-//TODO: Make tests for this function
 exports.contactMembers = async (req, res) => {
 	/** @type {{ to: {name: string, email: string}[], content: string }} */
 	const { to, content } = req.body;
