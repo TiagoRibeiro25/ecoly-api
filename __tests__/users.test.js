@@ -113,18 +113,18 @@ describe("GET /api/users", () => {
 		);
 	});
 
-	test("should respond with a 403 status code if the user is not an admin", async () => {
+	test("should respond with a 403 status code if the user is not verified", async () => {
 		const response = await supertest(app)
 			.get("/api/users")
-			.set("Authorization", `Bearer ${userToken}`);
+			.set("Authorization", `Bearer ${unsignedToken}`);
 		expect(response.statusCode).toBe(403);
 	});
 
-	test("should respond with a message if the user is not an admin", async () => {
+	test("should respond with a message if the user is not verified", async () => {
 		const response = await supertest(app)
 			.get("/api/users")
-			.set("Authorization", `Bearer ${userToken}`);
-		expect(response.body.message).toBe("Require Admin Role!");
+			.set("Authorization", `Bearer ${unsignedToken}`);
+		expect(response.body.message).toBe("Require Verified Role!");
 		expect(response.body.success).toBe(false);
 	});
 
