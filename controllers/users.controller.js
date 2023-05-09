@@ -44,6 +44,10 @@ async function getBadgeCompletionPercentage(badgeId) {
 	return Math.round((totalUsers / totalUsersExist) * 100);
 }
 
+/**
+ * @param {string} name
+ * @returns {string}
+ */
 function convertName(name) {
 	// trim
 	let newName = name.trim();
