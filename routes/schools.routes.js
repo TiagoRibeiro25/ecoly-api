@@ -3,9 +3,15 @@ const router = express.Router();
 const schoolsController = require("../controllers/schools.controller.js");
 const authController = require("../controllers/auth.controller");
 
-router
-	.route("/")
-	.get(authController.verifyToken, authController.verifyIsVerified, schoolsController.getSchools);
+router.route("/").get(schoolsController.getSchools).post(schoolsController.addSchool);
 
-router.route("/:id").get(schoolsController.getSchool);
+router
+	.route("/:id")
+	.get(authController.verifyToken, authController.verifyIsAdmin, schoolsController.getSchool)
+	.delete(
+		authController.verifyToken,
+		authController.verifyIsAdmin,
+		schoolsController.deleteSchool
+	);
+
 module.exports = router;
