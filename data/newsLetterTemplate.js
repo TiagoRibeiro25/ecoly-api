@@ -1,14 +1,5 @@
-/**
- *
- * @param {string} title
- * @param {{id: number, name: string}} author
- * @param {string} content
- * @param {string} img
- * @param {string} date
- * @param {string} unsubscribeKey
- * @returns {string}
- */
-function newsLetterTemplate(title, author, content, img, date, unsubscribeKey) {
+/** @param {{title: string, author: {id: number, name: string}, content: string, img: string, date: string, unsubscribeKey: string}} */
+function newsLetterTemplate({ title, author, content, img, date, unsubscribeKey }) {
 	return `<!DOCTYPE html>
 <html
 	xmlns:v="urn:schemas-microsoft-com:vml"
