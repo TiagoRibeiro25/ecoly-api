@@ -418,7 +418,6 @@ exports.editUserRole = async (req, res) => {
 	}
 };
 
-//TODO: Reduce cognitive complexity of this function
 exports.editUserInfo = async (req, res) => {
 	/** @type { number } */
 	const id = req.tokenData.userId;
