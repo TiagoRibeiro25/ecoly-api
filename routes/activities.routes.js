@@ -40,7 +40,14 @@ router
 
 //TODO => add body validation middleware
 //TODO => add auth validation middleware
-router.route("/:id").patch(activitiesController.finishActivity);
+router
+	.route("/:id")
+	.patch(
+		activitiesValidator.validateQueries,
+		activitiesValidator.foundQuery,
+		activitiesController.finishActivity,
+		activitiesController.disabledTheme
+	);
 
 //TODO => add auth validation middleware
 router
@@ -48,8 +55,7 @@ router
 	.delete(
 		activitiesValidator.validateQueries,
 		activitiesValidator.foundQuery,
-		activitiesController.deleteActivity,
-		activitiesController.deleteTheme
+		activitiesController.deleteActivity
 	);
-	
+
 module.exports = router;
