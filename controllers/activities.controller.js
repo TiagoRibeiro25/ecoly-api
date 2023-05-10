@@ -17,6 +17,11 @@ function fixDate(date) {
 	return reverseDate;
 }
 
+
+function canUserEdit  () {
+	
+}
+
 // TODO => add Authentication (Token auth_key) when creating activities
 // TODO => add 401 Unauthorized error when creating activities with invalid auth_key
 // TODO => add 403 Forbidden error without auth_key
@@ -225,6 +230,7 @@ exports.getAllActivities = async (req, res) => {
 		const response = activities.map((activity) => {
 			return {
 				id: activity.id,
+				// canUserEdit: 
 				creator: {
 					id: activity.creator.id,
 					name: activity.creator.name,
@@ -941,6 +947,10 @@ exports.finishActivity = async (req, res) => {
 	console.log(colors.green("Finish Activity"));
 };
 
+exports.disabledTheme = async (req, res) => {
+	console.log(colors.green("Theme inactive"));
+};
+
 // for testing purposes
 exports.deleteActivity = async (req, res) => {
 	console.log(colors.green("Delete Activity"));
@@ -975,6 +985,3 @@ exports.deleteActivity = async (req, res) => {
 	}
 };
 
-exports.deleteTheme = async (req, res) => {
-	console.log(colors.green("Delete Theme"));
-};

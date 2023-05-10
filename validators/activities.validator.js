@@ -139,6 +139,27 @@ exports.validateQueries = (req, res, next) => {
 		});
 	}
 
+
+	// accept only theme and activity for the fields parameter in the POST PATCH DELETE
+	if(
+		(req.method === "POST" || req.method === "PATCH" || req.method === "DELETE") &&
+		req.query.fields &&
+		req.query.fields !== "activity" &&
+		req.query.fields !== "theme"
+	) {
+		console.log(ObjectKeys);
+		responseSent = true;
+		console.log(
+			colors.red(
+				"Invalid fields value : accept only theme and activity for the fields parameter"
+	)
+		);
+		return res.status(400).json({
+			success: false,
+			error: `${req.query.fields} is a invalid value for the fields parameter`,
+		});
+	}
+
 	if (
 		req.method === "GET" &&
 		req.query.fields &&
@@ -153,6 +174,7 @@ exports.validateQueries = (req, res, next) => {
 			error: "filter parameter is only allowed before schoolId parameter",
 		});
 	}
+
 
 	if (!responseSent) {
 		// Call next() only if no response has been sent (if passed all validations)
@@ -210,6 +232,15 @@ exports.foundQuery = (req, res, next) => {
 	if (req.method === "POST" && req.query.fields === "theme") {
 		return activitiesController.addTheme(req, res);
 	}
+
+	if(req.method === "PATCH" && req.query.fields === "activity") {
+		return activitiesController.finishActivity(req, res);
+	}
+
+	if (req.method === "PATCH" && req.query.fields === "theme") {
+		return activitiesController.disabledTheme(req, res);
+	}
+
 	if (req.query.fields === "activity" && req.method === "DELETE") {
 		return activitiesController.deleteActivity(req, res);
 	}
