@@ -10,8 +10,6 @@ exports.validateQueries = (req, res, next) => {
 
 	const ObjectKeys = [];
 
-	let responseSent = false; // Flag variable to track whether a response has been sent (to fix the error of headers already sent)
-
 	Object.keys(req.query).forEach((key) => {
 		ObjectKeys.push(key);
 	});
@@ -27,7 +25,6 @@ exports.validateQueries = (req, res, next) => {
 
 		if (invalidQueries.length == 1) {
 			// returns only one error without array
-			responseSent = true;
 			console.log(colors.red("Invalid parameter"));
 			return res.status(400).json({
 				success: false,
@@ -35,7 +32,6 @@ exports.validateQueries = (req, res, next) => {
 			});
 		}
 
-		responseSent = true;
 		console.log(colors.red("Invalid parameters"));
 		return res.status(400).json({
 			success: false,
@@ -50,16 +46,14 @@ exports.validateQueries = (req, res, next) => {
 
 	if (emptyQueries.length == 1) {
 		// returns only one error without array
-		responseSent = true;
 		console.log(colors.red("Empty query"));
 		return res.status(400).json({
 			success: false,
 			error: emptyQueries[0],
-		});
+		});;
 	}
 
 	if (emptyQueries.length > 1) {
-		responseSent = true;
 		console.log(colors.red("Empty queries"));
 		return res.status(400).json({
 			success: false,
@@ -87,7 +81,6 @@ exports.validateQueries = (req, res, next) => {
 
 	// Return all possible errors as an array
 	if (allInvalidParams.length > 1) {
-		responseSent = true;
 		console.log(colors.red("Invalid parameters"));
 		return res.status(400).json({
 			success: false,
@@ -96,7 +89,6 @@ exports.validateQueries = (req, res, next) => {
 	}
 
 	if (allInvalidParams.length == 1) {
-		responseSent = true;
 		console.log(colors.red("Invalid parameter"));
 		return res.status(400).json({
 			success: false,
@@ -111,7 +103,6 @@ exports.validateQueries = (req, res, next) => {
 		!req.query.schoolId &&
 		!req.query.filter
 	) {
-		responseSent = true;
 		console.log(colors.red("Missing schoolId or filter parameter"));
 		return res.status(400).json({
 			success: false,
@@ -127,7 +118,6 @@ exports.validateQueries = (req, res, next) => {
 		req.query.fields !== "themes"
 	) {
 		console.log(ObjectKeys);
-		responseSent = true;
 		console.log(
 			colors.red(
 				"Invalid fields value : accept only themes and activities for the fields parameter"
@@ -148,7 +138,6 @@ exports.validateQueries = (req, res, next) => {
 		req.query.fields !== "theme"
 	) {
 		console.log(ObjectKeys);
-		responseSent = true;
 		console.log(
 			colors.red(
 				"Invalid fields value : accept only theme and activity for the fields parameter"
@@ -167,7 +156,6 @@ exports.validateQueries = (req, res, next) => {
 		req.query.filter &&
 		Object.keys(req.query).indexOf("filter") > Object.keys(req.query).indexOf("schoolId")
 	) {
-		responseSent = true;
 		console.log(colors.red("Invalid query"));
 		return res.status(400).json({
 			success: false,
@@ -175,11 +163,9 @@ exports.validateQueries = (req, res, next) => {
 		});
 	}
 
-
-	if (!responseSent) {
 		// Call next() only if no response has been sent (if passed all validations)
 		next();
-	}
+	
 };
 
 exports.foundQuery = (req, res, next) => {

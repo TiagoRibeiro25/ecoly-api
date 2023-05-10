@@ -28,6 +28,7 @@ function canUserEdit  () {
 // TODO => read auth_key for authentication => checking each user is creating the activity (creator_id, school_id)
 
 exports.getOneActivity = async (req, res) => {
+	console.log(colors.green("get one activity"));
 	const { id } = req.params;
 
 	try {
@@ -112,6 +113,7 @@ exports.getOneActivity = async (req, res) => {
 };
 
 exports.searchActivities = async (req, res) => {
+	console.log(colors.green("searching activities..."));
 	const { search } = req.query;
 	const formatVal = search.replace(/%20/g, " ");
 
@@ -196,6 +198,7 @@ exports.searchActivities = async (req, res) => {
 };
 
 exports.getAllActivities = async (req, res) => {
+	console.log(colors.green("GET ALL ACTIVITIES"));
 	try {
 		const activities = await Activities.findAll({
 			include: [
