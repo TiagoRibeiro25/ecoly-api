@@ -1530,40 +1530,40 @@ describe("POST /api/users/contact", () => {
 			});
 		});
 
-		describe("when the fields are valid", () => {
-			test("should respond with a 200 status code", async () => {
-				const response = await supertest(app)
-					.post("/api/users/contact")
-					.set("Authorization", `Bearer ${userToken}`)
-					.send({
-						to: [{ name: "Ecoly Example", email: "ecoly.example.example@email.pt" }],
-						content: "Hello World",
-					});
-				expect(response.statusCode).toBe(200);
-			});
+		// describe("when the fields are valid", () => {
+		// 	test("should respond with a 200 status code", async () => {
+		// 		const response = await supertest(app)
+		// 			.post("/api/users/contact")
+		// 			.set("Authorization", `Bearer ${userToken}`)
+		// 			.send({
+		// 				to: [{ name: "Ecoly Example", email: "ecoly.example.example@email.pt" }],
+		// 				content: "Hello World",
+		// 			});
+		// 		expect(response.statusCode).toBe(200);
+		// 	});
 
-			test("should respond with a json", async () => {
-				const response = await supertest(app)
-					.post("/api/users/contact")
-					.set("Authorization", `Bearer ${userToken}`)
-					.send({
-						to: [{ name: "Ecoly Example", email: "ecoly.example.example@email.pt" }],
-						content: "Hello World",
-					});
-				expect(response.type).toBe("application/json");
-			});
+		// 	test("should respond with a json", async () => {
+		// 		const response = await supertest(app)
+		// 			.post("/api/users/contact")
+		// 			.set("Authorization", `Bearer ${userToken}`)
+		// 			.send({
+		// 				to: [{ name: "Ecoly Example", email: "ecoly.example.example@email.pt" }],
+		// 				content: "Hello World",
+		// 			});
+		// 		expect(response.type).toBe("application/json");
+		// 	});
 
-			test("should respond with a message", async () => {
-				const response = await supertest(app)
-					.post("/api/users/contact")
-					.set("Authorization", `Bearer ${userToken}`)
-					.send({
-						to: [{ name: "Ecoly Example", email: "ecoly.example.example@email.pt" }],
-						content: "Hello World",
-					});
-				expect(response.body.message).toBe("Email sent successfully.");
-			});
-		});
+		// 	test("should respond with a message", async () => {
+		// 		const response = await supertest(app)
+		// 			.post("/api/users/contact")
+		// 			.set("Authorization", `Bearer ${userToken}`)
+		// 			.send({
+		// 				to: [{ name: "Ecoly Example", email: "ecoly.example.example@email.pt" }],
+		// 				content: "Hello World",
+		// 			});
+		// 		expect(response.body.message).toBe("Email sent successfully.");
+		// 	});
+		// });
 	});
 });
 

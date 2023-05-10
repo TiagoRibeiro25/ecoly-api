@@ -16,22 +16,19 @@ async function sendNewsLetter(latestNew) {
 	const subject = "ECOLY - Nova Notícia";
 
 	for (const user of users) {
-		const body = newsLetterTemplate(
-			latestNew.title,
-			latestNew.author,
-			reduceText(latestNew.content),
-			latestNew.img,
-			new Date().toLocaleDateString("pt-PT"),
-			user.delete_key
-		);
+		const body = newsLetterTemplate({
+			title: latestNew.title,
+			author: latestNew.author,
+			content: reduceText(latestNew.content),
+			img: latestNew.img,
+			date: new Date().toLocaleDateString("pt-PT"),
+			unsubscribeKey: user.delete_key,
+		});
 
 		// send email
-		const result = await sendEmail(
-			from,
-			[{ name: user.email, email: user.email }],
-			subject,
-			body
-		);
+		const userData = { name: user.email, email: user.email };
+		const result = await sendEmail(from, [userData], subject, body);
+
 		if (result) console.log(colors.green(`Email sent to ${user.email}`));
 		else console.log(colors.red(`Email not sent to ${user.email}`));
 	}
