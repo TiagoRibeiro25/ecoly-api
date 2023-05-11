@@ -1,4 +1,4 @@
-if (process.env.NODE_ENV !== "production") require("dotenv").config();
+if (process.env.NODE_ENV === "development") require("dotenv").config();
 const colors = require("colors");
 const checkEnvs = require("./config/checkEnvs");
 const app = require("./app");
