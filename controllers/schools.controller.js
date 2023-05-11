@@ -8,7 +8,7 @@ exports.getSchools = async (req, res) => {
 		const schools = await Schools.findAll();
 		res.status(200).json({
 			success: true,
-			schools,
+			data: schools,
 		});
 	} catch (error) {
 		res.status(500).send({
