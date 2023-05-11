@@ -46,11 +46,11 @@ exports.getAllSubscribedEmails = async (req, res) => {
 };
 
 exports.deleteSubscription = async (req, res) => {
-	const { email } = req.body;
+	const { id } = req.params;
 
 	try {
 		// Find the email to be deleted
-		const subscriber = await NewsLetter.findOne({ where: { email } });
+		const subscriber = await NewsLetter.findByPk(id);
 
 		if (!subscriber) {
 			res.status(404).json({

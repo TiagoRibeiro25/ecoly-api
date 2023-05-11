@@ -6,7 +6,10 @@ const subscribeValidator = require("../validators/news_letter.validator");
 router
 	.route("/")
 	.get(subscribeController.getAllSubscribedEmails)
-	.post(subscribeValidator.validateBodySubscribe, subscribeController.subscribe)
+	.post(subscribeValidator.validateBodySubscribe, subscribeController.subscribe);
+
+router
+	.route("/:id")
 	.delete(subscribeValidator.validateBodySubscribe, subscribeController.deleteSubscription);
 
 module.exports = router;

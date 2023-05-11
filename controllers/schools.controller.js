@@ -48,7 +48,7 @@ exports.addSchool = async (req, res) => {
 	const { school } = req.body;
 
 	try {
-		const existingSchool = await Schools.findOne({ where: { school } });
+		const existingSchool = await Schools.findOne({ where: { name: school } });
 		if (existingSchool) {
 			res.status(409).json({
 				success: false,
@@ -64,7 +64,7 @@ exports.addSchool = async (req, res) => {
 	} catch (error) {
 		res.status(500).send({
 			success: false,
-			message: "Failed to add new school",
+			message: "Failed to add new school" + error,
 		});
 	}
 };
