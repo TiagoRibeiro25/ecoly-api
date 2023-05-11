@@ -74,7 +74,12 @@ function convertName(name) {
  */
 async function getBadgesInfo(unlockedBadges) {
 	const unlockedBadgesInfoArray = await Promise.all(
-		unlockedBadges.map(async (badge) => await badge.getBadge())
+		unlockedBadges.map(async (badge) => {
+			// await badge.getBadge();
+			const badgeInfo = await badge.getBadge();
+			// convert to JSON
+			return badgeInfo.toJSON();
+		})
 	);
 
 	/** @type number | undefined */
