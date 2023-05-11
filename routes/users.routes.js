@@ -53,6 +53,6 @@ router
 		usersController.editUserRole
 	);
 
-router.route("/:id").get(usersController.getUser);
+router.route("/:id").get(usersController.checkUserId, usersController.getUser);
 
 module.exports = router;

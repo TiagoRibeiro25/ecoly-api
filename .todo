@@ -1,4 +1,0 @@
-(1) PATCH /api/users/:
-- [ ] 🐛 fix the errors
-- [ ] 📃 fix the user validator not checking the types of the fields
-----

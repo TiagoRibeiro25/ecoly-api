@@ -100,6 +100,27 @@ async function getBadgesInfo(unlockedBadges) {
 	return { unlocked: unlockedBadgesInfoArray, locked: lockedBadgesInfoArray };
 }
 
+exports.checkUserId = async (req, res, next) => {
+	const { id } = req.params;
+	if (id !== "me") return next();
+
+	try {
+		let token = req.headers["x-access-token"] || req.headers["authorization"];
+		token = token?.replace("Bearer ", "");
+		if (!token) throw new Error("no_token");
+
+		const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+		req.params.id = decoded.userId;
+
+		next();
+	} catch (err) {
+		if (err.message === "no_token") {
+			return res.status(404).send({ success: false, message: "No user found!" });
+		}
+	}
+};
+
 exports.login = async (req, res) => {
 	try {
 		const { email, password } = req.body;
