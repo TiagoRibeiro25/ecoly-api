@@ -18,10 +18,6 @@ function fixDate(date) {
 }
 
 
-function canUserEdit  () {
-	
-}
-
 // TODO => add Authentication (Token auth_key) when creating activities
 // TODO => add 401 Unauthorized error when creating activities with invalid auth_key
 // TODO => add 403 Forbidden error without auth_key
@@ -870,6 +866,9 @@ exports.getThemes = async (req, res) => {
 	console.log(colors.green("Themes"));
 	try {
 		const themes = await Themes.findAll({
+			where: {
+				is_active: true,
+			},
 			attributes: ["id", "name"],
 		});
 		if (themes)
@@ -888,58 +887,58 @@ exports.getThemes = async (req, res) => {
 
 exports.addActivity = async (req, res) => {
 	console.log(colors.yellow("Adding activity..."));
-	try {
-		// Get the last inserted activity ID
-		const lastActivity = await Activities.findOne({
-			order: [["id", "DESC"]],
-		});
+	// try {
+	// 	// Get the last inserted activity ID
+	// 	const lastActivity = await Activities.findOne({
+	// 		order: [["id", "DESC"]],
+	// 	});
 
-		// Create the new activity
-		const activity = await Activities.create(req.body);
+	// 	// Create the new activity
+	// 	const activity = await Activities.create(req.body);
 
-		// add blocks of code for the authentication validations
-		//
-		//
+	// 	// add blocks of code for the authentication validations
+	// 	//
+	// 	//
 
-		// if the body includes images add to the activity_images
-		if (req.body.images) {
-			const images = req.body.images; // array of images
-			// for each image in the array add the activity_id and the image to the activity_images table
-			images.forEach((image) => {
-				activity_images.create({
-					activity_id: activity.id,
-					img: image,
-				});
-			});
+	// 	// if the body includes images add to the activity_images
+	// 	if (req.body.images) {
+	// 		const images = req.body.images; // array of images
+	// 		// for each image in the array add the activity_id and the image to the activity_images table
+	// 		images.forEach((image) => {
+	// 			activity_images.create({
+	// 				activity_id: activity.id,
+	// 				img: image,
+	// 			});
+	// 		});
 
-			return res.status(201).json({
-				success: true,
-				message: "Activity added",
-			});
-		}
-	} catch (err) {
-		if (err instanceof ValidationError) {
-			if (Object.keys(req.body).length === 0) {
-				return res.status(400).json({
-					success: false,
-					error: "body cannot be empty",
-				});
-			}
-			// else check if the body includes the required fields otherwise return null errors
-			else {
-				return res.status(400).json({
-					success: false,
-					// for each error in the errors array return the error message
-					error: err.errors.map((error) => error.message),
-				});
-			}
-		}
+	// 		return res.status(201).json({
+	// 			success: true,
+	// 			message: "Activity added",
+	// 		});
+	// 	}
+	// } catch (err) {
+	// 	if (err instanceof ValidationError) {
+	// 		if (Object.keys(req.body).length === 0) {
+	// 			return res.status(400).json({
+	// 				success: false,
+	// 				error: "body cannot be empty",
+	// 			});
+	// 		}
+	// 		// else check if the body includes the required fields otherwise return null errors
+	// 		else {
+	// 			return res.status(400).json({
+	// 				success: false,
+	// 				// for each error in the errors array return the error message
+	// 				error: err.errors.map((error) => error.message),
+	// 			});
+	// 		}
+	// 	}
 
-		return res.status(500).json({
-			success: false,
-			error: err.message || "Something went wrong. Please try again later.",
-		});
-	}
+	// 	return res.status(500).json({
+	// 		success: false,
+	// 		error: err.message || "Something went wrong. Please try again later.",
+	// 	});
+	// }
 };
 
 exports.addTheme = async (req, res) => {
@@ -958,33 +957,33 @@ exports.disabledTheme = async (req, res) => {
 exports.deleteActivity = async (req, res) => {
 	console.log(colors.green("Delete Activity"));
 
-	const { id } = req.params;
+	// const { id } = req.params;
 
-	try {
-		// delete the images from the activity_images table
-		await activity_images.destroy({
-			where: {
-				activity_id: id,
-			},
-		});
+	// try {
+	// 	// delete the images from the activity_images table
+	// 	await activity_images.destroy({
+	// 		where: {
+	// 			activity_id: id,
+	// 		},
+	// 	});
 
-		// delete the activity
-		await Activities.destroy({
-			where: {
-				id: id,
-			},
-		});
+	// 	// delete the activity
+	// 	await Activities.destroy({
+	// 		where: {
+	// 			id: id,
+	// 		},
+	// 	});
 
-		return res.status(200).json({
-			success: true,
-			message: "Activity deleted",
-		});
-	} catch (err) {
-		console.log(colors.red(`${err.message}`));
-		return res.status(500).json({
-			success: false,
-			error: "We apologize, but our system is currently experiencing some issues. Please try again later.",
-		});
-	}
+	// 	return res.status(200).json({
+	// 		success: true,
+	// 		message: "Activity deleted",
+	// 	});
+	// } catch (err) {
+	// 	console.log(colors.red(`${err.message}`));
+	// 	return res.status(500).json({
+	// 		success: false,
+	// 		error: "We apologize, but our system is currently experiencing some issues. Please try again later.",
+	// 	});
+	// }
 };
 

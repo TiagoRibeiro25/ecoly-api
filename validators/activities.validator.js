@@ -1,6 +1,5 @@
 // TODO => include auth validations and body validations
 const colors = require("colors");
-const activitiesController = require("../controllers/activities.controller");
 
 exports.validateQueries = (req, res, next) => {
 	const validQueries = ["filter", "schoolId", "fields", "search"];
@@ -50,7 +49,7 @@ exports.validateQueries = (req, res, next) => {
 		return res.status(400).json({
 			success: false,
 			error: emptyQueries[0],
-		});;
+		});
 	}
 
 	if (emptyQueries.length > 1) {
@@ -115,7 +114,8 @@ exports.validateQueries = (req, res, next) => {
 		req.method === "GET" &&
 		req.query.fields &&
 		req.query.fields !== "activities" &&
-		req.query.fields !== "themes"
+		req.query.fields !== "themes" &&
+		req.query.fields !== "reports"
 	) {
 		console.log(ObjectKeys);
 		console.log(
@@ -129,9 +129,8 @@ exports.validateQueries = (req, res, next) => {
 		});
 	}
 
-
 	// accept only theme and activity for the fields parameter in the POST PATCH DELETE
-	if(
+	if (
 		(req.method === "POST" || req.method === "PATCH" || req.method === "DELETE") &&
 		req.query.fields &&
 		req.query.fields !== "activity" &&
@@ -141,7 +140,7 @@ exports.validateQueries = (req, res, next) => {
 		console.log(
 			colors.red(
 				"Invalid fields value : accept only theme and activity for the fields parameter"
-	)
+			)
 		);
 		return res.status(400).json({
 			success: false,
@@ -162,76 +161,35 @@ exports.validateQueries = (req, res, next) => {
 			error: "filter parameter is only allowed before schoolId parameter",
 		});
 	}
-
-		// Call next() only if no response has been sent (if passed all validations)
-		next();
-	
+	next();
 };
 
-exports.foundQuery = (req, res, next) => {
-	if (req.method === "GET" && req.query.search) {
-		return activitiesController.searchActivities(req, res);
+// create activity
+exports.validateBodyActivity = (req, res, next) => {
+	const bodyValid = true;
+	if (bodyValid) {
+		console.log(colors.green("create activity body is valid"));
 	}
 
-	if (req.method === "GET" && req.query.fields === "activities" && req.query.schoolId) {
-		if (req.query.filter === "finished") {
-			return activitiesController.getFinishedSchoolActivities(req, res);
-		}
-		if (req.query.filter === "unfinished") {
-			return activitiesController.getUnfinishedSchoolActivities(req, res);
-		}
-		if (req.query.filter === "recent") {
-			return activitiesController.getRecentSchoolActivities(req, res);
-		}
-		return activitiesController.getSchoolActivities(req, res);
+	next();
+};
+
+// create theme
+exports.validateBodyTheme = (req, res, next) => {
+	const bodyValid = true;
+	if (bodyValid) {
+		console.log(colors.green("create theme body is valid"));
 	}
 
-	if (
-		req.method === "GET" &&
-		req.query.fields === "activities" &&
-		req.query.filter === "finished"
-	) {
-		return activitiesController.getFinishedActivities(req, res);
+	next();
+};
+
+// finish activity - create report of activity
+exports.validateBodyReport = (req, res, next) => {
+	const bodyValid = true;
+	if (bodyValid) {
+		console.log(colors.green("create report body is valid to finish activity"));
 	}
 
-	if (
-		req.method === "GET" &&
-		req.query.fields === "activities" &&
-		req.query.filter === "unfinished"
-	) {
-		return activitiesController.getUnfinishedActivities(req, res);
-	}
-
-	if (req.method === "GET" && req.query.fields === "activities" && req.query.filter === "recent") {
-		return activitiesController.getRecentActivities(req, res);
-	}
-
-	if (req.method === "GET" && req.query.fields === "reports") {
-		return activitiesController.getReports(req, res);
-	}
-	if (req.method === "GET" && req.query.fields === "themes") {
-		return activitiesController.getThemes(req, res);
-	}
-	if (req.method === "POST" && req.query.fields === "activity") {
-		return activitiesController.addActivity(req, res);
-	}
-	if (req.method === "POST" && req.query.fields === "theme") {
-		return activitiesController.addTheme(req, res);
-	}
-
-	if(req.method === "PATCH" && req.query.fields === "activity") {
-		return activitiesController.finishActivity(req, res);
-	}
-
-	if (req.method === "PATCH" && req.query.fields === "theme") {
-		return activitiesController.disabledTheme(req, res);
-	}
-
-	if (req.query.fields === "activity" && req.method === "DELETE") {
-		return activitiesController.deleteActivity(req, res);
-	}
-	if (req.query.fields === "theme" && req.method === "DELETE") {
-		return activitiesController.deleteTheme(req, res);
-	}
 	next();
 };
