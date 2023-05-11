@@ -74,7 +74,12 @@ function convertName(name) {
  */
 async function getBadgesInfo(unlockedBadges) {
 	const unlockedBadgesInfoArray = await Promise.all(
-		unlockedBadges.map(async (badge) => await badge.getBadge())
+		unlockedBadges.map(async (badge) => {
+			// await badge.getBadge();
+			const badgeInfo = await badge.getBadge();
+			// convert to JSON
+			return badgeInfo.toJSON();
+		})
 	);
 
 	/** @type number | undefined */
@@ -468,16 +473,22 @@ exports.editUserInfo = async (req, res) => {
 
 		// highlighted badge
 		if (req.body.highlightBadgeId) {
-			const userBadge = await UserBadge.findOne({
+			// find the badge that is currently highlighted (if any)
+			const highlightedBadge = await UserBadge.findOne({
+				where: { user_id: id, is_highlight: true },
+			});
+
+			// if there is a highlighted badge, remove the highlight
+			if (highlightedBadge) await highlightedBadge.update({ is_highlight: false });
+
+			// find the badge that the user wants to highlight
+			const badge = await UserBadge.findOne({
 				where: { user_id: id, badge_id: req.body.highlightBadgeId },
 			});
-			if (!userBadge) throw new Error("user_badge_not_found");
+			if (!badge) throw new Error("user_badge_not_found");
 
-			// remove highlight from all other badges
-			await UserBadge.update(
-				{ is_highlight: false },
-				{ where: { user_id: id, badge_id: { [Op.ne]: req.body.highlightBadgeId } } }
-			);
+			// update the highlighted badge
+			await badge.update({ is_highlight: true });
 		}
 
 		// update the user
