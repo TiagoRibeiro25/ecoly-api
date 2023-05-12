@@ -22,12 +22,12 @@
 		"morgan": "^1.10.0",
 		"mysql2": "^3.3.0",
 		"sequelize": "^6.31.1",
+		"dotenv": "^16.0.3",
 		"sqlite3": "^5.1.6"
 	},
 	"devDependencies": {
 		"jest": "^29.5.0",
 		"nodemon": "^2.0.22",
-		"dotenv": "^16.0.3",
 		"supertest": "^6.3.3"
 	}
 }
