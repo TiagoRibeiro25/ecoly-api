@@ -5,8 +5,6 @@ const activitiesValidator = require("../validators/activities.validator");
 const authController = require("../controllers/auth.controller");
 
 
-// - !! EXPLICO NA REUNIÃO DE AMANHÃ PORQUE FIZ ASSIM :) NÃO TE ASSUSTES TIAGO 
-
 // GET /api/activities
 router.get("/", activitiesValidator.validateQueries, (req, res) => {
 	// first validate queries and then execute the next parameter
