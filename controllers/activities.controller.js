@@ -1,10 +1,12 @@
 const db = require("../models/db");
 const colors = require("colors");
+const jwt = require("jsonwebtoken");
 const { Op, ValidationError } = require("sequelize");
 const Activities = db.activities;
 const activity_images = db.activity_image;
 const Users = db.users;
 const Schools = db.schools;
+const Roles = db.role;
 const Themes = db.theme;
 const badges = db.badges; //for the unlocked badges
 const userBadges = db.user_badge; //for the unlocked badges
@@ -17,11 +19,11 @@ function fixDate(date) {
 	return reverseDate;
 }
 
-
-// TODO => add Authentication (Token auth_key) when creating activities
-// TODO => add 401 Unauthorized error when creating activities with invalid auth_key
-// TODO => add 403 Forbidden error without auth_key
-// TODO => read auth_key for authentication => checking each user is creating the activity (creator_id, school_id)
+// GET ACTIVITIES
+// => TODO => INCLUDE THE TOKEN USER ON THE REQUEST HEADER :
+// () - TO SEE IF THE ACTIVITY IS FROM THE SCHOOL OF THE USER PROVIDE ON THE TOKEN - canUserEdit:true/false
+// () - provide key canUserEdit:true/false only on unfinished activities (is_finished:false)
+// () - TO CHECK THE LOGGED USER PROVIDE ON THE TOKEN - loggedUser: username provided on the token/ null (no token provided- no user logged)
 
 exports.getOneActivity = async (req, res) => {
 	console.log(colors.green("get one activity"));
@@ -193,77 +195,77 @@ exports.searchActivities = async (req, res) => {
 	}
 };
 
-exports.getAllActivities = async (req, res) => {
-	console.log(colors.green("GET ALL ACTIVITIES"));
-	try {
-		const activities = await Activities.findAll({
-			include: [
-				{
-					model: Themes,
-					as: "theme",
-					attributes: ["name"],
-				},
-				{
-					model: Schools,
-					as: "school",
-					attributes: ["name"],
-				},
-				{
-					model: Users,
-					as: "creator",
-					attributes: ["id", "name"],
-				},
-				{
-					model: activity_images,
-					as: "activity_images",
-					attributes: ["img"],
-				},
-			],
+// exports.getAllActivities = async (req, res) => {
+// 	console.log(colors.green("GET ALL ACTIVITIES"));
+// 	try {
+// 		const activities = await Activities.findAll({
+// 			include: [
+// 				{
+// 					model: Themes,
+// 					as: "theme",
+// 					attributes: ["name"],
+// 				},
+// 				{
+// 					model: Schools,
+// 					as: "school",
+// 					attributes: ["name"],
+// 				},
+// 				{
+// 					model: Users,
+// 					as: "creator",
+// 					attributes: ["id", "name"],
+// 				},
+// 				{
+// 					model: activity_images,
+// 					as: "activity_images",
+// 					attributes: ["img"],
+// 				},
+// 			],
 
-			// remove the school_id, theme_id and creator_id from the response
-			attributes: {
-				exclude: ["school_id", "theme_id", "creator_id", "report"],
-			},
-		});
+// 			// remove the school_id, theme_id and creator_id from the response
+// 			attributes: {
+// 				exclude: ["school_id", "theme_id", "creator_id", "report"],
+// 			},
+// 		});
 
-		const response = activities.map((activity) => {
-			return {
-				id: activity.id,
-				// canUserEdit: 
-				creator: {
-					id: activity.creator.id,
-					name: activity.creator.name,
-				},
-				is_finished: activity.is_finished,
-				school: activity.school.name,
-				theme: activity.theme.name,
-				title: activity.title,
-				complexity: activity.complexity,
-				initial_date: fixDate(activity.initial_date),
-				final_date: fixDate(activity.final_date),
-				objective: activity.objective,
-				diagnostic: activity.diagnostic,
-				meta: activity.meta,
-				resources: activity.resources,
-				participants: activity.participants,
-				evaluation_indicator: activity.evaluation_indicator,
-				evaluation_method: activity.evaluation_method,
-				images: activity.activity_images.map((image) => image.img),
-			};
-		});
+// const response = activities.map((activity) => {
+// 	return {
+// 		id: activity.id,
+// 		creator: {
+// 			id: activity.creator.id,
+// 			name: activity.creator.name,
+// 		},
+// 		is_finished: activity.is_finished,
+// 		school: activity.school.name,
+// 		theme: activity.theme.name,
+// 		title: activity.title,
+// 		complexity: activity.complexity,
+// 		initial_date: fixDate(activity.initial_date),
+// 		final_date: fixDate(activity.final_date),
+// 		objective: activity.objective,
+// 		diagnostic: activity.diagnostic,
+// 		meta: activity.meta,
+// 		resources: activity.resources,
+// 		participants: activity.participants,
+// 		evaluation_indicator: activity.evaluation_indicator,
+// 		evaluation_method: activity.evaluation_method,
+// 		images: activity.activity_images.map((image) => image.img),
+// 	};
+// });
 
-		return res.status(200).json({
-			success: true,
-			data: response,
-		});
-	} catch (err) {
-		console.log(colors.red(`${err.message}`));
-		return res.status(500).json({
-			success: false,
-			error: "We apologize, but our system is currently experiencing some issues. Please try again later.",
-		});
-	}
-};
+// 		return res.status(200).json({
+// 			success: true,
+// 			data: response,
+// 		});
+
+// 	} catch (err) {
+// 		console.log(colors.red(`${err.message}`));
+// 		return res.status(500).json({
+// 			success: false,
+// 			error: "We apologize, but our system is currently experiencing some issues. Please try again later.",
+// 		});
+// 	}
+// };
 
 exports.getFinishedActivities = async (req, res) => {
 	console.log(colors.green("Finished Activities"));
@@ -987,3 +989,146 @@ exports.deleteActivity = async (req, res) => {
 	// }
 };
 
+async function getAllActivities() {
+	const activities = await Activities.findAll({
+		include: [
+			{
+				model: Themes,
+				as: "theme",
+				attributes: ["name"],
+			},
+			{
+				model: Schools,
+				as: "school",
+				attributes: ["name"],
+			},
+			{
+				model: Users,
+				as: "creator",
+				attributes: ["id", "name"],
+			},
+			{
+				model: activity_images,
+				as: "activity_images",
+				attributes: ["img"],
+			},
+		],
+
+		// remove the school_id, theme_id and creator_id from the response
+		attributes: {
+			exclude: ["school_id", "theme_id", "creator_id", "report"],
+		},
+	});
+
+	const data = activities.map((activity) => {
+		return {
+			id: activity.id,
+			creator: {
+				id: activity.creator.id,
+				name: activity.creator.name,
+			},
+			is_finished: activity.is_finished,
+			school: activity.school.name,
+			theme: activity.theme.name,
+			title: activity.title,
+			complexity: activity.complexity,
+			initial_date: fixDate(activity.initial_date),
+			final_date: fixDate(activity.final_date),
+			objective: activity.objective,
+			diagnostic: activity.diagnostic,
+			meta: activity.meta,
+			resources: activity.resources,
+			participants: activity.participants,
+			evaluation_indicator: activity.evaluation_indicator,
+			evaluation_method: activity.evaluation_method,
+			images: activity.activity_images.map((image) => image.img),
+		};
+	});
+
+	// token provided
+	const admin_token =
+		"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInJvbGVJZCI6Miwic2Nob29sSWQiOjEsImlhdCI6MTY4Mzg5MDE3MywiZXhwIjoxNjgzOTc2NTczfQ.r9Hmc2EUtVRVeUYAbq-Xaqz4AFcrGqxZHGFAun6chS0";
+
+	const user_token =
+		"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjIsInJvbGVJZCI6Mywic2Nob29sSWQiOjEsImlhdCI6MTY4MzkxMzI5OSwiZXhwIjoxNjgzOTk5Njk5fQ.ivToVHT0kQ74eukDa9IbbikVs7lFKVeN5ogAWiymnxM";
+
+	const unsigned_token =
+		"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEwLCJyb2xlSWQiOjEsInNjaG9vbElkIjoyLCJpYXQiOjE2ODM5MTMwODYsImV4cCI6MTY4Mzk5OTQ4Nn0.i0-qNdwPJucaDgt_l00KU66rfwyBgVIAXV7A2AFYKxE";
+
+	// no token provided
+	const no_token = null;
+
+	// verify token
+	const decoded = jwt.verify(user_token, process.env.JWT_SECRET);
+
+	// get the current time of the token
+	const currentTime = Math.floor(Date.now() / 1000);
+
+	// get the time remaining of the token
+	const timeRemaining = decoded.exp - currentTime;
+
+	// give the time remaining in hours and minutes
+	const timeRemainingHours = Math.floor(timeRemaining / 3600);
+
+	const timeRemainingMinutes = Math.floor((timeRemaining % 3600) / 60);
+
+	const username = await Users.findByPk(decoded.userId, {
+		attributes: ["name"],
+	});
+
+	const role = await Roles.findByPk(decoded.roleId, {
+		attributes: ["title"],
+	});
+
+	const school = await Schools.findByPk(decoded.schoolId, {
+		attributes: ["name"],
+	});
+
+	// set canUserEdit to true if the activity is unfinished belongs to the user's school and if the role is not unsigned
+	const activities_ = data.map((activity) => {
+		if (
+			activity.is_finished === false &&
+			activity.school === school.name &&
+			role.title !== "unsigned"
+		) {
+				return {
+					canUserEdit: true,
+					...activity,
+				}
+		}
+		return {
+			canUserEdit: false,
+			...activity,
+		};
+	});
+
+
+	const objectResponse = {
+		success: true,
+		loggedUser: {
+			sessionTime: `${timeRemainingHours}h${timeRemainingMinutes}m`,
+			name: username.name,
+			role: role.title,
+			school: school.name,
+		},
+		data: activities_,
+	};
+
+	// if there is token - login user
+	if(admin_token || user_token || unsigned_token) {
+		console.log(objectResponse);
+	}
+
+	// if there is no token - logout user automatically
+	// if the token expired or if there is not token set the loggedUser to null and delete the canUserEdit property
+	if (timeRemaining <= 0 || !user_token || !admin_token || !unsigned_token) {
+		delete objectResponse.loggedUser;
+		objectResponse.data = data.map((activity) => {
+			delete activity.canUserEdit;
+			return activity;
+		});
+	}
+
+}
+
+getAllActivities();
