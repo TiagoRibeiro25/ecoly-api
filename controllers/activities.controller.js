@@ -70,7 +70,7 @@ exports.getOneActivity = async (req, res) => {
 			});
 		}
 
-		const response = {
+		const data = {
 			id: activity.id,
 			creator: {
 				id: activity.creator.id,
@@ -92,12 +92,97 @@ exports.getOneActivity = async (req, res) => {
 			evaluation_method: activity.evaluation_method,
 			images: activity.activity_images.map((image) => image.img),
 		};
-		return res.status(200).json({
-			success: true,
-			data: response,
-		});
+
+		// check if there's a token in the request
+		let token = req.headers["x-access-token"] || req.headers.authorization;
+		token = token?.replace("Bearer ", "");
+
+		// with no loggedUser
+		if (!token) {
+			console.log("Activities without loggedUser: ", data);
+			return res.status(200).json({
+				success: true,
+				data: data,
+			});
+		}
+
+		// with loggedUser
+		if (token) {
+			// verify token
+			const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+			// get the current time of the token
+			const currentTime = Math.floor(Date.now() / 1000);
+
+			// get the time remaining of the token
+			const timeRemaining = decoded.exp - currentTime;
+
+			// give the time remaining in hours and minutes
+			const timeRemainingHours = Math.floor(timeRemaining / 3600);
+
+			const timeRemainingMinutes = Math.floor((timeRemaining % 3600) / 60);
+
+			const timeRemainingSeconds = Math.floor((timeRemaining % 3600) % 60);
+
+			const username = await Users.findByPk(decoded.userId, {
+				attributes: ["name"],
+			});
+
+			const role = await Roles.findByPk(decoded.roleId, {
+				attributes: ["title"],
+			});
+
+			const school = await Schools.findByPk(decoded.schoolId, {
+				attributes: ["name"],
+			});
+
+			if (
+				data.is_finished === false &&
+				data.school === school.name &&
+				role.title !== "unsigned"
+			) {
+				return res.status(200).json({
+					success: true,
+					loggedUser: {
+						sessionTime: `${timeRemainingHours}h ${timeRemainingMinutes}m ${timeRemainingSeconds}s`,
+						name: username.name,
+						role: role.title,
+						school: school.name,
+					},
+					data: {
+						canUserEdit: true,
+						...data,
+					},
+				});
+			} else if (
+				data.is_finished === true ||
+				data.school !== school.name ||
+				role.title === "unsigned"
+			) {
+				return res.status(200).json({
+					success: true,
+					loggedUser: {
+						sessionTime: `${timeRemainingHours}h ${timeRemainingMinutes}m ${timeRemainingSeconds}s`,
+						name: username.name,
+						role: role.title,
+						school: school.name,
+					},
+					data: {
+						canUserEdit: false,
+						...data,
+					},
+				});
+			}
+		}
 	} catch (err) {
 		console.log(colors.red(`${err.message}`));
+
+		if (err.message === "jwt expired") {
+			return res.status(401).json({
+				success: false,
+				error: "Your session has expired. Please log in again.",
+			});
+		}
 		return res.status(500).json({
 			success: false,
 			error: "We apologize, but our system is currently experiencing some issues. Please try again later.",
@@ -118,31 +203,7 @@ exports.searchActivities = async (req, res) => {
 				},
 				is_finished: false,
 			},
-			include: [
-				{
-					model: Themes,
-					as: "theme",
-					attributes: ["name"],
-				},
-				{
-					model: Schools,
-					as: "school",
-					attributes: ["name"],
-				},
-				{
-					model: Users,
-					as: "creator",
-					attributes: ["id", "name"],
-				},
-				{
-					model: activity_images,
-					as: "activity_images",
-					attributes: ["img"],
-				},
-			],
-			attributes: {
-				exclude: ["school_id", "theme_id", "creator_id", "report"],
-			},
+			attributes: ["id", "title"],
 		});
 
 		if (activities.length === 0) {
@@ -155,25 +216,7 @@ exports.searchActivities = async (req, res) => {
 		const data = activities.map((activity) => {
 			return {
 				id: activity.id,
-				creator: {
-					id: activity.creator.id,
-					name: activity.creator.name,
-				},
-				is_finished: activity.is_finished,
-				school: activity.school.name,
-				theme: activity.theme.name,
 				title: activity.title,
-				complexity: activity.complexity,
-				initial_date: fixDate(activity.initial_date),
-				final_date: fixDate(activity.final_date),
-				objective: activity.objective,
-				diagnostic: activity.diagnostic,
-				meta: activity.meta,
-				resources: activity.resources,
-				participants: activity.participants,
-				evaluation_indicator: activity.evaluation_indicator,
-				evaluation_method: activity.evaluation_method,
-				images: activity.activity_images.map((image) => image.img),
 			};
 		});
 
@@ -220,33 +263,42 @@ exports.searchActivities = async (req, res) => {
 				attributes: ["name"],
 			});
 
-			const activities_ = data.map((activity) => {
-				if (activity.school === school.name && role.title !== "unsigned") {
-					return {
-						canUserEdit: true,
-						...activity,
-					};
-				}
+			const loggedUser = {
+				sessionTime: `${timeRemainingHours}h ${timeRemainingMinutes}m ${timeRemainingSeconds}s`,
+				name: username.name,
+				role: role.title,
+				school: school.name,
+			};
+
+			// check if the activity response is from the logged user's school
+			const isFromLoggedUserSchool = await Activities.findOne({
+				where: {
+					id: { [Op.in]: activities.map((activity) => activity.id) },
+					school_id: decoded.schoolId,
+				},
+			});
+
+			// check if the role of the logged user is unsigned
+			const isUnsigned = await Roles.findOne({
+				where: {
+					id: decoded.roleId,
+					title: "unsigned",
+				},
+			});
+
+			const data = activities.map((activity) => {
 				return {
-					canUserEdit: false,
-					...activity,
+					canUserEdit: isFromLoggedUserSchool && !isUnsigned ? true : false,
+					id: activity.id,
+					title: activity.title,
 				};
 			});
 
-			const objectResponse = {
-				loggedUser: {
-					sessionTime: `${timeRemainingHours}h ${timeRemainingMinutes}m ${timeRemainingSeconds}s`,
-					name: username.name,
-					role: role.title,
-					school: school.name,
-				},
-				data: activities_,
-			};
-
-			console.log("activities with loggedUser: ", objectResponse);
+			console.log("Activities with loggedUser: ", data);
 			return res.status(200).json({
 				success: true,
-				...objectResponse,
+				loggedUser: loggedUser,
+				data: data,
 			});
 		}
 	} catch (err) {
@@ -1291,7 +1343,7 @@ exports.getUnfinishedSchoolActivities = async (req, res) => {
 				data: data,
 			});
 		}
-	
+
 		// with loggedUser
 		if (token) {
 			// verify token
