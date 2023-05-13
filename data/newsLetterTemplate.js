@@ -518,7 +518,7 @@ function newsLetterTemplate({ title, author, content, img, date, unsubscribeKey 
 																					mso-line-height-alt: 16.8px;
 																				"
 																			>
-																				Esta notícia foi criada por <a href="https://ecoly-2023.netlify.app/account/${author.id}" style="color: #18516f; text-decoration: none" target="_blank">${author.name}</a>
+																				Esta notícia foi criada por <a href="https://ecoly-tsiw.netlify.app/profile/${author.id}" style="color: #18516f; text-decoration: none" target="_blank">${author.name}</a>
 																				em ${date}
 																			</p>
 																		</div>
@@ -629,7 +629,7 @@ function newsLetterTemplate({ title, author, content, img, date, unsubscribeKey 
 																					mso-line-height-alt: 14.399999999999999px;
 																				"
 																			>
-																				&nbsp;<a href="https://ecoly-2023.netlify.app/unsubscribe/${unsubscribeKey}" style="color: #18516f; text-decoration: underline" target="_blank">https://ecoly-2023.netlify.app/unsubscribe/${unsubscribeKey}</a>
+																				&nbsp;<a href="https://ecoly-tsiw.netlify.app/unsubscribe/${unsubscribeKey}" style="color: #18516f; text-decoration: underline" target="_blank">https://ecoly-2023.netlify.app/unsubscribe/${unsubscribeKey}</a>
 																			</p>
 																		</div>
 																	</div>
