@@ -329,7 +329,7 @@ exports.getAllActivities = async (req, res) => {
 		token = token?.replace("Bearer ", "");
 
 		// with no loggedUser
-		if (!token) {
+		if (!token || token === "") {
 			console.log("Activities without loggedUser: ", data);
 			return res.status(200).json({
 				success: true,
@@ -1120,6 +1120,7 @@ exports.getFinishedSchoolActivities = async (req, res) => {
 		// with no loggedUser
 		if (!token) {
 			console.log("Activities without loggedUser: ", data);
+			console.log("token: ", token);
 			return res.status(200).json({
 				success: true,
 				data: data,
@@ -1290,7 +1291,7 @@ exports.getUnfinishedSchoolActivities = async (req, res) => {
 				data: data,
 			});
 		}
-
+	
 		// with loggedUser
 		if (token) {
 			// verify token
@@ -1423,7 +1424,7 @@ exports.getRecentSchoolActivities = async (req, res) => {
 			});
 		}
 
-		const response = activities.slice(-3).map((activity) => {
+		const data = activities.slice(-3).map((activity) => {
 			return {
 				id: activity.id,
 				creator: {
@@ -1448,12 +1449,92 @@ exports.getRecentSchoolActivities = async (req, res) => {
 			};
 		});
 
-		return res.status(200).json({
-			success: true,
-			data: response,
-		});
+		// check if there's a token in the request
+		let token = req.headers["x-access-token"] || req.headers.authorization;
+		token = token?.replace("Bearer ", "");
+
+		// with no loggedUser
+		if (!token) {
+			console.log("Activities without loggedUser: ", data);
+			return res.status(200).json({
+				success: true,
+				data: data,
+			});
+		}
+
+		// with loggedUser
+		if (token) {
+			// verify token
+			const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+			// get the current time of the token
+			const currentTime = Math.floor(Date.now() / 1000);
+
+			// get the time remaining of the token
+			const timeRemaining = decoded.exp - currentTime;
+
+			// give the time remaining in hours and minutes
+			const timeRemainingHours = Math.floor(timeRemaining / 3600);
+
+			const timeRemainingMinutes = Math.floor((timeRemaining % 3600) / 60);
+
+			const timeRemainingSeconds = Math.floor((timeRemaining % 3600) % 60);
+
+			const username = await Users.findByPk(decoded.userId, {
+				attributes: ["name"],
+			});
+
+			const role = await Roles.findByPk(decoded.roleId, {
+				attributes: ["title"],
+			});
+
+			const school = await Schools.findByPk(decoded.schoolId, {
+				attributes: ["name"],
+			});
+
+			const activities_ = data.map((activity) => {
+				if (
+					activity.is_finished === false &&
+					activity.school === school.name &&
+					role.title !== "unsigned"
+				) {
+					return {
+						canUserEdit: true,
+						...activity,
+					};
+				}
+				return {
+					canUserEdit: false,
+					...activity,
+				};
+			});
+
+			const objectResponse = {
+				loggedUser: {
+					sessionTime: `${timeRemainingHours}h ${timeRemainingMinutes}m ${timeRemainingSeconds}s`,
+					name: username.name,
+					role: role.title,
+					school: school.name,
+				},
+				data: activities_,
+			};
+
+			console.log("activities with loggedUser: ", objectResponse);
+			return res.status(200).json({
+				success: true,
+				...objectResponse,
+			});
+		}
 	} catch (err) {
 		console.log(colors.red(`${err.message}`));
+
+		if (err.message === "jwt expired") {
+			return res.status(401).json({
+				success: false,
+				error: "Your session has expired. Please log in again.",
+			});
+		}
+
 		return res.status(500).json({
 			success: false,
 			error: "We apologize, but our system is currently experiencing some issues. Please try again later.",
