@@ -284,8 +284,6 @@ exports.getUsers = async (req, res) => {
 		if (filter === "school") {
 			// get name of the school
 			const school = await Schools.findByPk(req.tokenData.schoolId);
-			if (!school) throw new Error("school_not_found");
-
 			userSchoolName = school.name;
 		}
 
@@ -308,13 +306,6 @@ exports.getUsers = async (req, res) => {
 
 		res.status(200).json({ success: true, data: result });
 	} catch (err) {
-		if (err.message === "no_token_provided") {
-			return res.status(401).json({ success: false, message: "No token provided." });
-		}
-		if (err.message === "school_not_found") {
-			return res.status(404).json({ success: false, message: "School not found." });
-		}
-
 		console.log(colors.red("\n\n-> ") + colors.yellow(err) + "\n");
 		res.status(500).json({ success: false, message: "Error occurred while retrieving users." });
 	}
