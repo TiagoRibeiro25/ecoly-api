@@ -10,7 +10,7 @@ exports.validateBodyLogin = (req, res, next) => {
 	}
 
 	// check if the password is empty
-	if (!password) {
+	if (!password || password.trim() === "") {
 		return res.status(400).json({ success: false, message: "Password can not be empty!" });
 	}
 
@@ -40,7 +40,7 @@ exports.validateBodyRegister = (req, res, next) => {
 		return res.status(400).json({ success: false, message: "Invalid school id!" });
 	}
 
-	if (internalId && typeof internalId !== "string") {
+	if (internalId === 0 || (internalId && typeof internalId !== "string")) {
 		return res.status(400).json({ success: false, message: "Invalid internal id!" });
 	}
 
@@ -48,7 +48,7 @@ exports.validateBodyRegister = (req, res, next) => {
 		return res.status(400).json({ success: false, message: "Invalid course!" });
 	}
 
-	if (internalId && course && year && typeof year !== "number") {
+	if (year === 0 || (internalId && course && year && typeof year !== "number")) {
 		return res.status(400).json({ success: false, message: "Invalid year!" });
 	}
 
@@ -100,14 +100,12 @@ exports.validateBodyEditUserInfo = (req, res, next) => {
 	}
 
 	const validators = {
-		email: (email) =>
-			typeof email === "string" && validateEmail(email) && email.trim().length !== 0,
+		email: (email) => typeof email === "string" && validateEmail(email) && email.trim().length !== 0,
 		password: (password) => typeof password === "string" && password.trim().length !== 0,
 		internalId: (internalId) => typeof internalId === "string" && internalId.trim().length !== 0,
 		course: (course) => typeof course === "string" && course.trim().length !== 0,
 		year: (year) => typeof year === "number" && year >= 0 && year <= 5,
-		highlightBadgeId: (highlightBadgeId) =>
-			typeof highlightBadgeId === "number" && highlightBadgeId > 0,
+		highlightBadgeId: (highlightBadgeId) => typeof highlightBadgeId === "number" && highlightBadgeId > 0,
 	};
 
 	// check if the fields are valid
