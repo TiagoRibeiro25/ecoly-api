@@ -213,103 +213,15 @@ exports.searchActivities = async (req, res) => {
 			});
 		}
 
-		const data = activities.map((activity) => {
-			return {
-				id: activity.id,
-				title: activity.title,
-			};
-		});
+		
+		return res.status(200).json({
+			success: true,
+			data: activities,
+		})
 
-		// check if there's a token in the request
-		let token = req.headers["x-access-token"] || req.headers.authorization;
-		token = token?.replace("Bearer ", "");
 
-		// with no loggedUser
-		if (!token) {
-			console.log("Activities without loggedUser: ", data);
-			return res.status(200).json({
-				success: true,
-				data: data,
-			});
-		}
-
-		// with loggedUser
-		if (token) {
-			// verify token
-			const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-			// get the current time of the token
-			const currentTime = Math.floor(Date.now() / 1000);
-
-			// get the time remaining of the token
-			const timeRemaining = decoded.exp - currentTime;
-
-			// give the time remaining in hours and minutes
-			const timeRemainingHours = Math.floor(timeRemaining / 3600);
-
-			const timeRemainingMinutes = Math.floor((timeRemaining % 3600) / 60);
-
-			const timeRemainingSeconds = Math.floor((timeRemaining % 3600) % 60);
-
-			const username = await Users.findByPk(decoded.userId, {
-				attributes: ["name"],
-			});
-
-			const role = await Roles.findByPk(decoded.roleId, {
-				attributes: ["title"],
-			});
-
-			const school = await Schools.findByPk(decoded.schoolId, {
-				attributes: ["name"],
-			});
-
-			const loggedUser = {
-				sessionTime: `${timeRemainingHours}h ${timeRemainingMinutes}m ${timeRemainingSeconds}s`,
-				name: username.name,
-				role: role.title,
-				school: school.name,
-			};
-
-			// check if the activity response is from the logged user's school
-			const isFromLoggedUserSchool = await Activities.findOne({
-				where: {
-					id: { [Op.in]: activities.map((activity) => activity.id) },
-					school_id: decoded.schoolId,
-				},
-			});
-
-			// check if the role of the logged user is unsigned
-			const isUnsigned = await Roles.findOne({
-				where: {
-					id: decoded.roleId,
-					title: "unsigned",
-				},
-			});
-
-			const data = activities.map((activity) => {
-				return {
-					canUserEdit: isFromLoggedUserSchool && !isUnsigned ? true : false,
-					id: activity.id,
-					title: activity.title,
-				};
-			});
-
-			console.log("Activities with loggedUser: ", data);
-			return res.status(200).json({
-				success: true,
-				loggedUser: loggedUser,
-				data: data,
-			});
-		}
 	} catch (err) {
 		console.log(colors.red(`${err.message}`));
-
-		if (err.message === "jwt expired") {
-			return res.status(401).json({
-				success: false,
-				error: "Your session has expired. Please log in again.",
-			});
-		}
 
 		return res.status(500).json({
 			success: false,
