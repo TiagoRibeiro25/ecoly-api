@@ -7,7 +7,7 @@ exports.getNews = async (req, res) => {
 		const news = await News.findAll();
 		res.status(200).json({
 			success: true,
-			news,
+			data: news,
 		});
 	} catch (error) {
 		res.status(500).send({
@@ -33,7 +33,7 @@ exports.getSingleNew = async (req, res) => {
 
 		return res.status(200).json({
 			success: true,
-			new: result,
+			data: result,
 		});
 	} catch (error) {
 		return res.status(500).json({
