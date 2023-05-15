@@ -20,7 +20,8 @@ function fixDate(date) {
 	return reverseDate;
 }
 
-exports.getOneActivity = async (req, res) => {
+// DETAIL ACTIVITY
+exports.getOneDetActivity = async (req, res) => {
 	console.log(colors.green("get one activity"));
 	const { id } = req.params;
 
@@ -213,166 +214,12 @@ exports.searchActivities = async (req, res) => {
 			});
 		}
 
-		
 		return res.status(200).json({
 			success: true,
 			data: activities,
-		})
-
-
+		});
 	} catch (err) {
 		console.log(colors.red(`${err.message}`));
-
-		return res.status(500).json({
-			success: false,
-			error: "We apologize, but our system is currently experiencing some issues. Please try again later.",
-		});
-	}
-};
-
-exports.getAllActivities = async (req, res) => {
-	console.log(colors.green("GET ALL ACTIVITIES"));
-	try {
-		const activities = await Activities.findAll({
-			include: [
-				{
-					model: Themes,
-					as: "theme",
-					attributes: ["name"],
-				},
-				{
-					model: Schools,
-					as: "school",
-					attributes: ["name"],
-				},
-				{
-					model: Users,
-					as: "creator",
-					attributes: ["id", "name"],
-				},
-				{
-					model: activity_images,
-					as: "activity_images",
-					attributes: ["img"],
-				},
-			],
-
-			// remove the school_id, theme_id and creator_id from the response
-			attributes: {
-				exclude: ["school_id", "theme_id", "creator_id", "report"],
-			},
-		});
-
-		let data = activities.map((activity) => {
-			return {
-				id: activity.id,
-				creator: {
-					id: activity.creator.id,
-					name: activity.creator.name,
-				},
-				is_finished: activity.is_finished,
-				school: activity.school.name,
-				theme: activity.theme.name,
-				title: activity.title,
-				complexity: activity.complexity,
-				initial_date: fixDate(activity.initial_date),
-				final_date: fixDate(activity.final_date),
-				objective: activity.objective,
-				diagnostic: activity.diagnostic,
-				meta: activity.meta,
-				resources: activity.resources,
-				participants: activity.participants,
-				evaluation_indicator: activity.evaluation_indicator,
-				evaluation_method: activity.evaluation_method,
-				images: activity.activity_images.map((image) => image.img),
-			};
-		});
-
-		// check if there's a token in the request
-		let token = req.headers["x-access-token"] || req.headers.authorization;
-		token = token?.replace("Bearer ", "");
-
-		// with no loggedUser
-		if (!token || token === "") {
-			console.log("Activities without loggedUser: ", data);
-			return res.status(200).json({
-				success: true,
-				data: data,
-			});
-		}
-
-		// with loggedUser
-		if (token) {
-			// verify token
-			const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-			// get the current time of the token
-			const currentTime = Math.floor(Date.now() / 1000);
-
-			// get the time remaining of the token
-			const timeRemaining = decoded.exp - currentTime;
-
-			// give the time remaining in hours and minutes
-			const timeRemainingHours = Math.floor(timeRemaining / 3600);
-
-			const timeRemainingMinutes = Math.floor((timeRemaining % 3600) / 60);
-
-			const timeRemainingSeconds = Math.floor((timeRemaining % 3600) % 60);
-
-			const username = await Users.findByPk(decoded.userId, {
-				attributes: ["name"],
-			});
-
-			const role = await Roles.findByPk(decoded.roleId, {
-				attributes: ["title"],
-			});
-
-			const school = await Schools.findByPk(decoded.schoolId, {
-				attributes: ["name"],
-			});
-
-			const activities_ = data.map((activity) => {
-				if (
-					activity.is_finished === false &&
-					activity.school === school.name &&
-					role.title !== "unsigned"
-				) {
-					return {
-						canUserEdit: true,
-						...activity,
-					};
-				}
-				return {
-					canUserEdit: false,
-					...activity,
-				};
-			});
-
-			const objectResponse = {
-				loggedUser: {
-					sessionTime: `${timeRemainingHours}h ${timeRemainingMinutes}m ${timeRemainingSeconds}s`,
-					name: username.name,
-					role: role.title,
-					school: school.name,
-				},
-				data: activities_,
-			};
-
-			console.log("activities with loggedUser: ", objectResponse);
-			return res.status(200).json({
-				success: true,
-				...objectResponse,
-			});
-		}
-	} catch (err) {
-		console.log(colors.red(`${err.message}`));
-
-		if (err.message === "jwt expired") {
-			return res.status(401).json({
-				success: false,
-				error: "Your session has expired. Please log in again.",
-			});
-		}
 
 		return res.status(500).json({
 			success: false,
@@ -526,6 +373,7 @@ exports.getFinishedActivities = async (req, res) => {
 exports.getUnfinishedActivities = async (req, res) => {
 	console.log(colors.green("Unfinished Activities"));
 	try {
+		// meta objective participants = description
 		const activities = await Activities.findAll({
 			where: {
 				is_finished: false,
@@ -535,16 +383,6 @@ exports.getUnfinishedActivities = async (req, res) => {
 					model: Themes,
 					as: "theme",
 					attributes: ["name"],
-				},
-				{
-					model: Schools,
-					as: "school",
-					attributes: ["name"],
-				},
-				{
-					model: Users,
-					as: "creator",
-					attributes: ["id", "name"],
 				},
 				{
 					model: activity_images,
@@ -560,25 +398,13 @@ exports.getUnfinishedActivities = async (req, res) => {
 		const data = activities.map((activity) => {
 			return {
 				id: activity.id,
-				creator: {
-					id: activity.creator.id,
-					name: activity.creator.name,
-				},
 				is_finished: activity.is_finished,
-				school: activity.school.name,
 				theme: activity.theme.name,
 				title: activity.title,
-				complexity: activity.complexity,
+				description: `${activity.meta} ${activity.objective} ${activity.participants}`,
 				initial_date: fixDate(activity.initial_date),
 				final_date: fixDate(activity.final_date),
-				objective: activity.objective,
-				diagnostic: activity.diagnostic,
-				meta: activity.meta,
-				resources: activity.resources,
-				participants: activity.participants,
-				evaluation_indicator: activity.evaluation_indicator,
-				evaluation_method: activity.evaluation_method,
-				images: activity.activity_images.map((image) => image.img),
+				image: activity.activity_images[0].img, //main image
 			};
 		});
 
@@ -588,30 +414,16 @@ exports.getUnfinishedActivities = async (req, res) => {
 
 		// with no loggedUser
 		if (!token) {
-			console.log("Activities without loggedUser: ", data);
 			return res.status(200).json({
 				success: true,
 				data: data,
 			});
 		}
 
-		// with loggedUser
+		// with loggedUser - for verify user and no verify user
 		if (token) {
 			// verify token
 			const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-			// get the current time of the token
-			const currentTime = Math.floor(Date.now() / 1000);
-
-			// get the time remaining of the token
-			const timeRemaining = decoded.exp - currentTime;
-
-			// give the time remaining in hours and minutes
-			const timeRemainingHours = Math.floor(timeRemaining / 3600);
-
-			const timeRemainingMinutes = Math.floor((timeRemaining % 3600) / 60);
-
-			const timeRemainingSeconds = Math.floor((timeRemaining % 3600) % 60);
 
 			const username = await Users.findByPk(decoded.userId, {
 				attributes: ["name"],
@@ -625,34 +437,43 @@ exports.getUnfinishedActivities = async (req, res) => {
 				attributes: ["name"],
 			});
 
-			const activities_ = data.map((activity) => {
-				if (activity.school === school.name && role.title !== "unsigned") {
-					return {
-						canUserEdit: true,
-						...activity,
-					};
-				}
+			// check each activity if it's from the logged user's school
+			const isFromLoggedUserSchool_ = await Activities.findOne({
+				where: {
+					id: { [Op.in]: activities.map((activity) => activity.id) },
+					school_id: decoded.schoolId,
+				},
+			});
+
+			// check if the role of the logged user is unsigned
+			const isUnsigned = await Roles.findOne({
+				where: {
+					id: decoded.roleId,
+					title: "unsigned",
+				},
+			});
+
+			const data = activities.map((activity) => {
 				return {
-					canUserEdit: false,
-					...activity,
+					isFromLoggedUserSchool: isFromLoggedUserSchool_ && !isUnsigned ? true : false,
+					id: activity.id,
+					is_finished: activity.is_finished,
+					theme: activity.theme.name,
+					title: activity.title,
+					description: `${activity.meta} ${activity.objective} ${activity.participants}`,
+					initial_date: fixDate(activity.initial_date),
+					final_date: fixDate(activity.final_date),
+					image: activity.activity_images[0].img, //main image
 				};
 			});
 
-			const objectResponse = {
-				loggedUser: {
-					sessionTime: `${timeRemainingHours}h ${timeRemainingMinutes}m ${timeRemainingSeconds}s`,
-					name: username.name,
-					role: role.title,
-					school: school.name,
-				},
-				data: activities_,
-			};
-
-			console.log("activities with loggedUser: ", objectResponse);
-			return res.status(200).json({
+			// testing the logged user
+			console.log(`loggedUser: ${username.name} - ${role.title} - ${school.name}`);
+			console.log("activities with loggedUser: ", data);
+			res.status(200).json({
 				success: true,
-				...objectResponse,
-			});
+				data: data,
+			})
 		}
 	} catch (err) {
 		console.log(colors.red(`${err.message}`));
