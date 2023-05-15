@@ -21,7 +21,7 @@ function fixDate(date) {
 }
 
 // DETAIL ACTIVITY
-exports.getOneDetActivity = async (req, res) => {
+exports.getOneActivity = async (req, res) => {
 	console.log(colors.green("get one activity"));
 	const { id } = req.params;
 
