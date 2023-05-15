@@ -54,8 +54,12 @@ router.get("/", activitiesValidator.validateQueries, (req, res) => {
 				activitiesController.getThemes(req, res); // return themes controller
 			});
 		});
-	} else {
-		return activitiesController.getAllActivities(req, res);
+	} 
+	else{
+		return res.status(400).json({
+			success: false,
+			error: "provide parameters",
+		})
 	}
 });
 
