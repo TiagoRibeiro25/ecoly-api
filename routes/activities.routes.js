@@ -64,7 +64,7 @@ router.get("/", activitiesValidator.validateQueries, (req, res) => {
 });
 
 // GET /api/activities/:id => find a specific activity (activity detail)
-router.get("/:id", activitiesController.getOneActivity);
+router.get("/:id", activitiesController.getDetailActivity);
 
 // POST /api/activities => add an activity/ theme
 router.post("/", activitiesValidator.validateQueries, (req, res) => {
