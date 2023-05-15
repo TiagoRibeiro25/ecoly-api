@@ -38,6 +38,7 @@ exports.getNews = async (req, res) => {
 
 		res.status(200).json({ success: true, data: { isUserAdmin, news: newsJSON } });
 	} catch (error) {
+		console.log(error);
 		res.status(500).send({
 			success: false,
 			message: "Failed to fetch news",
