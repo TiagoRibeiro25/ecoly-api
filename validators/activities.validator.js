@@ -2,7 +2,7 @@
 const colors = require("colors");
 
 exports.validateQueries = (req, res, next) => {
-	const validQueries = ["filter", "schoolId", "fields", "search"];
+	const validQueries = ["filter", "school", "fields", "search"];
 
 	const fieldsValid = ["activity", "theme", "activities", "themes", "reports"];
 	const filterValid = ["finished", "unfinished", "recent"];
@@ -70,13 +70,9 @@ exports.validateQueries = (req, res, next) => {
 		.filter((key) => key === "filter" && !filterValid.includes(req.query[key]))
 		.map((key) => `${req.query.filter} is an invalid value for the filter parameter`);
 
-	// Check if schoolId parameter is valid
-	const invalidSchoolId = Object.keys(req.query)
-		.filter((key) => key === "schoolId" && isNaN(req.query[key]))
-		.map((key) => `${req.query.schoolId} is an invalid value for the schoolId parameter`);
 
 	// Combine all invalid parameters
-	const allInvalidParams = [...invalidFields, ...invalidFilter, ...invalidSchoolId];
+	const allInvalidParams = [...invalidFields, ...invalidFilter];
 
 	// Return all possible errors as an array
 	if (allInvalidParams.length > 1) {
@@ -99,13 +95,13 @@ exports.validateQueries = (req, res, next) => {
 	if (
 		req.method === "GET" &&
 		req.query.fields === "activities" &&
-		!req.query.schoolId &&
+		!req.query.school &&
 		!req.query.filter
 	) {
-		console.log(colors.red("Missing schoolId or filter parameter"));
+		console.log(colors.red("Missing school or filter parameter"));
 		return res.status(400).json({
 			success: false,
-			error: "Missing parameters filter or schoolId",
+			error: "Missing parameters filter or school",
 		});
 	}
 
@@ -151,14 +147,14 @@ exports.validateQueries = (req, res, next) => {
 	if (
 		req.method === "GET" &&
 		req.query.fields &&
-		req.query.schoolId &&
+		req.query.school &&
 		req.query.filter &&
-		Object.keys(req.query).indexOf("filter") > Object.keys(req.query).indexOf("schoolId")
+		Object.keys(req.query).indexOf("filter") > Object.keys(req.query).indexOf("school")
 	) {
 		console.log(colors.red("Invalid query"));
 		return res.status(400).json({
 			success: false,
-			error: "filter parameter is only allowed before schoolId parameter",
+			error: "filter parameter is only allowed before school parameter",
 		});
 	}
 	next();
