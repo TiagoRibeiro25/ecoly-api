@@ -30,10 +30,10 @@ exports.getNews = async (req, res) => {
 				const role = await Roles.findByPk(+decoded.roleId);
 
 				// if the role name is admin, add the isLoggedUser field to the response
-				if (role.title === "admin") {
-					isUserAdmin = true;
-				}
-			} catch (err) {}
+				if (role.title === "admin") isUserAdmin = true;
+			} catch (err) {
+				isUserAdmin = false;
+			}
 		}
 
 		res.status(200).json({ success: true, data: { isUserAdmin, news: newsJSON } });
