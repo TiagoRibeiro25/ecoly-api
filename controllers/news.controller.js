@@ -1,15 +1,44 @@
+const jwt = require("jsonwebtoken");
 const db = require("../models/db");
 const News = db.news;
+const NewsImage = db.new_image;
+const Roles = db.role;
 const sendNewsLetter = require("../utils/sendNewsLetter");
 
 exports.getNews = async (req, res) => {
 	try {
 		const news = await News.findAll();
-		res.status(200).json({
-			success: true,
-			data: news,
-		});
+		const newsJSON = news.map((item) => item.toJSON());
+		let isUserAdmin = false;
+
+		// Add image to each new
+		for (const item of newsJSON) {
+			const image = await NewsImage.findOne({ where: { new_id: item.id } });
+			item.image = image.img;
+		}
+
+		// Check if the person that made the request is an admin
+		let token = req.headers["x-access-token"] || req.headers.authorization;
+		token = token?.replace("Bearer ", "");
+
+		if (token) {
+			try {
+				// verify the token
+				const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+				// if the token is valid, find the role name from the database
+				const role = await Roles.findByPk(+decoded.roleId);
+
+				// if the role name is admin, add the isLoggedUser field to the response
+				if (role.title === "admin") isUserAdmin = true;
+			} catch (err) {
+				isUserAdmin = false;
+			}
+		}
+
+		res.status(200).json({ success: true, data: { isUserAdmin, news: newsJSON } });
 	} catch (error) {
+		console.log(error);
 		res.status(500).send({
 			success: false,
 			message: "Failed to fetch news",
