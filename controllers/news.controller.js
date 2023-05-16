@@ -61,7 +61,12 @@ exports.getSingleNew = async (req, res) => {
 
 		const creator = await Users.findByPk(newsJSON.creator_id);
 
-		console.log(creator.name);
+		const creatorInfo = {
+			creator: {
+				id: creator.id,
+				name: creator.name,
+			},
+		};
 		// Add images to the news
 		const images = await NewsImage.findAll({ where: { new_id: newsJSON.id } });
 		newsJSON.images = images.map((image) => image.img);
@@ -92,7 +97,7 @@ exports.getSingleNew = async (req, res) => {
 
 		res.status(200).json({
 			success: true,
-			data: { isUserAdmin, news: newsJSON, creator: creator.name },
+			data: { isUserAdmin, news: newsJSON, creator: creatorInfo.creator },
 		});
 	} catch (error) {
 		return res.status(500).json({
