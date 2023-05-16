@@ -101,7 +101,7 @@ exports.getSingleNew = async (req, res) => {
 
 		res.status(200).json({
 			success: true,
-			data: { isUserAdmin, newsJSON },
+			data: { isUserAdmin, ...newsJSON },
 		});
 	} catch (error) {
 		return res.status(500).json({
