@@ -55,6 +55,13 @@ exports.getSingleNew = async (req, res) => {
 	try {
 		const singleNew = await News.findByPk(id);
 
+		if (!singleNew) {
+			return res.status(404).json({
+				success: false,
+				message: "New does not exist",
+			});
+		}
+
 		const newsJSON = singleNew.toJSON();
 
 		let isUserAdmin = false;
@@ -62,21 +69,16 @@ exports.getSingleNew = async (req, res) => {
 		const creator = await Users.findByPk(newsJSON.creator_id);
 
 		const creatorInfo = {
-			creator: {
-				id: creator.id,
-				name: creator.name,
-			},
+			id: creator.id,
+			name: creator.name,
 		};
+
+		delete newsJSON.creator_id;
+
 		// Add images to the news
 		const images = await NewsImage.findAll({ where: { new_id: newsJSON.id } });
 		newsJSON.images = images.map((image) => image.img);
 
-		if (!singleNew) {
-			return res.status(404).json({
-				success: false,
-				message: "New does not exist",
-			});
-		}
 		let token = req.headers["x-access-token"] || req.headers.authorization;
 		token = token?.replace("Bearer ", "");
 
@@ -97,7 +99,7 @@ exports.getSingleNew = async (req, res) => {
 
 		res.status(200).json({
 			success: true,
-			data: { isUserAdmin, news: newsJSON, creator: creatorInfo.creator },
+			data: { isUserAdmin, creator: creatorInfo, news: newsJSON },
 		});
 	} catch (error) {
 		return res.status(500).json({
