@@ -3,6 +3,7 @@ const db = require("../models/db");
 const News = db.news;
 const NewsImage = db.new_image;
 const Roles = db.role;
+const Users = db.users;
 const sendNewsLetter = require("../utils/sendNewsLetter");
 
 exports.getNews = async (req, res) => {
@@ -11,6 +12,7 @@ exports.getNews = async (req, res) => {
 		const newsJSON = news.map((item) => item.toJSON());
 		let isUserAdmin = false;
 
+		console.log(newsJSON);
 		// Add image to each new
 		for (const item of newsJSON) {
 			const image = await NewsImage.findOne({ where: { new_id: item.id } });
@@ -51,23 +53,50 @@ exports.getSingleNew = async (req, res) => {
 
 	try {
 		const singleNew = await News.findByPk(id);
+
+		const newsJSON = singleNew.toJSON();
+
+		let isUserAdmin = false;
+
+		const creator = await Users.findByPk(newsJSON.creator_id);
+
+		console.log(creator.name);
+		// Add image to each new
+		const image = await NewsImage.findOne({ where: { new_id: newsJSON.id } });
+		newsJSON.image = image.img;
+
 		if (!singleNew) {
 			return res.status(404).json({
 				success: false,
 				message: "New does not exist",
 			});
 		}
+		let token = req.headers["x-access-token"] || req.headers.authorization;
+		token = token?.replace("Bearer ", "");
 
-		const result = singleNew.toJSON();
+		if (token) {
+			try {
+				// verify the token
+				const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-		return res.status(200).json({
+				// if the token is valid, find the role name from the database
+				const role = await Roles.findByPk(+decoded.roleId);
+
+				// if the role name is admin, add the isLoggedUser field to the response
+				if (role.title === "admin") isUserAdmin = true;
+			} catch (err) {
+				isUserAdmin = false;
+			}
+		}
+
+		res.status(200).json({
 			success: true,
-			data: result,
+			data: { isUserAdmin, news: newsJSON, creator: creator.name },
 		});
 	} catch (error) {
 		return res.status(500).json({
 			success: false,
-			message: "Failed to fetch New",
+			message: "Failed to fetch New" + " " + error,
 		});
 	}
 };
