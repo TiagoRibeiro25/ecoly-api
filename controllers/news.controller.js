@@ -13,6 +13,7 @@ exports.getNews = async (req, res) => {
 		let isUserAdmin = false;
 
 		console.log(newsJSON);
+
 		// Add image to each new
 		for (const item of newsJSON) {
 			const image = await NewsImage.findOne({ where: { new_id: item.id } });
@@ -61,9 +62,9 @@ exports.getSingleNew = async (req, res) => {
 		const creator = await Users.findByPk(newsJSON.creator_id);
 
 		console.log(creator.name);
-		// Add image to each new
-		const image = await NewsImage.findOne({ where: { new_id: newsJSON.id } });
-		newsJSON.image = image.img;
+		// Add images to the news
+		const images = await NewsImage.findAll({ where: { new_id: newsJSON.id } });
+		newsJSON.images = images.map((image) => image.img);
 
 		if (!singleNew) {
 			return res.status(404).json({
