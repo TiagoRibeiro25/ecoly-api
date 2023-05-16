@@ -133,6 +133,7 @@ exports.addNew = async (req, res) => {
 
 	try {
 		const existingNew = await News.findOne({ where: { title: newToCreate.title } });
+		const creator = await Users.findByPk(newToCreate.creator_id);
 
 		if (existingNew) {
 			res.status(409).json({
@@ -149,7 +150,7 @@ exports.addNew = async (req, res) => {
 
 			await sendNewsLetter({
 				title: `${newToCreate.title}`,
-				author: { id: `${newToCreate.creator_id}`, name: `José Nogueira` },
+				author: { id: `${creator.id}`, name: `${creator.name}` },
 				content: `${newToCreate.content}`,
 				img: "https://picsum.photos/400/300",
 			});
