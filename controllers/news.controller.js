@@ -73,6 +73,8 @@ exports.getSingleNew = async (req, res) => {
 			name: creator.name,
 		};
 
+		newsJSON.creator = creatorInfo;
+
 		delete newsJSON.creator_id;
 
 		// Add images to the news
@@ -99,7 +101,7 @@ exports.getSingleNew = async (req, res) => {
 
 		res.status(200).json({
 			success: true,
-			data: { isUserAdmin, creator: creatorInfo, news: newsJSON },
+			data: { isUserAdmin, new: newsJSON },
 		});
 	} catch (error) {
 		return res.status(500).json({
