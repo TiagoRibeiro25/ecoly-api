@@ -12,7 +12,7 @@ router.get("/", activitiesValidator.validateQueries, (req, res) => {
 		return activitiesController.searchActivities(req, res);
 	}
 
-	if (req.query.fields === "activities" && req.query.schoolId) {
+	if (req.query.fields === "activities" && req.query.school) {
 		if (req.query.filter === "finished") {
 			return activitiesController.getFinishedSchoolActivities(req, res);
 		}
@@ -22,7 +22,6 @@ router.get("/", activitiesValidator.validateQueries, (req, res) => {
 		if (req.query.filter === "recent") {
 			return activitiesController.getRecentSchoolActivities(req, res);
 		}
-		return activitiesController.getSchoolActivities(req, res);
 	}
 
 	if (req.query.fields === "activities" && req.query.filter === "finished") {
