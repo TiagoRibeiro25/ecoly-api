@@ -3,6 +3,7 @@ const db = require("../models/db");
 const News = db.news;
 const NewsImage = db.new_image;
 const Roles = db.role;
+const Users = db.users;
 const sendNewsLetter = require("../utils/sendNewsLetter");
 
 exports.getNews = async (req, res) => {
@@ -10,6 +11,8 @@ exports.getNews = async (req, res) => {
 		const news = await News.findAll();
 		const newsJSON = news.map((item) => item.toJSON());
 		let isUserAdmin = false;
+
+		console.log(newsJSON);
 
 		// Add image to each new
 		for (const item of newsJSON) {
@@ -51,6 +54,7 @@ exports.getSingleNew = async (req, res) => {
 
 	try {
 		const singleNew = await News.findByPk(id);
+
 		if (!singleNew) {
 			return res.status(404).json({
 				success: false,
@@ -58,16 +62,51 @@ exports.getSingleNew = async (req, res) => {
 			});
 		}
 
-		const result = singleNew.toJSON();
+		const newsJSON = singleNew.toJSON();
 
-		return res.status(200).json({
+		let isUserAdmin = false;
+
+		const creator = await Users.findByPk(newsJSON.creator_id);
+
+		const creatorInfo = {
+			id: creator.id,
+			name: creator.name,
+		};
+
+		newsJSON.creator = creatorInfo;
+
+		delete newsJSON.creator_id;
+
+		// Add images to the news
+		const images = await NewsImage.findAll({ where: { new_id: newsJSON.id } });
+		newsJSON.images = images.map((image) => image.img);
+
+		let token = req.headers["x-access-token"] || req.headers.authorization;
+		token = token?.replace("Bearer ", "");
+
+		if (token) {
+			try {
+				// verify the token
+				const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+				// if the token is valid, find the role name from the database
+				const role = await Roles.findByPk(+decoded.roleId);
+
+				// if the role name is admin, add the isLoggedUser field to the response
+				if (role.title === "admin") isUserAdmin = true;
+			} catch (err) {
+				isUserAdmin = false;
+			}
+		}
+
+		res.status(200).json({
 			success: true,
-			data: result,
+			data: { isUserAdmin, ...newsJSON },
 		});
 	} catch (error) {
 		return res.status(500).json({
 			success: false,
-			message: "Failed to fetch New",
+			message: "Failed to fetch New" + " " + error,
 		});
 	}
 };
@@ -104,6 +143,7 @@ exports.addNew = async (req, res) => {
 
 	try {
 		const existingNew = await News.findOne({ where: { title: newToCreate.title } });
+		const creator = await Users.findByPk(newToCreate.creator_id);
 
 		if (existingNew) {
 			res.status(409).json({
@@ -120,7 +160,7 @@ exports.addNew = async (req, res) => {
 
 			await sendNewsLetter({
 				title: `${newToCreate.title}`,
-				author: { id: `${newToCreate.creator_id}`, name: `José Nogueira` },
+				author: { id: `${creator.id}`, name: `${creator.name}` },
 				content: `${newToCreate.content}`,
 				img: "https://picsum.photos/400/300",
 			});
