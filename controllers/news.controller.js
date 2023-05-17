@@ -5,10 +5,14 @@ const NewsImage = db.new_image;
 const Roles = db.role;
 const Users = db.users;
 const sendNewsLetter = require("../utils/sendNewsLetter");
+const { Op } = require("sequelize");
 
 exports.getNews = async (req, res) => {
 	try {
-		const news = await News.findAll();
+		const { search } = req.query;
+		const formatVal = search ? search.replace(/%20/g, " ") : "";
+
+		const news = await News.findAll({ where: { title: { [Op.like]: `%${formatVal}%` } } });
 		const newsJSON = news.map((item) => item.toJSON());
 		let isUserAdmin = false;
 
