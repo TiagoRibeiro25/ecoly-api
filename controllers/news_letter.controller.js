@@ -4,17 +4,11 @@ const Users = db.users;
 
 exports.subscribe = async (req, res) => {
 	const { email } = req.body;
-
-	console.log(email);
 	try {
 		// Check if email already exists
 		const existingEmail = await NewsLetter.findOne({ where: { email } });
-		if (existingEmail) {
-			res.status(409).json({
-				success: false,
-				message: "Email already subscribed",
-			});
-		} else {
+		if (existingEmail) throw new Error("Email already subscribed");
+		else {
 			// Sign up for the newsletter
 			const subscriber = await NewsLetter.create({ email });
 			res.status(201).json({
@@ -23,6 +17,10 @@ exports.subscribe = async (req, res) => {
 			});
 		}
 	} catch (error) {
+		if (error.message === "Email already subscribed") {
+			return res.status(409).json({ success: false, message: error.message });
+		}
+
 		res.status(500).json({
 			success: false,
 			message: "Failed to subscribe to the newsletter",
