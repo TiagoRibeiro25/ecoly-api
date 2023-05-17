@@ -443,8 +443,8 @@ module.exports = {
 	news_letter: [
 		{ email: "Admin@esmad.ipp.pt" },
 		{ email: "User@esmad.ipp.pt" },
-		{ email: "tiago.d.ribeiro@hotmail.com" },
 		{ email: "joaquim.honesto@email.pt" },
+		{ email: "josepprn@gmail.com" },
 	],
 
 	/**
