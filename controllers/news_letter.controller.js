@@ -1,5 +1,6 @@
 const db = require("../models/db");
 const NewsLetter = db.news_letter;
+const Users = db.users;
 
 exports.subscribe = async (req, res) => {
 	const { email } = req.body;
@@ -29,18 +30,23 @@ exports.subscribe = async (req, res) => {
 	}
 };
 
-exports.getAllSubscribedEmails = async (req, res) => {
+exports.isEmailSubscribed = async (req, res) => {
 	try {
-		// Fetch all subscribed emails
-		const emails = await NewsLetter.findAll();
-		res.status(200).json({
-			success: true,
-			emails,
-		});
+		const user = await Users.findByPk(req.tokenData.userId);
+		if (user) {
+			const email = user.email;
+			const subscriber = await NewsLetter.findOne({ where: { email } });
+
+			if (!subscriber) {
+				return res.status(404).json({ success: false, message: "Email not found" });
+			}
+			return res.status(200).json({ success: true, message: "Email found" });
+		}
+		res.status(404).json({ success: false, message: "Email not found" });
 	} catch (error) {
-		res.status(500).send({
+		res.status(500).json({
 			success: false,
-			message: "Failed to fetch subscribed emails",
+			message: "Failed to check if email is subscribed",
 		});
 	}
 };
