@@ -141,33 +141,31 @@ exports.deleteNew = async (req, res) => {
 };
 
 exports.addNew = async (req, res) => {
-	console.log(req.body);
 	const { title, content, imgs } = req.body;
-	console.log(title);
+
 	try {
 		const existingNew = await News.findOne({ where: { title: title } });
 		const creator = await Users.findByPk(req.tokenData.userId);
 
-		if (existingNew) {
-			res.status(409).json({
-				success: false,
-				message: "The new already exists",
-			});
-		} else {
+		if (existingNew) throw new Error("The new already exists");
+		else {
 			const newNew = await News.create({
 				title: title,
 				content: content,
 				date_created: new Date().toISOString().split("T")[0],
-				creator_id : creator.id
+				creator_id: creator.id,
 			});
 
-			for(const img of imgs) {
-				await NewsImage.create(
-					newNew.id, img
-				)
+			for (const img of imgs) {
+				await NewsImage.create({ img: img, new_id: newNew.id });
 			}
 
-			const selectedImage = await NewsImage.findOne({ where: {new_id : newNew.id}})
+			res.status(201).json({
+				success: true,
+				message: "New was successfully added",
+			});
+
+			const selectedImage = await NewsImage.findOne({ where: { new_id: newNew.id } });
 
 			await sendNewsLetter({
 				title: `${title}`,
@@ -175,13 +173,12 @@ exports.addNew = async (req, res) => {
 				content: `${content}`,
 				img: selectedImage.img,
 			});
-
-			res.status(201).json({
-				success: true,
-				message: "New was successfully added",
-			});
 		}
 	} catch (error) {
+		if (error.message === "The new already exists") {
+			return res.status(409).json({ success: false, message: "The new already exists" });
+		}
+
 		res.status(500).send({
 			success: false,
 			message: "Failed to add the new" + " " + error,
