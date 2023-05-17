@@ -181,7 +181,7 @@ exports.addNew = async (req, res) => {
 
 		res.status(500).send({
 			success: false,
-			message: "Failed to add the new" + " " + error,
+			message: "Failed to add the new",
 		});
 	}
 };
