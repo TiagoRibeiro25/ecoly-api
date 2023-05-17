@@ -437,15 +437,8 @@ module.exports = {
 		},
 	],
 
-	/**
-	 * @type {Array<{email: string}>}
-	 */
-	news_letter: [
-		{ email: "Admin@esmad.ipp.pt" },
-		{ email: "User@esmad.ipp.pt" },
-		{ email: "joaquim.honesto@email.pt" },
-		{ email: "josepprn@gmail.com" },
-	],
+	/** @type {Array<{email: string}>} */
+	news_letter: [{ email: "josepprn@gmail.com" }],
 
 	/**
 	 * @type {Array<{
