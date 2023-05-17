@@ -12,8 +12,6 @@ exports.getNews = async (req, res) => {
 		const newsJSON = news.map((item) => item.toJSON());
 		let isUserAdmin = false;
 
-		console.log(newsJSON);
-
 		// Add image to each new
 		for (const item of newsJSON) {
 			const image = await NewsImage.findOne({ where: { new_id: item.id } });
