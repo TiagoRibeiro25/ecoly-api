@@ -141,11 +141,12 @@ exports.deleteNew = async (req, res) => {
 };
 
 exports.addNew = async (req, res) => {
-	const { newToCreate } = req.body;
-
+	console.log(req.body);
+	const { title, content, imgs } = req.body;
+	console.log(title);
 	try {
-		const existingNew = await News.findOne({ where: { title: newToCreate.title } });
-		const creator = await Users.findByPk(newToCreate.creator_id);
+		const existingNew = await News.findOne({ where: { title: title } });
+		const creator = await Users.findByPk(req.tokenData.userId);
 
 		if (existingNew) {
 			res.status(409).json({
@@ -154,17 +155,25 @@ exports.addNew = async (req, res) => {
 			});
 		} else {
 			const newNew = await News.create({
-				title: newToCreate.title,
-				content: newToCreate.content,
-				date_created: newToCreate.date_created,
-				creator_id: newToCreate.creator_id,
+				title: title,
+				content: content,
+				date_created: new Date().toISOString().split("T")[0],
+				creator_id : creator.id
 			});
 
+			for(const img of imgs) {
+				await NewsImage.create(
+					newNew.id, img
+				)
+			}
+
+			const selectedImage = await NewsImage.findOne({ where: {new_id : newNew.id}})
+
 			await sendNewsLetter({
-				title: `${newToCreate.title}`,
+				title: `${title}`,
 				author: { id: `${creator.id}`, name: `${creator.name}` },
-				content: `${newToCreate.content}`,
-				img: "https://picsum.photos/400/300",
+				content: `${content}`,
+				img: selectedImage.img,
 			});
 
 			res.status(201).json({
