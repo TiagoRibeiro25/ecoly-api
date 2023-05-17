@@ -8,8 +8,6 @@ router
 	.get(subscribeController.getAllSubscribedEmails)
 	.post(subscribeValidator.validateBodySubscribe, subscribeController.subscribe);
 
-router
-	.route("/:id")
-	.delete(subscribeValidator.validateBodySubscribe, subscribeController.deleteSubscription);
+router.route("/:id").delete(subscribeController.deleteSubscription);
 
 module.exports = router;
