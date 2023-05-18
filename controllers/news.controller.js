@@ -109,20 +109,17 @@ exports.deleteNew = async (req, res) => {
 	try {
 		const newToDelete = await News.findByPk(id);
 
-		if (!newToDelete) {
-			res.status(404).json({
-				success: false,
-				message: "New was not found",
-			});
-		} else {
-			await newToDelete.destroy();
+		if (!newToDelete) throw new Error("New was not found");
 
-			res.status(200).json({
-				success: true,
-				message: "The new was deleted",
-			});
-		}
+		await NewsImage.destroy({ where: { new_id: id } });
+		await newToDelete.destroy();
+
+		res.status(200).json({ success: true, message: "The new was deleted" });
 	} catch (error) {
+		if (error.message === "New was not found") {
+			return res.status(404).json({ success: false, message: error.message });
+		}
+
 		res.status(500).json({
 			success: false,
 			message: "Failed to delete new",
