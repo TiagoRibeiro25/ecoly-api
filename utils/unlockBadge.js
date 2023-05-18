@@ -9,8 +9,7 @@ const Badges = db.badges;
 
 /**
  * @description IMPORTANT: This file is used to unlock a badge for a user but it does not check if the user did the task or not.
- * @param {number} badgeId - The id of the badge to unlock
- * @param {number} userId - The id of the user to unlock the badge for
+ * @param {{ badgeId: number, userId: number}} - An object containing the badge id and the user id
  * @returns  {Promise<{ success: boolean, message: string, data?: object }>} - Returns an object with the success status, a message and the data if success is true
  */
 async function unlockBadge({ badgeId, userId }) {
