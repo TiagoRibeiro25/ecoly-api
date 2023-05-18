@@ -4,7 +4,6 @@ const activitiesController = require("../controllers/activities.controller");
 const activitiesValidator = require("../validators/activities.validator");
 const authController = require("../controllers/auth.controller");
 
-
 // GET /api/activities
 router.get("/", activitiesValidator.validateQueries, (req, res) => {
 	// first validate queries and then execute the next parameter
@@ -19,14 +18,8 @@ router.get("/", activitiesValidator.validateQueries, (req, res) => {
 		if (req.query.filter === "unfinished") {
 			return activitiesController.getUnfinishedSchoolActivities(req, res);
 		}
-		if (req.query.filter === "recent") {
-			return activitiesController.getRecentSchoolActivities(req, res);
-		}
 	}
 
-	if (req.query.fields === "activities" && req.query.filter === "finished") {
-		return activitiesController.getFinishedActivities(req, res);
-	}
 	if (req.query.fields === "activities" && req.query.filter === "unfinished") {
 		return activitiesController.getUnfinishedActivities(req, res);
 	}
@@ -35,7 +28,7 @@ router.get("/", activitiesValidator.validateQueries, (req, res) => {
 	}
 
 	if (req.query.fields === "reports") {
-		// need to pass the two auth middleware´s first to return the reports controller -  EXPLICO NA REUNIÃO DE AMANHÃ
+		// need to pass the two auth middleware´s first to return the reports controller
 		return authController.verifyToken(req, res, () => {
 			//next
 			authController.verifyIsVerified(req, res, () => {
@@ -45,7 +38,7 @@ router.get("/", activitiesValidator.validateQueries, (req, res) => {
 		});
 	}
 	if (req.query.fields === "themes") {
-		// need to pass the two auth middleware´s first to return the themes controller - EXPLICO NA REUNIÃO DE AMANHÃ
+		// need to pass the two auth middleware´s first to return the themes controller
 		return authController.verifyToken(req, res, () => {
 			//next
 			authController.verifyIsVerified(req, res, () => {
@@ -53,12 +46,11 @@ router.get("/", activitiesValidator.validateQueries, (req, res) => {
 				activitiesController.getThemes(req, res); // return themes controller
 			});
 		});
-	} 
-	else{
+	} else {
 		return res.status(400).json({
 			success: false,
 			error: "provide parameters",
-		})
+		});
 	}
 });
 
@@ -93,7 +85,6 @@ router.post("/", activitiesValidator.validateQueries, (req, res) => {
 	}
 });
 
-
 // PATCH /api/activities/:id => finish an activity/ disable a theme
 router.patch("/:id", activitiesValidator.validateQueries, (req, res) => {
 	if (req.query.fields === "activity") {
@@ -120,18 +111,11 @@ router.patch("/:id", activitiesValidator.validateQueries, (req, res) => {
 });
 
 // DELETE /api/activities/:id => delete an activity
-router.delete("/:id", activitiesValidator.validateQueries, (req, res) => {
-	if(req.query.fields === "activity"){
-		return authController.verifyToken(req, res, () => {
-			//next
-			authController.verifyIsVerified(req, res, () => {
-				// next
-				activitiesController.deleteActivity(req, res);
-			});
-		}
-		);
-	}
-});
-
+router.delete(
+	"/:id",
+	authController.verifyToken,
+	authController.verifyIsVerified,
+	activitiesController.deleteActivity
+);
 
 module.exports = router;
