@@ -6,6 +6,7 @@ const Roles = db.role;
 const Users = db.users;
 const sendNewsLetter = require("../utils/sendNewsLetter");
 const { Op } = require("sequelize");
+const unlockBadge = require("../utils/unlockBadge");
 
 exports.getNews = async (req, res) => {
 	try {
@@ -151,6 +152,9 @@ exports.addNew = async (req, res) => {
 			success: true,
 			message: "New was successfully added",
 		});
+
+		// Unlock badges
+		await unlockBadge({ badgeId: 7, userId: creator.id });
 
 		await sendNewsLetter({
 			newId: newNew.id,
