@@ -154,17 +154,15 @@ exports.addNew = async (req, res) => {
 			message: "New was successfully added",
 		});
 
-		// Unlock badges
-		await unlockBadge({ badgeId: 7, userId: creator.id });
-
-		// Add seeds
-		await addSeeds({ userId: creator.id, amount: 40 });
-
-		await sendNewsLetter({
-			newId: newNew.id,
-			title: `${title}`,
-			author: { id: `${creator.id}`, name: `${creator.name}` },
-		});
+		Promise.all([
+			unlockBadge({ badgeId: 7, userId: creator.id }), // Add badge to the user
+			addSeeds({ userId: creator.id, amount: 40 }), // Add seeds to the user
+			sendNewsLetter({
+				newId: newNew.id,
+				title: `${title}`,
+				author: { id: `${creator.id}`, name: `${creator.name}` },
+			}),
+		]);
 	} catch (error) {
 		if (error.message === "The new already exists") {
 			return res.status(409).json({ success: false, message: "The new already exists" });
