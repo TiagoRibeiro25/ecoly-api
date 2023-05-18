@@ -4,7 +4,7 @@ const colors = require("colors");
 exports.validateQueries = (req, res, next) => {
 	const validQueries = ["filter", "school", "fields", "search"];
 
-	const fieldsValid = ["activity", "theme", "activities", "themes", "reports", "ata"];
+	const fieldsValid = ["activity", "theme", "activities", "themes", "report", "ata"];
 	const filterValid = ["finished", "unfinished", "recent"];
 
 	const ObjectKeys = [];
@@ -111,7 +111,7 @@ exports.validateQueries = (req, res, next) => {
 		req.query.fields &&
 		req.query.fields !== "activities" &&
 		req.query.fields !== "themes" &&
-		req.query.fields !== "reports"
+		req.query.fields !== "report"
 	) {
 		console.log(ObjectKeys);
 		console.log(
