@@ -41,6 +41,9 @@ exports.getNews = async (req, res) => {
 			}
 		}
 
+		// sort news by date
+		newsJSON.sort((a, b) => new Date(b.date_created) - new Date(a.date_created));
+
 		res.status(200).json({ success: true, data: { isUserAdmin, news: newsJSON } });
 	} catch (error) {
 		console.log(error);
