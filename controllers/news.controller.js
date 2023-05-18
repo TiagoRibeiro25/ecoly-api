@@ -7,6 +7,7 @@ const Users = db.users;
 const sendNewsLetter = require("../utils/sendNewsLetter");
 const { Op } = require("sequelize");
 const unlockBadge = require("../utils/unlockBadge");
+const addSeeds = require("../utils/addSeeds");
 
 exports.getNews = async (req, res) => {
 	try {
@@ -155,6 +156,9 @@ exports.addNew = async (req, res) => {
 
 		// Unlock badges
 		await unlockBadge({ badgeId: 7, userId: creator.id });
+
+		// Add seeds
+		await addSeeds({ userId: creator.id, amount: 40 });
 
 		await sendNewsLetter({
 			newId: newNew.id,
