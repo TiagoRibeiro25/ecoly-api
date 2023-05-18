@@ -1,5 +1,5 @@
-/** @param {{title: string, author: {id: number, name: string}, content: string, img: string, date: string, unsubscribeKey: string}} */
-function newsLetterTemplate({ title, author, content, img, date, unsubscribeKey }) {
+/** @param {{newId: number, title: string, author: {id: number, name: string}, date: string, unsubscribeKey: string}} */
+function newsLetterTemplate({ newId, title, author, date, unsubscribeKey }) {
 	return `<!DOCTYPE html>
 <html
 	xmlns:v="urn:schemas-microsoft-com:vml"
@@ -202,103 +202,6 @@ function newsLetterTemplate({ title, author, content, img, date, unsubscribeKey 
 							</tbody>
 						</table>
 						<table
-							class="row row-2"
-							align="center"
-							width="100%"
-							border="0"
-							cellpadding="0"
-							cellspacing="0"
-							role="presentation"
-							style="mso-table-lspace: 0; mso-table-rspace: 0; background-color: #fff"
-						>
-							<tbody>
-								<tr>
-									<td>
-										<table
-											class="row-content stack"
-											align="center"
-											border="0"
-											cellpadding="0"
-											cellspacing="0"
-											role="presentation"
-											style="
-												mso-table-lspace: 0;
-												mso-table-rspace: 0;
-												background-color: #e4f0e8;
-												color: #000;
-												width: 600px;
-											"
-											width="600"
-										>
-											<tbody>
-												<tr>
-													<td
-														class="column column-1"
-														width="100%"
-														style="
-															mso-table-lspace: 0;
-															mso-table-rspace: 0;
-															font-weight: 400;
-															text-align: left;
-															padding-bottom: 15px;
-															padding-top: 15px;
-															vertical-align: top;
-															border-top: 0;
-															border-right: 0;
-															border-bottom: 0;
-															border-left: 0;
-														"
-													>
-														<table
-															class="image_block block-1"
-															width="100%"
-															border="0"
-															cellpadding="0"
-															cellspacing="0"
-															role="presentation"
-															style="mso-table-lspace: 0; mso-table-rspace: 0"
-														>
-															<tr>
-																<td
-																	class="pad"
-																	style="
-																		width: 100%;
-																		padding-right: 0;
-																		padding-left: 0;
-																	"
-																>
-																	<div
-																		class="alignment"
-																		align="center"
-																		style="line-height: 10px"
-																	>
-																		<img
-																			class="fullMobileWidth"
-																			src="${img}"
-																			style="
-																				display: block;
-																				height: auto;
-																				border: 0;
-																				width: 420px;
-																				max-width: 100%;
-																			"
-																			width="420"
-																			alt="Alternate text"
-																			title="Alternate text"
-																		/>
-																	</div>
-																</td>
-															</tr>
-														</table>
-													</td>
-												</tr>
-											</tbody>
-										</table>
-									</td>
-								</tr>
-							</tbody>
-						</table>
-						<table
 							class="row row-3"
 							align="center"
 							width="100%"
@@ -422,13 +325,14 @@ function newsLetterTemplate({ title, author, content, img, date, unsubscribeKey 
 																			<p
 																				style="
 																					margin: 0;
-																					text-align: justify;
+																					text-align: center;
 																					mso-line-height-alt: 14.399999999999999px;
+																					display: flex;
+																					justify-content: center;
+																					align-items: center;
 																				"
 																			>
-																				<span style="font-size: 14px"
-																					>${content}</span
-																				>
+																				<a href="https://ecoly-tsiw.netlify.app/news/${newId}" style="color: #18516f; text-decoration: none" target="_blank">https://ecoly-tsiw.netlify.app/news/${newId}</a>
 																			</p>
 																			<p
 																				style="

@@ -6,6 +6,7 @@ const Roles = db.role;
 const Users = db.users;
 const sendNewsLetter = require("../utils/sendNewsLetter");
 const { Op } = require("sequelize");
+const unlockBadge = require("../utils/unlockBadge");
 
 exports.getNews = async (req, res) => {
 	try {
@@ -109,20 +110,17 @@ exports.deleteNew = async (req, res) => {
 	try {
 		const newToDelete = await News.findByPk(id);
 
-		if (!newToDelete) {
-			res.status(404).json({
-				success: false,
-				message: "New was not found",
-			});
-		} else {
-			await newToDelete.destroy();
+		if (!newToDelete) throw new Error("New was not found");
 
-			res.status(200).json({
-				success: true,
-				message: "The new was deleted",
-			});
-		}
+		await NewsImage.destroy({ where: { new_id: id } });
+		await newToDelete.destroy();
+
+		res.status(200).json({ success: true, message: "The new was deleted" });
 	} catch (error) {
+		if (error.message === "New was not found") {
+			return res.status(404).json({ success: false, message: error.message });
+		}
+
 		res.status(500).json({
 			success: false,
 			message: "Failed to delete new",
@@ -138,32 +136,31 @@ exports.addNew = async (req, res) => {
 		const creator = await Users.findByPk(req.tokenData.userId);
 
 		if (existingNew) throw new Error("The new already exists");
-		else {
-			const newNew = await News.create({
-				title: title,
-				content: content,
-				date_created: new Date().toISOString().split("T")[0],
-				creator_id: creator.id,
-			});
 
-			for (const img of imgs) {
-				await NewsImage.create({ img: img, new_id: newNew.id });
-			}
+		const newNew = await News.create({
+			title: title,
+			content: content,
+			date_created: new Date().toISOString().split("T")[0],
+			creator_id: creator.id,
+		});
 
-			res.status(201).json({
-				success: true,
-				message: "New was successfully added",
-			});
-
-			const selectedImage = await NewsImage.findOne({ where: { new_id: newNew.id } });
-
-			await sendNewsLetter({
-				title: `${title}`,
-				author: { id: `${creator.id}`, name: `${creator.name}` },
-				content: `${content}`,
-				img: selectedImage.img,
-			});
+		for (const img of imgs) {
+			await NewsImage.create({ img: img, new_id: newNew.id });
 		}
+
+		res.status(201).json({
+			success: true,
+			message: "New was successfully added",
+		});
+
+		// Unlock badges
+		await unlockBadge({ badgeId: 7, userId: creator.id });
+
+		await sendNewsLetter({
+			newId: newNew.id,
+			title: `${title}`,
+			author: { id: `${creator.id}`, name: `${creator.name}` },
+		});
 	} catch (error) {
 		if (error.message === "The new already exists") {
 			return res.status(409).json({ success: false, message: "The new already exists" });

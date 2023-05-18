@@ -75,7 +75,7 @@ module.exports = {
 			name: "Tiago Ribeiro",
 			password: "2525",
 			photo: "https://api.dicebear.com/5.x/personas/svg?seed=tiago_ribeiro",
-			role_id: 3,
+			role_id: 2,
 			school_id: 1,
 			internal_id: "40210462",
 			course: "TSIW",
@@ -361,6 +361,13 @@ module.exports = {
 				"Uma equipe de arqueólogos e antropólogos anunciou hoje a descoberta de uma nova civilização antiga em uma região remota do mundo. A descoberta foi feita durante uma série de escavações e incluiu uma variedade de artefactos e estruturas que sugerem a existência de uma sociedade avançada com uma longa história. De acordo com os arqueólogos, a civilização descoberta apresenta características únicas e desconhecidas, incluindo tecnologias avançadas e uma escrita desconhecida. A equipe também encontrou evidências de práticas religiosas e cerimoniais complexas, bem como uma arquitetura monumentais. A descoberta tem gerado grande interesse e especulação entre a comunidade científica e histórica. Alguns especialistas sugerem que a civilização descoberta pode ter tido contacto e influência sobre outras civilizações conhecidas, enquanto outros argumentam que pode ter existido de forma isolada e independente. A equipe de pesquisa agora está trabalhando para traduzir e decifrar a escrita desconhecida e estudar os artefactos e estruturas encontrados, para compreender melhor a história e a cultura da civilização descoberta. A descoberta também tem implicações éticas e políticas significativas, já que a região onde a civilização foi descoberta é habitada atualmente por uma comunidade indígena. A equipe de pesquisa está trabalhando em estreita colaboração com essa comunidade e as autoridades locais para garantir a proteção e preservação dos artefactos e estruturas encontrados, bem como o respeito pelos direitos e cultura da comunidade indígena. A descoberta tem o potencial de mudar radicalmente a compreensão da história humana e do desenvolvimento das civilizações. E também chama a atenção para a importância da preservação da cultura e dos direitos das comunidades indígenas.",
 			date_created: "2022-06-12",
 		},
+		{
+			creator_id: 4,
+			title: "Front End - Notícias Finalizadas",
+			content:
+				'<h3> O que isto significa? </h3><p> A parte das notícias do front end: </p><ul><li> Lista das notícias </li><li> Detalhe de uma notícia </li><li> Criar notícia </li><li> Apagar notícia </li><li> Subscrever newsletter </li></ul><p> foram oficialmente finalizadas e estão 100% funcionais! </p><br /><h3> O que falta fazer? </h3><p> Apesar das notícias estarem feitas, ainda falta bastante coisa para ser finalizada tais como: </p><ul><li> Home View </li><li> Atividades </li><li> Detalhe de uma atividade </li><li> Gestão </li><li> Menu de Administrador </li><li> ... </li></ul><br /><h3> Acompanha o progresso </h3><p> Queres acompanhar o nosso progresso no desenvolvimento de ECOLY? Visita os nossos repositórios do github: </p><ul><li><a href="https://github.com/TiagoRibeiro25/Ecoly-FrontEnd" target="_blank"> Ecoly - Front End </a></li><li><a href="https://github.com/TiagoRibeiro25/ecoly-api" target="_blank"> Ecoly - Back End </a></li></ul><h3> Conclusão </h3><p> O objetivo desta notícia foi testar o visual final de uma notícia usando HTML como formato do conteúdo. </p>',
+			date_created: "2023-05-18",
+		},
 	],
 
 	/**
@@ -435,10 +442,22 @@ module.exports = {
 			new_id: 7,
 			img: base64Data.newImg13,
 		},
+		{
+			new_id: 8,
+			img: base64Data.newImg14,
+		},
+		{
+			new_id: 8,
+			img: base64Data.newImg15,
+		},
+		{
+			new_id: 8,
+			img: base64Data.newImg16,
+		},
 	],
 
 	/** @type {Array<{email: string}>} */
-	news_letter: [{ email: "josepprn@gmail.com" }],
+	news_letter: [{}],
 
 	/**
 	 * @type {Array<{
