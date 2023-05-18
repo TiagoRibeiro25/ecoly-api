@@ -39,16 +39,6 @@ router.get("/", activitiesValidator.validateQueries, (req, res) => {
 		return activitiesController.getRecentActivities(req, res);
 	}
 
-	if (req.query.fields === "reports") {
-		// need to pass the two auth middleware´s first to return the reports controller
-		return authController.verifyToken(req, res, () => {
-			//next
-			authController.verifyIsVerified(req, res, () => {
-				//next
-				activitiesController.getReports(req, res); // return reports controller
-			});
-		});
-	}
 	if (req.query.fields === "themes") {
 		// need to pass the two auth middleware´s first to return the themes controller
 		return authController.verifyToken(req, res, () => {
@@ -67,7 +57,22 @@ router.get("/", activitiesValidator.validateQueries, (req, res) => {
 });
 
 // GET /api/activities/:id => find a specific activity (activity detail)
-router.get("/:id", activitiesController.getDetailActivity);
+router.get("/:id", activitiesValidator.validateQueries, (req, res) => {
+	if(req.query.fields === "report"){
+		return authController.verifyToken(req, res, () => {
+			//next
+			authController.verifyIsVerified(req, res, () => {
+				//next
+				activitiesController.getReport(req, res);
+			});
+		}
+	);
+	}
+	else{
+		return activitiesController.getDetailActivity(req, res);
+	}
+});
+
 
 // POST /api/activities => add an activity/ theme
 router.post("/", activitiesValidator.validateQueries, (req, res) => {
