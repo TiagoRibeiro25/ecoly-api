@@ -4,8 +4,8 @@ const colors = require("colors");
 const checkEnvs = require("./config/checkEnvs");
 const app = require("./app");
 
-const HOST = process.env.HOST || "localhost";
-const PORT = process.env.PORT || 3000;
+const HOST = process.env.HOST;
+const PORT = process.env.PORT;
 
 if (!checkEnvs()) process.exit(1);
 

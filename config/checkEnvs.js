@@ -2,6 +2,16 @@ const colors = require("colors");
 
 /** @returns {boolean} true if all envs are defined, false if not */
 function checkEnvs() {
+	if (!process.env.PORT) {
+		console.log(colors.red("-> ") + colors.cyan("PORT ") + colors.red("is not defined!"));
+		return false;
+	}
+
+	if (!process.env.HOST) {
+		console.log(colors.red("-> ") + colors.cyan("HOST ") + colors.red("is not defined!"));
+		return false;
+	}
+
 	if (!process.env.JWT_SECRET) {
 		console.log(colors.red("-> ") + colors.cyan("JWT_SECRET ") + colors.red("is not defined!"));
 		return false;
