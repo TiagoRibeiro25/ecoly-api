@@ -25,10 +25,8 @@ router.get("/", activitiesValidator.validateQueries, (req, res) => {
 		if (req.query.filter === "unfinished") {
 				return authController.verifyToken(req, res, () => {
 					//next
-					authController.verifyIsVerified(req, res, () => {
-						//next
 						activitiesController.getUnfinishedSchoolActivities(req, res);
-					});
+					
 				}
 			);
 		}
