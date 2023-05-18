@@ -6,7 +6,7 @@ const NewsLetter = db.news_letter;
 
 const reduceText = (text) => (text.length > 200 ? text.slice(0, 200) + "..." : text);
 
-/** @param {{title: string, author: {id: number, name: string}, content: string, img: string}} latestNew */
+/** @param {{title: string, author: {id: number, name: string}, newId: number}} latestNew */
 async function sendNewsLetter(latestNew) {
 	/** @type {Array<{email: string, delete_key: string}>} */
 	const users = await NewsLetter.findAll();
@@ -17,10 +17,9 @@ async function sendNewsLetter(latestNew) {
 
 	for (const user of users) {
 		const body = newsLetterTemplate({
+			newId: latestNew.newId,
 			title: latestNew.title,
 			author: latestNew.author,
-			content: reduceText(latestNew.content),
-			img: latestNew.img,
 			date: new Date().toLocaleDateString("pt-PT"),
 			unsubscribeKey: user.delete_key,
 		});
@@ -33,14 +32,5 @@ async function sendNewsLetter(latestNew) {
 		else console.log(colors.red(`Email not sent to ${user.email}`));
 	}
 }
-
-//* Example on how to use:
-// await sendNewsLetter({
-// 	title: "Hello World",
-// 	author: { id: 3, name: "Tiago Ribeiro" },
-// 	content:
-// 		"Lorem ipsum dolor sit amet consectetur adipisicing elit. Quos possimus blanditiis, saepe sint dicta nobis magnam perferendis impedit tempora quas a facilis ipsum quibusdam fugit voluptates rem asperiores tempore minus modi cum! Dignissimos minima laborum provident pariatur distinctio, voluptatibus quia veniam perferendis maxime sapiente deleniti omnis excepturi atque aliquid? Laudantium, tempora nemo saepe pariatur iusto voluptatum quisquam blanditiis quis quibusdam, quia suscipit laborum magnam, atque quae repellat error",
-// 	img: "https://picsum.photos/400/300",
-// });
 
 module.exports = sendNewsLetter;

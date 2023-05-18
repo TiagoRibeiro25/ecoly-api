@@ -138,32 +138,28 @@ exports.addNew = async (req, res) => {
 		const creator = await Users.findByPk(req.tokenData.userId);
 
 		if (existingNew) throw new Error("The new already exists");
-		else {
-			const newNew = await News.create({
-				title: title,
-				content: content,
-				date_created: new Date().toISOString().split("T")[0],
-				creator_id: creator.id,
-			});
 
-			for (const img of imgs) {
-				await NewsImage.create({ img: img, new_id: newNew.id });
-			}
+		const newNew = await News.create({
+			title: title,
+			content: content,
+			date_created: new Date().toISOString().split("T")[0],
+			creator_id: creator.id,
+		});
 
-			res.status(201).json({
-				success: true,
-				message: "New was successfully added",
-			});
-
-			const selectedImage = await NewsImage.findOne({ where: { new_id: newNew.id } });
-
-			await sendNewsLetter({
-				title: `${title}`,
-				author: { id: `${creator.id}`, name: `${creator.name}` },
-				content: `${content}`,
-				img: selectedImage.img,
-			});
+		for (const img of imgs) {
+			await NewsImage.create({ img: img, new_id: newNew.id });
 		}
+
+		res.status(201).json({
+			success: true,
+			message: "New was successfully added",
+		});
+
+		await sendNewsLetter({
+			newId: newNew.id,
+			title: `${title}`,
+			author: { id: `${creator.id}`, name: `${creator.name}` },
+		});
 	} catch (error) {
 		if (error.message === "The new already exists") {
 			return res.status(409).json({ success: false, message: "The new already exists" });
