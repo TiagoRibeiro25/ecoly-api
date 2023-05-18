@@ -4,7 +4,7 @@ const colors = require("colors");
 exports.validateQueries = (req, res, next) => {
 	const validQueries = ["filter", "school", "fields", "search"];
 
-	const fieldsValid = ["activity", "theme", "activities", "themes", "reports"];
+	const fieldsValid = ["activity", "theme", "activities", "themes", "reports", "ata"];
 	const filterValid = ["finished", "unfinished", "recent"];
 
 	const ObjectKeys = [];
@@ -127,7 +127,7 @@ exports.validateQueries = (req, res, next) => {
 
 	// accept only theme and activity for the fields parameter in the POST PATCH DELETE
 	if (
-		(req.method === "POST" || req.method === "PATCH" || req.method === "DELETE") &&
+		(req.method === "POST" || req.method === "PATCH") &&
 		req.query.fields &&
 		req.query.fields !== "activity" &&
 		req.query.fields !== "theme"
