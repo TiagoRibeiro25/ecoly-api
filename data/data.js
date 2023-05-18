@@ -457,7 +457,7 @@ module.exports = {
 	],
 
 	/** @type {Array<{email: string}>} */
-	news_letter: [{}],
+	news_letter: [],
 
 	/**
 	 * @type {Array<{
