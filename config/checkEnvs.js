@@ -7,11 +7,6 @@ function checkEnvs() {
 		return false;
 	}
 
-	if (!process.env.HOST) {
-		console.log(colors.red("-> ") + colors.cyan("HOST ") + colors.red("is not defined!"));
-		return false;
-	}
-
 	if (!process.env.JWT_SECRET) {
 		console.log(colors.red("-> ") + colors.cyan("JWT_SECRET ") + colors.red("is not defined!"));
 		return false;
