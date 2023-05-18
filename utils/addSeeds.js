@@ -1,3 +1,4 @@
+const colors = require("colors");
 const db = require("../models/db");
 const Seeds = db.seeds;
 
@@ -12,6 +13,14 @@ async function addSeeds({ amount, userId }) {
 			amount: amount,
 			date: new Date().toISOString().slice(0, 19).replace("T", " "),
 		});
+
+		// get current time (yyyy-mm-dd hh:mm:ss)
+		const now = new Date().toISOString().slice(0, 19).replace("T", " ");
+		console.log(
+			`${colors.cyan(now)} - ${colors.blue(
+				`Added ${colors.green(amount)} seeds to the user ${colors.green(userId)}.`
+			)}`
+		);
 
 		return { success: true, message: "Seeds added successfully" };
 	} catch (err) {
