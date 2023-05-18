@@ -11,7 +11,7 @@ const addSeeds = require("../utils/addSeeds");
 
 exports.getNews = async (req, res) => {
 	try {
-		const { search } = req.query;
+		const { search, filter } = req.query;
 		const formatVal = search ? search.replace(/%20/g, " ") : "";
 
 		const news = await News.findAll({ where: { title: { [Op.like]: `%${formatVal}%` } } });
@@ -45,6 +45,9 @@ exports.getNews = async (req, res) => {
 
 		// sort news by date
 		newsJSON.sort((a, b) => new Date(b.date_created) - new Date(a.date_created));
+
+		// only return the first 3 news if the filter is recent
+		if (filter === "recent") newsJSON.splice(3);
 
 		res.status(200).json({ success: true, data: { isUserAdmin, news: newsJSON } });
 	} catch (error) {
