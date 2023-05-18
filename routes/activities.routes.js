@@ -13,10 +13,24 @@ router.get("/", activitiesValidator.validateQueries, (req, res) => {
 
 	if (req.query.fields === "activities" && req.query.school) {
 		if (req.query.filter === "finished") {
-			return activitiesController.getFinishedSchoolActivities(req, res);
+				return authController.verifyToken(req, res, () => {
+					//next
+					authController.verifyIsVerified(req, res, () => {
+						//next
+						activitiesController.getFinishedSchoolActivities(req, res);
+					});
+				}
+			);
 		}
 		if (req.query.filter === "unfinished") {
-			return activitiesController.getUnfinishedSchoolActivities(req, res);
+				return authController.verifyToken(req, res, () => {
+					//next
+					authController.verifyIsVerified(req, res, () => {
+						//next
+						activitiesController.getUnfinishedSchoolActivities(req, res);
+					});
+				}
+			);
 		}
 	}
 
