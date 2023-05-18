@@ -9,8 +9,10 @@ const Users = db.users;
 const Schools = db.schools;
 const Roles = db.role;
 const Themes = db.theme;
-const badges = db.badges; //for the unlocked badges
-const userBadges = db.user_badge; //for the unlocked badges
+const badges = db.badges;
+const userBadges = db.user_badge;
+const unlockBadge = require("../utils/unlockBadge");
+const addSeeds = require("../utils/addSeeds");
 
 function fixDate(date) {
 	const Date = date.toISOString().split("T")[0];
@@ -596,7 +598,6 @@ exports.getUnfinishedSchoolActivities = async (req, res) => {
 };
 
 exports.getReport = async (req, res) => {
-	
 	const { id } = req.params;
 
 	try {
@@ -655,7 +656,6 @@ exports.getReport = async (req, res) => {
 };
 
 exports.getThemes = async (req, res) => {
-	console.log(colors.green("Themes"));
 	try {
 		const themes = await Themes.findAll({
 			where: {
@@ -669,7 +669,6 @@ exports.getThemes = async (req, res) => {
 				data: themes,
 			});
 	} catch (err) {
-		console.log(colors.red(`${err.message}`));
 		return res.status(500).json({
 			success: false,
 			error: "We apologize, but our system is currently experiencing some issues. Please try again later.",
@@ -679,6 +678,91 @@ exports.getThemes = async (req, res) => {
 
 exports.addActivity = async (req, res) => {
 	console.log(colors.yellow("Adding activity..."));
+
+	let numActivities = 0; //10 unlock the badge of 10 activities created || 1 unlock the badge of 1 activity created
+
+	const {
+		title,
+		diagnostic,
+		objective,
+		participants,
+		meta,
+		evaluation_indicator,
+		resources,
+		evaluation_method,
+		complexity,
+		final_date,
+		theme,
+	} = req.body;
+
+	try {
+		const existingActivity = await Activities.findOne({
+			where: {
+				title: title,
+			}
+		});
+
+
+		// get the id theme by the name of the theme provided
+		const themeId = await Themes.findOne({
+			where: {
+				name: theme,
+			},
+		});
+
+		const validTheme = await Themes.findOne({
+			where: {
+				id: themeId.id,
+				is_active: true,
+			},
+		});
+
+		const existingTheme = await Themes.findOne({
+			where: {
+				name: theme,
+			},
+		});
+
+		const creator = await Users.findByPk(req.tokenData.userId);
+		const schoolUser = await Schools.findByPk(req.tokenData.schoolId);
+
+
+		const activity = await Activities.create({
+			creator_id: creator.id, // user
+			school_id: schoolUser.id, // user school
+			title: title,
+			diagnostic: diagnostic,
+			objective: objective,
+			participants: participants,
+			meta: meta,
+			evaluation_indicator: evaluation_indicator,
+			resources: resources,
+			evaluation_method: evaluation_method,
+			complexity: complexity,
+			initial_date: new Date().toISOString().split("T")[0], //current date
+			final_date: final_date,
+			theme_id: themeId.id,
+		});
+	} catch (err) {
+		if (err instanceof ValidationError) {
+			return res.status(400).json({
+				success: false,
+				error: err.message,
+			});
+		}
+
+		if (err.message === "jwt expired") {
+			return res.status(401).json({
+				success: false,
+				error: "Your session has expired. Please log in again.",
+			});
+		}
+
+		res.status(500).json({
+			success: false,
+			error: "We apologize, but our system is currently experiencing some issues. Please try again later.",
+		});
+	}
 };
 
 exports.addTheme = async (req, res) => {

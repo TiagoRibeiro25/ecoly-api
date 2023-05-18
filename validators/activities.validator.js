@@ -1,10 +1,9 @@
-// TODO => include auth validations and body validations
 const colors = require("colors");
 
 exports.validateQueries = (req, res, next) => {
 	const validQueries = ["filter", "school", "fields", "search"];
 
-	const fieldsValid = ["activity", "theme", "activities", "themes", "report", "ata"];
+	const fieldsValid = ["activity", "theme", "activities", "themes", "report"];
 	const filterValid = ["finished", "unfinished", "recent"];
 
 	const ObjectKeys = [];
@@ -69,7 +68,6 @@ exports.validateQueries = (req, res, next) => {
 	const invalidFilter = Object.keys(req.query)
 		.filter((key) => key === "filter" && !filterValid.includes(req.query[key]))
 		.map((key) => `${req.query.filter} is an invalid value for the filter parameter`);
-
 
 	// Combine all invalid parameters
 	const allInvalidParams = [...invalidFields, ...invalidFilter];
@@ -162,10 +160,48 @@ exports.validateQueries = (req, res, next) => {
 
 // create activity
 exports.validateBodyActivity = (req, res, next) => {
-	const bodyValid = true;
-	if (bodyValid) {
-		console.log(colors.green("create activity body is valid"));
-	}
+	// check with the activities model the null fields and if the body has the same fields
+	const validFields = [
+		"theme",
+		"title",
+		"complexity",
+		"initial_date",
+		"final_date",
+		"objective",
+		"diagnostic",
+		"meta",
+		"resources",
+		"participants",
+		"evaluation_indicator",
+		"evaluation_method",
+	];
+
+	const invalidFields = Object.keys(req.body)
+		.filter((key) => !validFields.includes(key))
+		.map((key) => `${key} is a invalid field`);
+
+	const emptyFields = Object.keys(req.body).filter((key) => req.body[key] == "").map((key) => `${key} is empty`);
+
+		if (Object.keys(req.body).length === 0) {
+			res.status(400).json({
+				success: false,
+				error: "body is empty",
+			});
+		}
+	
+		if (invalidFields.length > 0) {
+			res.status(400).json({
+				success: false,
+				error: invalidFields,
+			});
+		}
+
+		if (emptyFields.length > 0) {
+			res.status(400).json({
+				success: false,
+				error: emptyFields,
+			});
+		}
 
 	next();
 };
