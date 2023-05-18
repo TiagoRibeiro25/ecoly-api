@@ -37,7 +37,7 @@ exports.verifyIsAdmin = async (req, res, next) => {
 			: res.status(403).json({ success: false, message: "Require Admin Role!" });
 	} catch (err) {
 		console.log(colors.yellow(`Error in verifyIsAdmin middleware: ${err.message}`));
-		res.status(500).json({ success: false, message: "The new could not be deleted" });
+		res.status(500).json({ success: false, message: "Some error occurred on our side." });
 	}
 };
 
