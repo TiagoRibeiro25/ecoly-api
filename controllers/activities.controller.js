@@ -4,6 +4,7 @@ const jwt = require("jsonwebtoken");
 const { Op, ValidationError } = require("sequelize");
 const Activities = db.activities;
 const activity_images = db.activity_image;
+const activity_report_images = db.activity_report_image;
 const Users = db.users;
 const Schools = db.schools;
 const Roles = db.role;
@@ -307,10 +308,9 @@ exports.getUnfinishedActivities = async (req, res) => {
 };
 
 exports.getRecentActivities = async (req, res) => {
-
 	try {
 		const activities = await Activities.findAll({
-			where:{
+			where: {
 				is_finished: false,
 			},
 			include: [
@@ -346,8 +346,6 @@ exports.getRecentActivities = async (req, res) => {
 			success: true,
 			data: data,
 		});
-
-
 	} catch (err) {
 		return res.status(500).json({
 			success: false,
@@ -597,9 +595,63 @@ exports.getUnfinishedSchoolActivities = async (req, res) => {
 	}
 };
 
-exports.getReports = async (req, res) => {
-	console.log(colors.green("Reports"));
+exports.getReport = async (req, res) => {
 	
+	const { id } = req.params;
+
+	try {
+		const activity = await Activities.findByPk(id, {
+			where: {
+				is_finished: true,
+			},
+			include: [
+				{
+					model: activity_report_images,
+					as: "activity_report_images",
+					attributes: ["img"],
+				},
+			],
+			attributes: ["id", "report"],
+		});
+
+		if (isNaN(id)) {
+			return res.status(400).json({
+				success: false,
+				error: "Invalid id",
+			});
+		}
+
+		if (!activity) {
+			return res.status(404).json({
+				success: false,
+				error: "Activity not found.",
+			});
+		}
+
+		if (activity.report === null) {
+			return res.status(404).json({
+				success: false,
+				error: "Activity not finished yet",
+			});
+		}
+
+		const data = {
+			id: activity.id,
+			description: activity.report,
+			images: activity.activity_report_images.map((image) => image.img),
+		};
+
+		return res.status(200).json({
+			success: true,
+			data: data,
+		});
+	} catch (err) {
+		console.log(colors.red(`${err.message}`));
+		return res.status(500).json({
+			success: false,
+			error: "We apologize, but our system is currently experiencing some issues. Please try again later.",
+		});
+	}
 };
 
 exports.getThemes = async (req, res) => {
@@ -627,7 +679,6 @@ exports.getThemes = async (req, res) => {
 
 exports.addActivity = async (req, res) => {
 	console.log(colors.yellow("Adding activity..."));
-	
 };
 
 exports.addTheme = async (req, res) => {
@@ -644,6 +695,4 @@ exports.disabledTheme = async (req, res) => {
 
 exports.deleteActivity = async (req, res) => {
 	console.log(colors.green("Delete Activity"));
-
-	
 };
