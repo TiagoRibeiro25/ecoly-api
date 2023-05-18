@@ -64,7 +64,7 @@ exports.addSchool = async (req, res) => {
 	} catch (error) {
 		res.status(500).send({
 			success: false,
-			message: "Failed to add new school" + error,
+			message: "Failed to add new school",
 		});
 	}
 };

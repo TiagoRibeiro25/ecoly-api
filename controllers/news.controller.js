@@ -41,6 +41,9 @@ exports.getNews = async (req, res) => {
 			}
 		}
 
+		// sort news by date
+		newsJSON.sort((a, b) => new Date(b.date_created) - new Date(a.date_created));
+
 		res.status(200).json({ success: true, data: { isUserAdmin, news: newsJSON } });
 	} catch (error) {
 		console.log(error);
@@ -56,27 +59,13 @@ exports.getSingleNew = async (req, res) => {
 
 	try {
 		const singleNew = await News.findByPk(id);
-
-		if (!singleNew) {
-			return res.status(404).json({
-				success: false,
-				message: "New does not exist",
-			});
-		}
+		if (!singleNew) throw new Error("New does not exist");
 
 		const newsJSON = singleNew.toJSON();
-
 		let isUserAdmin = false;
 
 		const creator = await Users.findByPk(newsJSON.creator_id);
-
-		const creatorInfo = {
-			id: creator.id,
-			name: creator.name,
-		};
-
-		newsJSON.creator = creatorInfo;
-
+		newsJSON.creator = { id: creator.id, name: creator.name };
 		delete newsJSON.creator_id;
 
 		// Add images to the news
@@ -101,12 +90,13 @@ exports.getSingleNew = async (req, res) => {
 			}
 		}
 
-		res.status(200).json({
-			success: true,
-			data: { isUserAdmin, ...newsJSON },
-		});
+		res.status(200).json({ success: true, data: { isUserAdmin, ...newsJSON } });
 	} catch (error) {
-		return res.status(500).json({
+		if (error.message === "New does not exist") {
+			return res.status(404).json({ success: false, message: error.message });
+		}
+
+		res.status(500).json({
 			success: false,
 			message: "Failed to fetch New" + " " + error,
 		});
