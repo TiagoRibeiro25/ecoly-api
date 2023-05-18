@@ -471,12 +471,17 @@ exports.getRecentActivities = async (req, res) => {
 
 exports.getFinishedSchoolActivities = async (req, res) => {
 	console.log(colors.green("Finished School Activities"));
-	const { schoolId } = req.query;
+
+	const { school } = req.query;
+
+	const format =
+		school.charAt(0).toUpperCase() + school.slice(1).toLowerCase() || //to allow to lower case
+		school.toUpperCase() ||
+		school.toLowerCase();
 
 	try {
 		const activities = await Activities.findAll({
 			where: {
-				school_id: schoolId,
 				is_finished: true,
 			},
 			include: [
@@ -488,6 +493,9 @@ exports.getFinishedSchoolActivities = async (req, res) => {
 				{
 					model: Schools,
 					as: "school",
+					where: {
+						name: school || format,
+					},
 					attributes: ["name"],
 				},
 				{
@@ -506,120 +514,57 @@ exports.getFinishedSchoolActivities = async (req, res) => {
 			},
 		});
 
-		const school = await Schools.findOne({
+		// Filtered activities based on school name
+		const filteredActivities = activities.filter(
+			(activity) => activity.school.name === school || format
+		);
+
+		const data = filteredActivities.map((activity) => {
+			return {
+				id: activity.id,
+				is_finished: activity.is_finished,
+				theme: activity.theme.name,
+				title: activity.title,
+				initial_date: fixDate(activity.initial_date),
+				final_date: fixDate(activity.final_date),
+				image: activity.activity_images.map((image) => image.img),
+				participants: activity.participants,
+				diagnostic: activity.diagnostic,
+				objective: activity.objective,
+				meta: activity.meta,
+				resources: activity.resources,
+				evaluation_indicator: activity.evaluation_indicator,
+				evaluation_method: activity.evaluation_method,
+			};
+		});
+
+		// check if the school exists
+		const schoolExists = await Schools.findOne({
 			where: {
-				id: schoolId,
+				name: school || format,
 			},
 		});
 
-		if (!school) {
+		if (!schoolExists) {
 			return res.status(404).json({
 				success: false,
 				error: "School not found.",
 			});
 		}
 
-		if (activities.length === 0) {
+		if (data.length === 0) {
 			return res.status(404).json({
 				success: false,
 				error: "No activities finished found for this school.",
 			});
 		}
 
-		const data = activities.map((activity) => {
-			return {
-				id: activity.id,
-				creator: {
-					id: activity.creator.id,
-					name: activity.creator.name,
-				},
-				is_finished: activity.is_finished,
-				school: activity.school.name,
-				theme: activity.theme.name,
-				title: activity.title,
-				complexity: activity.complexity,
-				initial_date: fixDate(activity.initial_date),
-				final_date: fixDate(activity.final_date),
-				objective: activity.objective,
-				diagnostic: activity.diagnostic,
-				meta: activity.meta,
-				resources: activity.resources,
-				participants: activity.participants,
-				evaluation_indicator: activity.evaluation_indicator,
-				evaluation_method: activity.evaluation_method,
-				images: activity.activity_images.map((image) => image.img),
-			};
-		});
-
-		// check if there's a token in the request
-		let token = req.headers["x-access-token"] || req.headers.authorization;
-		token = token?.replace("Bearer ", "");
-
-		// with no loggedUser
-		if (!token) {
-			console.log("Activities without loggedUser: ", data);
-			console.log("token: ", token);
 			return res.status(200).json({
 				success: true,
 				data: data,
 			});
-		}
-
-		// with loggedUser
-		if (token) {
-			// verify token
-			const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-			// get the current time of the token
-			const currentTime = Math.floor(Date.now() / 1000);
-
-			// get the time remaining of the token
-			const timeRemaining = decoded.exp - currentTime;
-
-			// give the time remaining in hours and minutes
-			const timeRemainingHours = Math.floor(timeRemaining / 3600);
-
-			const timeRemainingMinutes = Math.floor((timeRemaining % 3600) / 60);
-
-			const timeRemainingSeconds = Math.floor((timeRemaining % 3600) % 60);
-
-			const username = await Users.findByPk(decoded.userId, {
-				attributes: ["name"],
-			});
-
-			const role = await Roles.findByPk(decoded.roleId, {
-				attributes: ["title"],
-			});
-
-			const school = await Schools.findByPk(decoded.schoolId, {
-				attributes: ["name"],
-			});
-
-			const activities_ = data.map((activity) => {
-				return {
-					canUserEdit: false,
-					...activity,
-				};
-			});
-
-			const objectResponse = {
-				loggedUser: {
-					sessionTime: `${timeRemainingHours}h ${timeRemainingMinutes}m ${timeRemainingSeconds}s`,
-					name: username.name,
-					role: role.title,
-					school: school.name,
-				},
-				data: activities_,
-			};
-
-			console.log("activities with loggedUser: ", objectResponse);
-			return res.status(200).json({
-				success: true,
-				...objectResponse,
-			});
-		}
+		
 	} catch (err) {
-		console.log(colors.red(`${err.message}`));
 
 		if (err.message === "jwt expired") {
 			return res.status(401).json({
@@ -695,7 +640,6 @@ exports.getUnfinishedSchoolActivities = async (req, res) => {
 			};
 		});
 
-
 		// check if the school exists
 		const schoolExists = await Schools.findOne({
 			where: {
@@ -710,13 +654,12 @@ exports.getUnfinishedSchoolActivities = async (req, res) => {
 			});
 		}
 
-		if(data.length === 0) {
+		if (data.length === 0) {
 			return res.status(404).json({
 				success: false,
 				error: "No activities found for this school.",
 			});
 		}
-
 
 		// check if there's a token in the request
 		let token = req.headers["x-access-token"] || req.headers.authorization;
