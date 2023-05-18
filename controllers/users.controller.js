@@ -112,6 +112,7 @@ exports.checkUserId = async (req, res, next) => {
 	try {
 		let token = req.headers["x-access-token"] || req.headers["authorization"];
 		token = token?.replace("Bearer ", "");
+		token = token?.replace("Bearer", "");
 		if (!token) throw new Error("no_token");
 
 		const decoded = jwt.verify(token, process.env.JWT_SECRET);
@@ -215,6 +216,7 @@ exports.getUser = async (req, res) => {
 		// check if there's a token in the request
 		let token = req.headers["x-access-token"] || req.headers.authorization;
 		token = token?.replace("Bearer ", "");
+		token = token?.replace("Bearer", "");
 
 		if (token) {
 			try {

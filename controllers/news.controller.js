@@ -27,6 +27,7 @@ exports.getNews = async (req, res) => {
 		// Check if the person that made the request is an admin
 		let token = req.headers["x-access-token"] || req.headers.authorization;
 		token = token?.replace("Bearer ", "");
+		token = token?.replace("Bearer", "");
 
 		if (token) {
 			try {
@@ -79,6 +80,7 @@ exports.getSingleNew = async (req, res) => {
 
 		let token = req.headers["x-access-token"] || req.headers.authorization;
 		token = token?.replace("Bearer ", "");
+		token = token?.replace("Bearer", "");
 
 		if (token) {
 			try {

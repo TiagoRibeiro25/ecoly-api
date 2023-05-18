@@ -8,6 +8,7 @@ exports.validateBodySubscribe = async (req, res, next) => {
 		// check if there's a token in the request and get the email from the token
 		let token = req.headers["x-access-token"] || req.headers.authorization;
 		token = token?.replace("Bearer ", "");
+		token = token?.replace("Bearer", "");
 
 		if (token) {
 			// verify the token
