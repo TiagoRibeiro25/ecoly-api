@@ -678,10 +678,7 @@ exports.getThemes = async (req, res) => {
 	}
 };
 
-// TODO => FIX BUG badge keeps on blocked list even after unblocking ( 10 activities created ) 
 exports.addActivity = async (req, res) => {
-	console.log(colors.yellow("Adding activity..."));
-
 	const {
 		title,
 		diagnostic,
@@ -773,14 +770,12 @@ exports.addActivity = async (req, res) => {
 			},
 		});
 
-		console.log(colors.green(`Activities created: ${activitiesCount}`));
-
 		if (activitiesCount === 1) {
-			unlockBadge({ badgeId: 1, userId: creator.id });
+			await unlockBadge({ badgeId: 1, userId: creator.id });
 		}
 
 		if (activitiesCount === 10) {
-			unlockBadge({ badgeId: 2, userId: creator.id });
+			await unlockBadge({ badgeId: 2, userId: creator.id });
 		}
 
 		if (activity) {
@@ -789,10 +784,9 @@ exports.addActivity = async (req, res) => {
 
 		return res.status(201).json({
 			success: true,
-			data: `activity created`,
+			data: `activity created ${activity.id}`,
 		});
 	} catch (err) {
-		console.log(colors.red(err.message));
 
 		if (err.message === "Activity already exists") {
 			return res.status(409).json({
