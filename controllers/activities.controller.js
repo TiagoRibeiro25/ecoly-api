@@ -213,6 +213,7 @@ exports.getUnfinishedActivities = async (req, res) => {
 			where: {
 				is_finished: false,
 			},
+			order: [["initial_date", "ASC"]],
 			include: [
 				{
 					model: Themes,
@@ -476,6 +477,7 @@ exports.getUnfinishedSchoolActivities = async (req, res) => {
 			where: {
 				is_finished: false,
 			},
+			order: [["initial_date", "ASC"]],
 			include: [
 				{
 					model: Themes,
@@ -676,10 +678,9 @@ exports.getThemes = async (req, res) => {
 	}
 };
 
+// TODO => FIX BUG badge keeps on blocked list even after unblocking ( 10 activities created ) 
 exports.addActivity = async (req, res) => {
 	console.log(colors.yellow("Adding activity..."));
-
-	let numActivities = 0; //10 unlock the badge of 10 activities created || 1 unlock the badge of 1 activity created
 
 	const {
 		title,
@@ -691,41 +692,50 @@ exports.addActivity = async (req, res) => {
 		resources,
 		evaluation_method,
 		complexity,
+		initial_date,
 		final_date,
-		theme,
+		theme_id,
+		images,
 	} = req.body;
 
 	try {
 		const existingActivity = await Activities.findOne({
 			where: {
 				title: title,
-			}
-		});
-
-
-		// get the id theme by the name of the theme provided
-		const themeId = await Themes.findOne({
-			where: {
-				name: theme,
 			},
 		});
+
+		const existingTheme = await Themes.findByPk(theme_id);
 
 		const validTheme = await Themes.findOne({
 			where: {
-				id: themeId.id,
+				id: theme_id,
 				is_active: true,
-			},
-		});
-
-		const existingTheme = await Themes.findOne({
-			where: {
-				name: theme,
 			},
 		});
 
 		const creator = await Users.findByPk(req.tokenData.userId);
 		const schoolUser = await Schools.findByPk(req.tokenData.schoolId);
 
+		if (title && existingActivity) {
+			throw new Error("Activity already exists");
+		}
+
+		if (!existingTheme) {
+			throw new Error("Theme not found");
+		}
+
+		if (!validTheme) {
+			throw new Error("Theme is not active");
+		}
+
+		if (req.body.images && images.length === 0) {
+			throw new Error("Images are required");
+		}
+
+		if (req.body.images && images.length > 4) {
+			throw new Error("You can only add four images");
+		}
 
 		const activity = await Activities.create({
 			creator_id: creator.id, // user
@@ -739,15 +749,83 @@ exports.addActivity = async (req, res) => {
 			resources: resources,
 			evaluation_method: evaluation_method,
 			complexity: complexity,
-			initial_date: new Date().toISOString().split("T")[0], //current date
+			initial_date: initial_date,
 			final_date: final_date,
-			theme_id: themeId.id,
+			theme_id: theme_id,
+		});
+
+		// if the body includes images add to the activity_images model
+		if (req.body.images && images.length > 0) {
+			const images = req.body.images; // array of images
+			// for each image in the array add the activity_id and the image to the activity_images table
+			images.forEach((image) => {
+				activity_images.create({
+					activity_id: activity.id,
+					img: image,
+				});
+			});
+		}
+
+		// count the number of activities created by the user
+		const activitiesCount = await Activities.count({
+			where: {
+				creator_id: creator.id,
+			},
+		});
+
+		console.log(colors.green(`Activities created: ${activitiesCount}`));
+
+		if (activitiesCount === 1) {
+			unlockBadge({ badgeId: 1, userId: creator.id });
+		}
+
+		if (activitiesCount === 10) {
+			unlockBadge({ badgeId: 2, userId: creator.id });
+		}
+
+		if (activity) {
+			addSeeds({ userId: creator.id, amount: 40 });
+		}
+
+		return res.status(201).json({
+			success: true,
+			data: `activity created`,
 		});
 	} catch (err) {
-		if (err instanceof ValidationError) {
+		console.log(colors.red(err.message));
+
+		if (err.message === "Activity already exists") {
+			return res.status(409).json({
+				success: false,
+				error: "Activity already exists",
+			});
+		}
+
+		if (err.message === "Theme is not active") {
+			return res.status(409).json({
+				success: false,
+				error: "Theme is not active",
+			});
+		}
+
+		if (err.message === "Theme not found") {
+			return res.status(404).json({
+				success: false,
+				error: "theme not found",
+			});
+		}
+
+		if (err.message === "Images are required") {
 			return res.status(400).json({
 				success: false,
-				error: err.message,
+				error: "Images are required",
+			});
+		}
+
+		if (err.message === "You can only add four images") {
+			return res.status(400).json({
+				success: false,
+				error: "You can only add four images",
 			});
 		}
 
