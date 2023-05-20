@@ -156,14 +156,14 @@ exports.validateBodyActivity = (req, res, next) => {
 		});
 	}
 
-	if (isNaN(theme_id)) {
+	if (isNaN(theme_id) || typeof theme_id !== "number") {
 		return res.status(400).json({
 			success: false,
 			error: "theme_id must be a number",
 		});
 	}
 
-	if (isNaN(complexity)) {
+	if (isNaN(complexity) || typeof complexity !== "number") {
 		return res.status(400).json({
 			success: false,
 			error: "complexity must be a number",
@@ -237,6 +237,21 @@ exports.validateBodyActivity = (req, res, next) => {
 		});
 	}
 
+	// check if images is empty
+	if (images.length === 0) {
+		return res.status(400).json({
+			success: false,
+			error: "images are required",
+		});
+	}
+
+	if(images.length > 4){
+		return res.status(400).json({
+			success: false,
+			error: "you can only add 4 images",
+		});
+	}
+
 	// check if images is an array of strings
 	if (!images.every((image) => typeof image === "string")) {
 		return res.status(400).json({
@@ -267,7 +282,7 @@ exports.validateBodyActivity = (req, res, next) => {
 	}
 
 	const validStringFields = stringFields
-		.filter((key) => key === typeof "string")
+		.filter((key) => typeof req.body[key] !== "string")
 		.map((key) => `${key} must be a string`);
 
 	if (validStringFields.length > 0) {

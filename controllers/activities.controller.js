@@ -9,8 +9,6 @@ const Users = db.users;
 const Schools = db.schools;
 const Roles = db.role;
 const Themes = db.theme;
-const badges = db.badges;
-const userBadges = db.user_badge;
 const unlockBadge = require("../utils/unlockBadge");
 const addSeeds = require("../utils/addSeeds");
 
@@ -718,20 +716,12 @@ exports.addActivity = async (req, res) => {
 			throw new Error("Activity already exists");
 		}
 
-		if (!existingTheme) {
+		if (theme_id && !existingTheme) {
 			throw new Error("Theme not found");
 		}
 
-		if (!validTheme) {
+		if (theme_id && !validTheme) {
 			throw new Error("Theme is not active");
-		}
-
-		if (req.body.images && images.length === 0) {
-			throw new Error("Images are required");
-		}
-
-		if (req.body.images && images.length > 4) {
-			throw new Error("You can only add four images");
 		}
 
 		const activity = await Activities.create({
@@ -809,27 +799,6 @@ exports.addActivity = async (req, res) => {
 			});
 		}
 
-		if (err.message === "Images are required") {
-			return res.status(400).json({
-				success: false,
-				error: "Images are required",
-			});
-		}
-
-		if (err.message === "You can only add four images") {
-			return res.status(400).json({
-				success: false,
-				error: "You can only add four images",
-			});
-		}
-
-		if (err.message === "jwt expired") {
-			return res.status(401).json({
-				success: false,
-				error: "Your session has expired. Please log in again.",
-			});
-		}
-
 		res.status(500).json({
 			success: false,
 			error: "We apologize, but our system is currently experiencing some issues. Please try again later.",
@@ -838,7 +807,13 @@ exports.addActivity = async (req, res) => {
 };
 
 exports.addTheme = async (req, res) => {
-	console.log(colors.green("Add Theme"));
+
+	try{
+
+	}
+	catch(err){
+		
+	}
 };
 
 exports.finishActivity = async (req, res) => {
