@@ -166,6 +166,7 @@ exports.validateBodyActivity = (req, res, next) => {
 		"theme_id",
 		"title",
 		"complexity",
+		"initial_date",
 		"final_date",
 		"objective",
 		"diagnostic",
@@ -179,6 +180,7 @@ exports.validateBodyActivity = (req, res, next) => {
 
 	const stringFields = [
 		"title",
+		"initial_date",
 		"final_date",
 		"objective",
 		"diagnostic",
@@ -189,7 +191,7 @@ exports.validateBodyActivity = (req, res, next) => {
 		"participants",
 	];
 
-	const { theme_id, complexity, final_date, images } = req.body;
+	const { theme_id, complexity, initial_date, final_date, images } = req.body;
 
 	const invalidFields = Object.keys(req.body)
 		.filter((key) => !validFields.includes(key))
@@ -274,6 +276,21 @@ exports.validateBodyActivity = (req, res, next) => {
 	}
 
 	// check if final_date is a valid date
+	if (!moment(initial_date, "YYYY-MM-DD", true).isValid()) {
+		return res.status(400).json({
+			success: false,
+			error: "initial_date must be a valid date",
+		});
+	}
+
+	// check if the year of final_date is greater or equal than the current year
+	if (moment(initial_date).year() < moment().year()) {
+		return res.status(400).json({
+			success: false,
+			error: "invalid year for initial_date",
+		});
+	}
+
 	if (!moment(final_date, "YYYY-MM-DD", true).isValid()) {
 		return res.status(400).json({
 			success: false,
@@ -281,7 +298,6 @@ exports.validateBodyActivity = (req, res, next) => {
 		});
 	}
 
-	// check if the year of final_date is greater or equal than the current year
 	if (moment(final_date).year() < moment().year()) {
 		return res.status(400).json({
 			success: false,
@@ -289,6 +305,36 @@ exports.validateBodyActivity = (req, res, next) => {
 		});
 	}
 
+	// check if the initial_date is before the final_date
+	if (moment(initial_date).isAfter(moment(final_date))) {
+		return res.status(400).json({
+			success: false,
+			error: "initial_date must be before final_date",
+		});
+	}
+
+	// check if the final_date is after the initial_date
+	if (moment(final_date).isBefore(moment(initial_date))) {
+		return res.status(400).json({
+			success: false,
+			error: "final_date must be after initial_date",
+		});
+	}
+
+	// check if the initial date is not equal to the final date
+	if (moment(initial_date).isSame(moment(final_date))) {
+		return res.status(400).json({
+			success: false,
+			error: "initial_date cannot be equal to final_date",
+		});
+	}
+
+	if (moment(final_date).isSame(moment(initial_date))) {
+		return res.status(400).json({
+			success: false,
+			error: "final_date cannot be equal to initial_date",
+		});
+	}
 
 	if (!Array.isArray(images)) {
 		return res.status(400).json({
@@ -313,7 +359,7 @@ exports.validateBodyActivity = (req, res, next) => {
 		});
 	}
 
-	if (images.some((image) => !image.startsWith("data:image/png;base64,"))) {
+	if (images.some((image) => !image.startsWith("data:image/png;base64,") || !image.startsWith("data:image/jpeg;base64,"))) {
 		return res.status(400).json({
 			success: false,
 			error: "images must be a valid base64 string",
