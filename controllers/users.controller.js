@@ -11,8 +11,12 @@ const Schools = db.schools;
 const UserBadge = db.user_badge;
 
 /**
- * @param { Array<{ id: number, user_id: number, amount: number, date: string}> } seeds
- * @returns {{ monthSeeds: number, totalSeeds: number }}
+ * The function calculates the total and monthly amount of seeds based on an array of seed objects with
+ * date and amount properties.
+ * @param { Array<{ id: number, user_id: number, amount: number, date: string}> } seeds - an array of objects representing seeds, with each object having the following
+ * properties:
+ * @returns {{ monthSeeds: number, totalSeeds: number }} - An object containing the total number of seeds for the current month and the total number
+ * of seeds overall.
  */
 function getSeedsMonthAndTotal(seeds) {
 	const currMonth = new Date().getMonth() + 1;
@@ -47,8 +51,11 @@ async function getBadgeCompletionPercentage(badgeId) {
 }
 
 /**
- * @param {string} name
- * @returns {string}
+ * The function converts a given name by trimming, replacing spaces with underscores, removing special
+ * characters, converting to lowercase, and replacing letters with accents with the same letter without
+ * accent.
+ * @param name - The input string that needs to be converted into a valid name format.
+ * @returns {string} - The converted string.
  */
 function convertName(name) {
 	// trim
@@ -65,19 +72,18 @@ function convertName(name) {
 }
 
 /**
- * @param { Array<{ id: number, user_id: number, badge_id: number, is_highlight: boolean }> } unlockedBadges
+ * @param {{id: number, email: string, name: string, password: string, photo: string, role_id: number, school_id: number, internal_id? : string, course? : string, year?: number}} user
  * @returns {Promise<{
  * 	highlighted?: number,
  *  	unlocked: Array<{ id: number, title: string, description: string, img: string}>,
  *  	locked: Array<{ id: number, title: string, description: string, img: string}>,
  *   }>}
  */
-async function getBadgesInfo(unlockedBadges) {
+async function getBadgesInfo(user) {
+	const unlockedBadges = await user.getUser_badges();
 	const unlockedBadgesInfoArray = await Promise.all(
 		unlockedBadges.map(async (badge) => {
-			// await badge.getBadge();
 			const badgeInfo = await badge.getBadge();
-			// convert to JSON
 			return badgeInfo.toJSON();
 		})
 	);
@@ -87,13 +93,11 @@ async function getBadgesInfo(unlockedBadges) {
 
 	// get the rest of the badges
 	const badges = await Badges.findAll();
-	const lockedBadgesInfoArray = badges.map((badge) => badge.toJSON());
-	lockedBadgesInfoArray.forEach((badge) => {
-		// if the badge is unlocked, delete it from the array
-		if (unlockedBadgesInfoArray.some((unlockedBadge) => unlockedBadge.id === badge.id)) {
-			lockedBadgesInfoArray.splice(lockedBadgesInfoArray.indexOf(badge), 1);
-		}
-	});
+	const lockedBadgesInfoArray = badges
+		.filter((badge) => {
+			return !unlockedBadgesInfoArray.some((unlockedBadge) => unlockedBadge.id === badge.id);
+		})
+		.map((badge) => badge.toJSON());
 
 	if (highlightBadgeId) {
 		return {
@@ -252,8 +256,7 @@ exports.getUser = async (req, res) => {
 		result.seeds = { month: monthSeeds, total: totalSeeds };
 
 		// add badges
-		const unlockedBadges = await user.getUser_badges();
-		result.badges = await getBadgesInfo(unlockedBadges);
+		result.badges = await getBadgesInfo(user);
 
 		// add users unlock percentage to the badges
 		for (const badge of result.badges.unlocked) {
