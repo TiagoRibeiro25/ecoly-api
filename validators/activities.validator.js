@@ -1,4 +1,5 @@
 const colors = require("colors");
+const moment = require("moment"); //library to handle dates validations
 
 exports.validateQueries = (req, res, next) => {
 	const validQueries = ["filter", "school", "fields", "search"];
@@ -158,14 +159,13 @@ exports.validateQueries = (req, res, next) => {
 	next();
 };
 
-// create activity
+// validations for create activity
 exports.validateBodyActivity = (req, res, next) => {
 	// check with the activities model the null fields and if the body has the same fields
 	const validFields = [
-		"theme",
+		"theme_id",
 		"title",
 		"complexity",
-		"initial_date",
 		"final_date",
 		"objective",
 		"diagnostic",
@@ -174,39 +174,174 @@ exports.validateBodyActivity = (req, res, next) => {
 		"participants",
 		"evaluation_indicator",
 		"evaluation_method",
+		"images",
 	];
+
+	const stringFields = [
+		"title",
+		"final_date",
+		"objective",
+		"diagnostic",
+		"meta",
+		"resources",
+		"evaluation_indicator",
+		"evaluation_method",
+		"participants",
+	];
+
+	const { theme_id, complexity, final_date, images } = req.body;
 
 	const invalidFields = Object.keys(req.body)
 		.filter((key) => !validFields.includes(key))
 		.map((key) => `${key} is a invalid field`);
 
-	const emptyFields = Object.keys(req.body).filter((key) => req.body[key] == "").map((key) => `${key} is empty`);
+	if (Object.keys(req.body).length === 0) {
+		return res.status(400).json({
+			success: false,
+			error: "body is empty",
+		});
+	}
 
-		if (Object.keys(req.body).length === 0) {
-			res.status(400).json({
-				success: false,
-				error: "body is empty",
-			});
-		}
-	
-		if (invalidFields.length > 0) {
-			res.status(400).json({
-				success: false,
-				error: invalidFields,
-			});
-		}
+	if (invalidFields.length > 1) {
+		return res.status(400).json({
+			success: false,
+			error: invalidFields,
+		});
+	}
 
-		if (emptyFields.length > 0) {
-			res.status(400).json({
-				success: false,
-				error: emptyFields,
-			});
-		}
+	if (invalidFields.length == 1) {
+		return res.status(400).json({
+			success: false,
+			error: invalidFields[0],
+		});
+	}
+
+	const nullFields = validFields
+		.filter((key) => req.body[key] === undefined)
+		.map((key) => `${key} cannot be null`);
+
+	const emptyFields = validFields
+		.filter((key) => req.body[key] === "")
+		.map((key) => `${key} cannot be empty`);
+
+	if (nullFields.length > 1) {
+		return res.status(400).json({
+			success: false,
+			error: nullFields,
+		});
+	}
+
+	if (nullFields.length == 1) {
+		return res.status(400).json({
+			success: false,
+			error: nullFields[0],
+		});
+	}
+
+	if (emptyFields.length > 1) {
+		return res.status(400).json({
+			success: false,
+			error: emptyFields,
+		});
+	}
+
+	if (emptyFields.length == 1) {
+		return res.status(400).json({
+			success: false,
+			error: emptyFields[0],
+		});
+	}
+
+	if (isNaN(theme_id)) {
+		return res.status(400).json({
+			success: false,
+			error: "theme_id must be a number",
+		});
+	}
+
+	if (isNaN(complexity)) {
+		return res.status(400).json({
+			success: false,
+			error: "complexity must be a number",
+		});
+	}
+
+	if (!(complexity >= 1 && complexity <= 5)) {
+		return res.status(400).json({
+			success: false,
+			error: "complexity must be between 1 and 5",
+		});
+	}
+
+	// check if final_date is a valid date
+	if (!moment(final_date, "YYYY-MM-DD", true).isValid()) {
+		return res.status(400).json({
+			success: false,
+			error: "final_date must be a valid date",
+		});
+	}
+
+	// check if the year of final_date is greater or equal than the current year
+	if (moment(final_date).year() < moment().year()) {
+		return res.status(400).json({
+			success: false,
+			error: "invalid year for final_date",
+		});
+	}
+
+
+	if (!Array.isArray(images)) {
+		return res.status(400).json({
+			success: false,
+			error: "images must be an array or list",
+		});
+	}
+
+	// check if images is an array of strings
+	if (!images.every((image) => typeof image === "string")) {
+		return res.status(400).json({
+			success: false,
+			error: "images must be an array of strings",
+		});
+	}
+
+	// empty string in images array
+	if (images.some((image) => image === "")) {
+		return res.status(400).json({
+			success: false,
+			error: "images cannot have empty strings",
+		});
+	}
+
+	if (images.some((image) => !image.startsWith("data:image/png;base64,"))) {
+		return res.status(400).json({
+			success: false,
+			error: "images must be a valid base64 string",
+		});
+	}
+
+	const validStringFields = stringFields
+		.filter((key) => key === typeof "string")
+		.map((key) => `${key} must be a string`);
+
+	if (validStringFields.length > 1) {
+		return res.status(400).json({
+			success: false,
+			error: validStringFields,
+		});
+	}
+
+	if (validStringFields.length == 1) {
+		return res.status(400).json({
+			success: false,
+			error: validStringFields[0],
+		});
+	}
 
 	next();
 };
 
-// create theme
+// validations for create theme
 exports.validateBodyTheme = (req, res, next) => {
 	const bodyValid = true;
 	if (bodyValid) {
@@ -216,7 +351,7 @@ exports.validateBodyTheme = (req, res, next) => {
 	next();
 };
 
-// finish activity - create report of activity
+// validations for finish activity - create report of activity
 exports.validateBodyReport = (req, res, next) => {
 	const bodyValid = true;
 	if (bodyValid) {
