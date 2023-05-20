@@ -3,94 +3,50 @@ const moment = require("moment"); //library to handle dates validations
 
 exports.validateQueries = (req, res, next) => {
 	const validQueries = ["filter", "school", "fields", "search"];
-
 	const fieldsValid = ["activity", "theme", "activities", "themes", "report"];
 	const filterValid = ["finished", "unfinished", "recent"];
-
-	const ObjectKeys = [];
-
-	Object.keys(req.query).forEach((key) => {
-		ObjectKeys.push(key);
-	});
+	const ObjectKeys = Object.keys(req.query);
 
 	// Check if all queries are valid
 	const queriesAreValid = ObjectKeys.every((key) => validQueries.includes(key));
 
-	// Check if all queries are valid
 	if (!queriesAreValid) {
 		const invalidQueries = ObjectKeys.filter((key) => !validQueries.includes(key)).map(
-			(key) => `${key} is a invalid parameter`
+			(key) => `${key} is an invalid parameter`
 		);
-
-		if (invalidQueries.length == 1) {
-			// returns only one error without array
-			console.log(colors.red("Invalid parameter"));
-			return res.status(400).json({
-				success: false,
-				error: invalidQueries[0],
-			});
-		}
-
-		console.log(colors.red("Invalid parameters"));
 		return res.status(400).json({
 			success: false,
-			// return error for each invalid query
-			error: invalidQueries,
+			error: invalidQueries.length > 1 ? invalidQueries : invalidQueries[0],
 		});
 	}
 
-	const emptyQueries = ObjectKeys.filter((key) => req.query[key] == "").map(
+	const emptyQueries = ObjectKeys.filter((key) => req.query[key] === "").map(
 		(key) => `${key} is empty`
 	);
 
-	if (emptyQueries.length == 1) {
-		// returns only one error without array
-		console.log(colors.red("Empty query"));
-		return res.status(400).json({
-			success: false,
-			error: emptyQueries[0],
-		});
+	if (emptyQueries.length > 0) {
+		return res
+			.status(400)
+			.json({ success: false, error: emptyQueries.length > 1 ? emptyQueries : emptyQueries[0] });
 	}
 
-	if (emptyQueries.length > 1) {
-		console.log(colors.red("Empty queries"));
-		return res.status(400).json({
-			success: false,
-			error: emptyQueries,
-		});
-	}
-
-	// Check if fields parameter is valid
 	const invalidFields = Object.keys(req.query)
 		.filter((key) => key === "fields" && !fieldsValid.includes(req.query[key]))
 		.map((key) => `${req.query.fields} is an invalid value for the fields parameter`);
 
-	// Check if filter parameter is valid
 	const invalidFilter = Object.keys(req.query)
 		.filter((key) => key === "filter" && !filterValid.includes(req.query[key]))
 		.map((key) => `${req.query.filter} is an invalid value for the filter parameter`);
 
-	// Combine all invalid parameters
 	const allInvalidParams = [...invalidFields, ...invalidFilter];
 
-	// Return all possible errors as an array
-	if (allInvalidParams.length > 1) {
-		console.log(colors.red("Invalid parameters"));
+	if (allInvalidParams.length > 0) {
 		return res.status(400).json({
 			success: false,
-			error: allInvalidParams,
+			error: allInvalidParams.length > 1 ? allInvalidParams : allInvalidParams[0],
 		});
 	}
 
-	if (allInvalidParams.length == 1) {
-		console.log(colors.red("Invalid parameter"));
-		return res.status(400).json({
-			success: false,
-			error: allInvalidParams[0],
-		});
-	}
-
-	// if fields is valid with activities but is missing schoolId or filter parameter
 	if (
 		req.method === "GET" &&
 		req.query.fields === "activities" &&
@@ -98,64 +54,31 @@ exports.validateQueries = (req, res, next) => {
 		!req.query.filter
 	) {
 		console.log(colors.red("Missing school or filter parameter"));
-		return res.status(400).json({
-			success: false,
-			error: "Missing parameters filter or school",
-		});
+		return res.status(400).json({ success: false, error: "Missing parameters filter or school" });
 	}
 
-	// accept only themes and activities for the fields parameter
 	if (
 		req.method === "GET" &&
 		req.query.fields &&
-		req.query.fields !== "activities" &&
-		req.query.fields !== "themes" &&
-		req.query.fields !== "report"
+		!["activities", "themes", "report"].includes(req.query.fields)
 	) {
-		console.log(ObjectKeys);
-		console.log(
-			colors.red(
-				"Invalid fields value : accept only themes and activities for the fields parameter"
-			)
-		);
 		return res.status(400).json({
 			success: false,
-			error: `${req.query.fields} is a invalid value for the fields parameter`,
+			error: `${req.query.fields} is an invalid value for the fields parameter`,
 		});
 	}
 
-	// accept only theme and activity for the fields parameter in the POST PATCH DELETE
 	if (
 		(req.method === "POST" || req.method === "PATCH") &&
 		req.query.fields &&
-		req.query.fields !== "activity" &&
-		req.query.fields !== "theme"
+		!["activity", "theme"].includes(req.query.fields)
 	) {
-		console.log(ObjectKeys);
-		console.log(
-			colors.red(
-				"Invalid fields value : accept only theme and activity for the fields parameter"
-			)
-		);
 		return res.status(400).json({
 			success: false,
-			error: `${req.query.fields} is a invalid value for the fields parameter`,
+			error: `${req.query.fields} is an invalid value for the fields parameter`,
 		});
 	}
 
-	if (
-		req.method === "GET" &&
-		req.query.fields &&
-		req.query.school &&
-		req.query.filter &&
-		Object.keys(req.query).indexOf("filter") > Object.keys(req.query).indexOf("school")
-	) {
-		console.log(colors.red("Invalid query"));
-		return res.status(400).json({
-			success: false,
-			error: "filter parameter is only allowed before school parameter",
-		});
-	}
 	next();
 };
 
@@ -204,17 +127,10 @@ exports.validateBodyActivity = (req, res, next) => {
 		});
 	}
 
-	if (invalidFields.length > 1) {
+	if (invalidFields.length > 0) {
 		return res.status(400).json({
 			success: false,
-			error: invalidFields,
-		});
-	}
-
-	if (invalidFields.length == 1) {
-		return res.status(400).json({
-			success: false,
-			error: invalidFields[0],
+			error: invalidFields.length > 1 ? invalidFields : invalidFields[0],
 		});
 	}
 
@@ -226,31 +142,17 @@ exports.validateBodyActivity = (req, res, next) => {
 		.filter((key) => req.body[key] === "")
 		.map((key) => `${key} cannot be empty`);
 
-	if (nullFields.length > 1) {
+	if (nullFields.length > 0) {
 		return res.status(400).json({
 			success: false,
-			error: nullFields,
+			error: nullFields.length > 1 ? nullFields : nullFields[0],
 		});
 	}
 
-	if (nullFields.length == 1) {
+	if (emptyFields.length > 0) {
 		return res.status(400).json({
 			success: false,
-			error: nullFields[0],
-		});
-	}
-
-	if (emptyFields.length > 1) {
-		return res.status(400).json({
-			success: false,
-			error: emptyFields,
-		});
-	}
-
-	if (emptyFields.length == 1) {
-		return res.status(400).json({
-			success: false,
-			error: emptyFields[0],
+			error: emptyFields.length > 1 ? emptyFields : emptyFields[0],
 		});
 	}
 
@@ -328,14 +230,6 @@ exports.validateBodyActivity = (req, res, next) => {
 			error: "initial_date cannot be equal to final_date",
 		});
 	}
-
-	if (moment(final_date).isSame(moment(initial_date))) {
-		return res.status(400).json({
-			success: false,
-			error: "final_date cannot be equal to initial_date",
-		});
-	}
-
 	if (!Array.isArray(images)) {
 		return res.status(400).json({
 			success: false,
@@ -359,7 +253,13 @@ exports.validateBodyActivity = (req, res, next) => {
 		});
 	}
 
-	if (images.some((image) => !image.startsWith("data:image/png;base64,") || !image.startsWith("data:image/jpeg;base64,"))) {
+	if (
+		images.some(
+			(image) =>
+				!image.startsWith("data:image/png;base64,") &&
+				!image.startsWith("data:image/jpeg;base64,")
+		)
+	) {
 		return res.status(400).json({
 			success: false,
 			error: "images must be a valid base64 string",
@@ -370,17 +270,10 @@ exports.validateBodyActivity = (req, res, next) => {
 		.filter((key) => key === typeof "string")
 		.map((key) => `${key} must be a string`);
 
-	if (validStringFields.length > 1) {
+	if (validStringFields.length > 0) {
 		return res.status(400).json({
 			success: false,
-			error: validStringFields,
-		});
-	}
-
-	if (validStringFields.length == 1) {
-		return res.status(400).json({
-			success: false,
-			error: validStringFields[0],
+			error: validStringFields.length > 1 ? validStringFields : validStringFields[0],
 		});
 	}
 
