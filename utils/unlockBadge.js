@@ -14,7 +14,7 @@ const Badges = db.badges;
  */
 async function unlockBadge({ badgeId, userId }) {
 	try {
-		// check if the bad exists
+		// check if the badge exists
 		const badge = await Badges.findOne({ where: { id: badgeId } });
 		if (!badge) throw new Error("Badge not found");
 
