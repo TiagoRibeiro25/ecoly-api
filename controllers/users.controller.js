@@ -76,9 +76,7 @@ async function getBadgesInfo(user) {
 	const unlockedBadges = await user.getUser_badges();
 	const unlockedBadgesInfoArray = await Promise.all(
 		unlockedBadges.map(async (badge) => {
-			// await badge.getBadge();
 			const badgeInfo = await badge.getBadge();
-			// convert to JSON
 			return badgeInfo.toJSON();
 		})
 	);
