@@ -4,6 +4,8 @@ const colors = require("colors");
 const sendEmail = require("../utils/emailSender");
 const db = require("../models/db");
 const contactMembersTemplate = require("../data/contactMembersTemplate");
+const unlockBadge = require("../utils/unlockBadge");
+const addSeeds = require("../utils/addSeeds");
 const Users = db.users;
 const Badges = db.badges;
 const Roles = db.role;
@@ -521,6 +523,11 @@ exports.contactMembers = async (req, res) => {
 		if (!result) throw new Error("email_not_sent");
 
 		res.status(200).json({ success: true, message: `Email sent successfully.` });
+
+		Promise.all([
+			unlockBadge({ badgeId: 6, userId: req.tokenData.userId }), // unlock the badge "Mensageiro"
+			addSeeds({ amount: 20, userId: req.tokenData.userId }), // add 20 seeds to the user
+		]);
 	} catch (err) {
 		console.log(colors.red("\n\n-> ") + colors.yellow(err) + "\n");
 		res.status(500).json({ success: false, message: `Error occurred while sending email.` });
