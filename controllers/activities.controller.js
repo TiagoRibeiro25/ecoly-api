@@ -22,7 +22,7 @@ function fixDate(date) {
 
 exports.getDetailActivity = async (req, res) => {
 	const { id } = req.params;
-
+	let isUserLogged = false;
 	try {
 		const activity = await Activities.findByPk(id, {
 			// get the activity theme name, the school name and the creator name  and the images of the activity in array
@@ -104,6 +104,7 @@ exports.getDetailActivity = async (req, res) => {
 		if (!token) {
 			return res.status(200).json({
 				success: true,
+				isUserLogged: false,
 				data: data,
 			});
 		}
@@ -114,7 +115,7 @@ exports.getDetailActivity = async (req, res) => {
 			const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
 			// check if the activity it's from the logged user's school
-			const isFromLoggedUserSchool_ = await Activities.findOne({
+			const isFromUserSchool_ = await Activities.findOne({
 				where: {
 					id: id,
 					school_id: decoded.schoolId,
@@ -129,6 +130,7 @@ exports.getDetailActivity = async (req, res) => {
 				},
 			});
 
+			// if the user logged is not unsigned set to true the isUserVerified variable
 			const data = {
 				id: activity.id,
 				creator: {
@@ -153,7 +155,10 @@ exports.getDetailActivity = async (req, res) => {
 
 			return res.status(200).json({
 				success: true,
-				isFromLoggedUserSchool: isFromLoggedUserSchool_ && !isUnsigned ? true : false,
+				isUserLogged: true,
+				isUserVerified: !isUnsigned ? true : false,
+				isFromUserSchool:
+					isFromUserSchool_ && !isUnsigned && isUserLogged == true ? true : false,
 				data: data,
 			});
 		}
@@ -205,6 +210,8 @@ exports.searchActivities = async (req, res) => {
 };
 
 exports.getUnfinishedActivities = async (req, res) => {
+	let isUserLogged = false;
+
 	try {
 		// meta objective participants = description
 		const activities = await Activities.findAll({
@@ -250,6 +257,7 @@ exports.getUnfinishedActivities = async (req, res) => {
 		if (!token) {
 			return res.status(200).json({
 				success: true,
+				isUserLogged: false,
 				data: data,
 			});
 		}
@@ -260,7 +268,7 @@ exports.getUnfinishedActivities = async (req, res) => {
 			const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
 			// check each activity if it's from the logged user's school
-			const isFromLoggedUserSchool_ = await Activities.findOne({
+			const isFromUserSchool_ = await Activities.findOne({
 				where: {
 					id: { [Op.in]: activities.map((activity) => activity.id) },
 					school_id: decoded.schoolId,
@@ -277,7 +285,7 @@ exports.getUnfinishedActivities = async (req, res) => {
 
 			const data = activities.map((activity) => {
 				return {
-					isFromLoggedUserSchool: isFromLoggedUserSchool_ && !isUnsigned ? true : false,
+					isFromUserSchool: isFromUserSchool_ && !isUnsigned && isUserLogged == true ? true : false,
 					id: activity.id,
 					is_finished: activity.is_finished,
 					theme: activity.theme.name,
@@ -291,6 +299,8 @@ exports.getUnfinishedActivities = async (req, res) => {
 
 			res.status(200).json({
 				success: true,
+				isUserLogged: true,
+				isUserVerified: !isUnsigned ? true : false,
 				data: data,
 			});
 		}
@@ -548,7 +558,7 @@ exports.getUnfinishedSchoolActivities = async (req, res) => {
 		const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
 		// check each activity if it's from the logged user's school
-		const isFromLoggedUserSchool_ = await Activities.findOne({
+		const isFromUserSchool_ = await Activities.findOne({
 			where: {
 				id: { [Op.in]: activities.map((activity) => activity.id) },
 				school_id: decoded.schoolId,
@@ -566,7 +576,7 @@ exports.getUnfinishedSchoolActivities = async (req, res) => {
 		// return the data above by setting the isFromLoggedUserSchool_ key
 		const activities_ = data.map((activity) => {
 			return {
-				isFromLoggedUserSchool: isFromLoggedUserSchool_ && !isUnsigned ? true : false,
+				isFromUserSchool: isFromUserSchool_ && !isUnsigned ? true : false,
 				id: activity.id,
 				is_finished: activity.is_finished,
 				theme: activity.theme,
@@ -601,6 +611,8 @@ exports.getReport = async (req, res) => {
 	const { id } = req.params;
 
 	try {
+		const schoolUser = await Schools.findByPk(req.tokenData.schoolId);
+
 		const activity = await Activities.findByPk(id, {
 			where: {
 				is_finished: true,
@@ -636,9 +648,17 @@ exports.getReport = async (req, res) => {
 			});
 		}
 
+		// check the if the activity finished is from the logged user's school
+		if (activity.school_id !== schoolUser.id) {
+			return res.status(409).json({
+				success: false,
+				error: "This activity is not from your school.",
+			});
+		}
+
 		const data = {
 			id: activity.id,
-			description: activity.report,
+			report: activity.report,
 			images: activity.activity_report_images.map((image) => image.img),
 		};
 
@@ -777,7 +797,6 @@ exports.addActivity = async (req, res) => {
 			data: `activity created ${activity.id}`,
 		});
 	} catch (err) {
-
 		if (err.message === "Activity already exists") {
 			return res.status(409).json({
 				success: false,
@@ -807,21 +826,186 @@ exports.addActivity = async (req, res) => {
 };
 
 exports.addTheme = async (req, res) => {
+	const { name } = req.body;
 
-	try{
+	try {
+		const existingTheme = await Themes.findOne({
+			where: {
+				name: name,
+				is_active: true,
+			},
+		});
 
-	}
-	catch(err){
+		if (name && existingTheme) {
+			throw new Error("Theme already exists");
+		}
+
+		// if the theme 
+
 		
+		
+
+
+		await addSeeds({ userId: creator.id, amount: 40 });
+
+		// return res.status(201).json({
+		// 	success: true,
+		// 	data: `theme created ${theme.id}`,
+		// });
+	} catch (err) {
+		if (err.message === "Theme already exists") {
+			return res.status(409).json({
+				success: false,
+				error: "Theme already exists",
+			});
+		}
+		res.status(500).json({
+			success: false,
+			error: "We apologize, but our system is currently experiencing some issues. Please try again later.",
+		});
 	}
 };
 
 exports.finishActivity = async (req, res) => {
-	console.log(colors.green("Finish Activity"));
+	const { id } = req.params;
+	const { images, report } = req.body;
+	try {
+		const activity = await Activities.findByPk(id);
+		const creator = await Users.findByPk(req.tokenData.userId);
+		const schoolUser = await Schools.findByPk(req.tokenData.schoolId);
+
+		// check if the activity exists
+		if (!activity) {
+			throw new Error("Activity not found");
+		}
+		// check if the activity is already finished
+		if (activity.is_finished === true) {
+			throw new Error("Activity is already finished");
+		}
+
+		// check if the activity is from the user school
+		if (activity.school_id !== schoolUser.id) {
+			throw new Error("Activity is not from your school");
+
+			// if the activity is from the user school finish the activity
+		} else if (activity.school_id === schoolUser.id) {
+			// update the activity to finished and add the report from the body
+			await Activities.update(
+				{
+					is_finished: true,
+					report: report,
+				},
+				{
+					where: {
+						id: id,
+					},
+				}
+			);
+
+			// if the body includes images add to the activity report_images model
+			if (req.body.images && images.length > 0) {
+				const images = req.body.images; // array of images
+				// for each image in the array add the activity_id and the image to the activity_images table
+				images.forEach((image) => {
+					activity_report_images.create({
+						activity_id: activity.id,
+						img: image,
+					});
+				});
+			}
+
+			// Unlock the badge if the activity is finished on the last day
+			const currentDate = new Date().toISOString().slice(0, 10);
+
+			// Convert the activity's final date to the same format as currentDate
+			const activityFinalDate = new Date(activity.final_date).toISOString().slice(0, 10);
+
+			// Check if the current date is the same as the final date of the activity
+			if (currentDate === activityFinalDate) {
+				unlockBadge({ badgeId: 3, userId: creator.id });
+			}
+
+			await addSeeds({ userId: creator.id, amount: 40 });
+
+			return res.status(200).json({
+				success: true,
+				data: `activity finished with success ${activity.id}`,
+			});
+		}
+	} catch (err) {
+		if (err.message === "Activity not found") {
+			return res.status(404).json({
+				success: false,
+				error: "Activity not found",
+			});
+		}
+		if (err.message === "Activity is already finished") {
+			return res.status(409).json({
+				success: false,
+				error: "Activity is already finished",
+			});
+		}
+		if (err.message === "Activity is not from your school") {
+			return res.status(409).json({
+				success: false,
+				error: "Activity is not from your school",
+			});
+		}
+		res.status(500).json({
+			success: false,
+			error: "We apologize, but our system is currently experiencing some issues. Please try again later.",
+		});
+	}
 };
 
 exports.disabledTheme = async (req, res) => {
-	console.log(colors.green("Theme inactive"));
+	const { id } = req.params;
+	try {
+		const theme = await Themes.findByPk(id);
+
+		if (!theme) {
+			throw new Error("Theme not found");
+		}
+
+		if (theme.is_active === false) {
+			throw new Error("Theme is already disabled");
+		}
+
+
+		// if there is token 
+		await Themes.update(
+			{
+				is_active: false,
+			},
+			{
+				where: {
+					id: id,
+				},
+			}
+		);
+
+		return res.status(200).json({
+			success: true,
+			message: `the theme ${theme.name} is now disabled`,
+		});
+	} catch (err) {
+		if (err.message === "Theme not found") {
+			return res.status(404).json({
+				success: false,
+				error: "Theme not found",
+			});
+		}
+		if (err.message === "Theme is already disabled") {
+			return res.status(409).json({
+				success: false,
+				error: "Theme is already disabled",
+			});
+		}
+		res.status(500).json({
+			success: false,
+			error: "We apologize, but our system is currently experiencing some issues. Please try again later.",
+		});
+	}
 };
 
 exports.deleteActivity = async (req, res) => {
