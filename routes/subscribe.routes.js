@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
-const subscribeController = require("../controllers/news_letter.controller");
-const subscribeValidator = require("../validators/news_letter.validator");
+const subscribeController = require("../controllers/subscribe.controller");
+const subscribeValidator = require("../validators/subscribe.validator");
 const authController = require("../controllers/auth.controller");
 
 router
