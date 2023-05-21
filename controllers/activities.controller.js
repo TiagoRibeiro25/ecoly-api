@@ -1035,13 +1035,49 @@ exports.disabledTheme = async (req, res) => {
 };
 
 exports.deleteActivity = async (req, res) => {
-	console.log("deleteActivity");
 	const { id } = req.params;
 
-	try{
+	try {
+		const activity = await Activities.findByPk(id);
 
-	}
-	catch(err){
+		if (!activity) {
+			throw new Error("Activity not found");
+		}
 
+		if (activity.is_finished === true) {
+			throw new Error("you can´t delete a finished activity");
+		}
+
+		// delete the activity images
+		await activity_images.destroy({
+			where: {
+				activity_id: id,
+			},
+		});
+
+		await Activities.destroy({
+			where: {
+				id: id,
+			},
+		});
+
+		return res.status(200).json({
+			success: true,
+			message: `the activity deleted successfully`,
+		});
+	} catch (err) {
+		console.log(err.message);
+		if (err.message === "Activity not found") {
+			return res.status(404).json({
+				success: false,
+				error: "Activity not found",
+			});
+		}
+		if (err.message === "you can´t delete a finished activity") {
+			return res.status(409).json({
+				success: false,
+				error: "you can´t delete a finished activity",
+			});
+		}
 	}
 };
