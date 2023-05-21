@@ -230,6 +230,15 @@ exports.validateBodyActivity = (req, res, next) => {
 			error: "initial_date cannot be equal to final_date",
 		});
 	}
+
+	// check if the initial date is before the current date
+	if (moment(initial_date).isBefore(moment().format("YYYY-MM-DD"))) {
+		return res.status(400).json({
+			success: false,
+			error: "initial_date must be after the current date",
+		});
+	}
+
 	if (!Array.isArray(images)) {
 		return res.status(400).json({
 			success: false,
@@ -245,7 +254,7 @@ exports.validateBodyActivity = (req, res, next) => {
 		});
 	}
 
-	if(images.length > 4){
+	if (images.length > 4) {
 		return res.status(400).json({
 			success: false,
 			error: "you can only add 4 images",
@@ -297,9 +306,35 @@ exports.validateBodyActivity = (req, res, next) => {
 
 // validations for create theme
 exports.validateBodyTheme = (req, res, next) => {
-	const bodyValid = true;
-	if (bodyValid) {
-		console.log(colors.green("create theme body is valid"));
+	const validField = "name";
+	const key = Object.keys(req.body)[0];
+
+	if (!key) {
+		return res.status(400).json({
+			success: false,
+			error: "body is empty",
+		});
+	}
+
+	if (key !== validField) {
+		return res.status(400).json({
+			success: false,
+			error: `${key} is not a valid field`,
+		});
+	}
+
+	if (!req.body[key]) {
+		return res.status(400).json({
+			success: false,
+			error: `${key} cannot be empty`,
+		});
+	}
+
+	if (typeof req.body[key] !== "string") {
+		return res.status(400).json({
+			success: false,
+			error: `${key} must be a string`,
+		});
 	}
 
 	next();
@@ -307,9 +342,107 @@ exports.validateBodyTheme = (req, res, next) => {
 
 // validations for finish activity - create report of activity
 exports.validateBodyReport = (req, res, next) => {
-	const bodyValid = true;
-	if (bodyValid) {
-		console.log(colors.green("create report body is valid to finish activity"));
+	const validFields = ["images", "report"];
+
+	const { images, report } = req.body;
+
+	// check invalid fields and return for each key the error
+	if (Object.keys(req.body).length === 0) {
+		return res.status(400).json({
+			success: false,
+			error: "body is empty",
+		});
+	}
+
+	const invalidFields = Object.keys(req.body)
+		.filter((key) => !validFields.includes(key))
+		.map((key) => `${key} is not a valid field`);
+
+	if (invalidFields.length > 0) {
+		return res.status(400).json({
+			success: false,
+			error: invalidFields.length > 1 ? invalidFields : invalidFields[0],
+		});
+	}
+
+	const emptyFields = validFields
+		.filter((key) => req.body[key] === "")
+		.map((key) => `${key} cannot be empty`);
+
+	if (emptyFields.length > 0) {
+		return res.status(400).json({
+			success: false,
+			error: emptyFields.length > 1 ? emptyFields : emptyFields[0],
+		});
+	}
+
+	const nullFields = validFields
+		.filter((key) => req.body[key] === undefined)
+		.map((key) => `${key} cannot be null`);
+
+	if (nullFields.length > 0) {
+		return res.status(400).json({
+			success: false,
+			error: nullFields.length > 1 ? nullFields : nullFields[0],
+		});
+	}
+
+	if (typeof report !== "string") {
+		return res.status(400).json({
+			success: false,
+			error: "report must be a string",
+		});
+	}
+
+	if (!Array.isArray(images)) {
+		return res.status(400).json({
+			success: false,
+			error: "images must be an array or list",
+		});
+	}
+
+	// check if images is empty
+	if (images.length === 0) {
+		return res.status(400).json({
+			success: false,
+			error: "images are required",
+		});
+	}
+
+	if (images.length > 4) {
+		return res.status(400).json({
+			success: false,
+			error: "you can only add 4 images",
+		});
+	}
+
+	// check if images is an array of strings
+	if (!images.every((image) => typeof image === "string")) {
+		return res.status(400).json({
+			success: false,
+			error: "images must be an array of strings",
+		});
+	}
+
+	// empty string in images array
+	if (images.some((image) => image === "")) {
+		return res.status(400).json({
+			success: false,
+			error: "images cannot have empty strings",
+		});
+	}
+
+	if (
+		images.some(
+			(image) =>
+				!image.startsWith("data:image/png;base64,") &&
+				!image.startsWith("data:image/jpeg;base64,")
+		)
+	) {
+		return res.status(400).json({
+			success: false,
+			error: "images must be a valid base64 string",
+		});
 	}
 
 	next();
