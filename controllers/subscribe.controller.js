@@ -38,7 +38,9 @@ exports.isEmailSubscribed = async (req, res) => {
 			if (!subscriber) {
 				return res.status(404).json({ success: false, message: "Email not found" });
 			}
-			return res.status(200).json({ success: true, message: "Email found" });
+			return res
+				.status(200)
+				.json({ success: true, message: "Email found", deleteKey: subscriber.delete_key });
 		}
 		res.status(404).json({ success: false, message: "Email not found" });
 	} catch (error) {
