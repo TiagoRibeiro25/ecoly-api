@@ -16,6 +16,7 @@ exports.getNews = async (req, res) => {
 
 		const news = await News.findAll({ where: { title: { [Op.like]: `%${formatVal}%` } } });
 		const newsJSON = news.map((item) => item.toJSON());
+		let isUserLogged = false;
 		let isUserAdmin = false;
 
 		// Add image to each new
@@ -34,6 +35,8 @@ exports.getNews = async (req, res) => {
 				// verify the token
 				const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
+				isUserLogged = true;
+
 				// if the token is valid, find the role name from the database
 				const role = await Roles.findByPk(+decoded.roleId);
 
@@ -50,7 +53,7 @@ exports.getNews = async (req, res) => {
 		// only return the first 3 news if the filter is recent
 		if (filter === "recent") newsJSON.splice(3);
 
-		res.status(200).json({ success: true, data: { isUserAdmin, news: newsJSON } });
+		res.status(200).json({ success: true, data: { isUserAdmin, isUserLogged, news: newsJSON } });
 	} catch (error) {
 		console.log(error);
 		res.status(500).send({
