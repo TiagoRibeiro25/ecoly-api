@@ -285,7 +285,8 @@ exports.getUnfinishedActivities = async (req, res) => {
 
 			const data = activities.map((activity) => {
 				return {
-					isFromUserSchool: isFromUserSchool_ && !isUnsigned && isUserLogged == true ? true : false,
+					isFromUserSchool:
+						isFromUserSchool_ && !isUnsigned && isUserLogged == true ? true : false,
 					id: activity.id,
 					is_finished: activity.is_finished,
 					theme: activity.theme.name,
@@ -829,29 +830,55 @@ exports.addTheme = async (req, res) => {
 	const { name } = req.body;
 
 	try {
-		const existingTheme = await Themes.findOne({
+		const Theme = await Themes.findOne({
+			where: {
+				name: name,
+			},
+		});
+
+		const activeThemes = await Themes.findOne({
 			where: {
 				name: name,
 				is_active: true,
 			},
 		});
 
-		if (name && existingTheme) {
+		if (name && activeThemes) {
 			throw new Error("Theme already exists");
 		}
 
-		// if the theme 
+		const creator = await Users.findByPk(req.tokenData.userId);
 
-		
-		
+		if (!Theme) {
+			await Themes.create({
+				name: name,
+			});
 
+			addSeeds({ userId: creator.id, amount: 40 });
 
-		await addSeeds({ userId: creator.id, amount: 40 });
+			return res.status(201).json({
+				success: true,
+				data: `theme created successfully`,
+			});
+		}
 
-		// return res.status(201).json({
-		// 	success: true,
-		// 	data: `theme created ${theme.id}`,
-		// });
+		if (Theme.is_active === false) {
+			await Themes.update(
+				{ is_active: true },
+				{
+					where: {
+						name: name,
+					},
+				}
+			);
+
+			addSeeds({ userId: creator.id, amount: 40 });
+
+			return res.status(200).json({
+				success: true,
+				data: `theme added successfully`,
+			});
+		}
 	} catch (err) {
 		if (err.message === "Theme already exists") {
 			return res.status(409).json({
@@ -971,8 +998,7 @@ exports.disabledTheme = async (req, res) => {
 			throw new Error("Theme is already disabled");
 		}
 
-
-		// if there is token 
+		// if there is token
 		await Themes.update(
 			{
 				is_active: false,
@@ -1009,5 +1035,13 @@ exports.disabledTheme = async (req, res) => {
 };
 
 exports.deleteActivity = async (req, res) => {
-	console.log(colors.green("Delete Activity"));
+	console.log("deleteActivity");
+	const { id } = req.params;
+
+	try{
+
+	}
+	catch(err){
+
+	}
 };
