@@ -11,6 +11,7 @@ const Badges = db.badges;
 const Roles = db.role;
 const Schools = db.schools;
 const UserBadge = db.user_badge;
+const NewsLetter = db.news_letter;
 
 /**
  * The function calculates the total and monthly amount of seeds based on an array of seed objects with
@@ -445,7 +446,9 @@ exports.editUserRole = async (req, res) => {
 exports.editUserInfo = async (req, res) => {
 	/** @type { number } */
 	const id = req.tokenData.userId;
+	/** @type {{ email?: string, password?: string, internal_id?: string, course?: string, year?: number }} */
 	const updates = {};
+	const oldEmail = (await Users.findByPk(id)).email;
 
 	try {
 		// email
@@ -491,6 +494,19 @@ exports.editUserInfo = async (req, res) => {
 
 		// update the user
 		if (Object.keys(updates).length !== 0) await Users.update(updates, { where: { id } });
+
+		// update the newsletter subscription
+		if (updates.email) {
+			// check if the new email is already subscribed
+			const userSubscription = await NewsLetter.findOne({ where: { email: updates.email } });
+			if (userSubscription) return;
+
+			// check if the old email is subscribed
+			const oldUserSubscription = await NewsLetter.findOne({ where: { email: oldEmail } });
+			if (oldUserSubscription) {
+				await oldUserSubscription.update({ email: updates.email });
+			}
+		}
 
 		res.status(200).json({ success: true, message: `User info updated successfully.` });
 	} catch (err) {
