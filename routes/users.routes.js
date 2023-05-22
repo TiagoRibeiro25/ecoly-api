@@ -27,7 +27,7 @@ router
 
 router
 	.route("/role")
-	.get(authController.verifyToken, authController.verifyIsAdmin, usersController.getRoles)
+	.get(authController.verifyToken, authController.verifyIsVerified, usersController.getRoles)
 	.post(
 		authController.verifyToken,
 		authController.verifyIsAdmin,
