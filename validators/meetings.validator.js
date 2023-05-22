@@ -1,6 +1,9 @@
+const colors = require("colors");
+
 exports.validateQueries = (req, res, next) => {
-	const validQuery = "fields";
+	const validQuery = ["fields", "filter","school"];
 	const fieldsValid = "ata";
+	const filterValid = ["past", "future"];
 
 	const ObjectKeys = [];
 
@@ -15,40 +18,65 @@ exports.validateQueries = (req, res, next) => {
 		(key) => `${key} is empty`
 	);
 
-    const isFieldsValid = Object.keys(req.query)
-        .filter((key) => key === "fields" && !fieldsValid.includes(req.query[key]))
-        .map((key) => `${req.query.fields} is an invalid value for the fields parameter`);
+	const isFieldsValid = Object.keys(req.query)
+		.filter((key) => key === "fields" && !fieldsValid.includes(req.query[key]))
+		.map((key) => `${req.query.fields} is an invalid value for the fields parameter`);
 
+	const isFilterValid = Object.keys(req.query)
+		.filter((key) => key === "filter" && !filterValid.includes(req.query[key]))
+		.map((key) => `${req.query.filter} is an invalid value for the filter parameter`);
 
-	// check if the query is valid
 	if (!queryValid) {
+		const invalidParams = ObjectKeys.filter((key) => !validQuery.includes(key)).map(
+			(key) => `${key} is an invalid  parameter`
+		);
+
 		return res.status(400).json({
 			success: false,
-			error: `${ObjectKeys[0]} is a invalid parameter`,
+			error: invalidParams.length > 1 ? invalidParams : invalidParams[0],
 		});
 	}
 
-    // check if the query is empty
-    if (emptyQuery.length == 1) {
-        return res.status(400).json({
-            success: false,
-            error: emptyQuery[0],
-        });
-    }
+	if (emptyQuery.length > 0) {
+		return res.status(400).json({
+			success: false,
+			error: emptyQuery.length > 1 ? emptyQuery : emptyQuery[0],
+		});
+	}
 
-    // check if the value for the key fields is valid
-    if (isFieldsValid.length == 1) {
-        return res.status(400).json({
-            success: false,
-            error: isFieldsValid[0],
-        });
+	if (isFieldsValid.length > 0) {
+		return res.status(400).json({
+			success: false,
+			error: isFieldsValid.length > 1 ? isFieldsValid : isFieldsValid[0],
+		});
+	}
+
+	if (isFilterValid.length > 0) {
+		return res.status(400).json({
+			success: false,
+			error: isFilterValid.length > 1 ? isFilterValid : isFilterValid[0],
+		});
+	}
+
+	next();
+};
+
+exports.validMeetingBody = (req, res, next) => {
+    let body = true;
+
+    if(body){
+        console.log(colors.green("Body meeting is valid"));
     }
 
     next();
 };
 
+exports.validAtaBody = (req, res, next) => {
+    let body = true;
 
-exports.validMeetingBody = (req, res, next) => {};
+    if(body){
+        console.log(colors.green("Body ata is valid"));
+    }
 
-
-exports.validAtaBody = (req, res, next) => {};
+    next();
+};
