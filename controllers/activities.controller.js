@@ -364,17 +364,15 @@ exports.getRecentActivities = async (req, res) => {
 };
 
 exports.getFinishedSchoolActivities = async (req, res) => {
-	const { school } = req.query;
+	let { school } = req.query;
 
-	const format =
-		school.charAt(0).toUpperCase() + school.slice(1).toLowerCase() || //to allow to lower case
-		school.toUpperCase() ||
-		school.toLowerCase();
+	school = school.toUpperCase();
 
 	try {
 		const activities = await Activities.findAll({
 			where: {
 				is_finished: true,
+				school_id: req.tokenData.schoolId,
 			},
 			include: [
 				{
@@ -386,7 +384,7 @@ exports.getFinishedSchoolActivities = async (req, res) => {
 					model: Schools,
 					as: "school",
 					where: {
-						name: school || format,
+						name: school,
 					},
 					attributes: ["name"],
 				},
@@ -407,10 +405,7 @@ exports.getFinishedSchoolActivities = async (req, res) => {
 		});
 
 		// Filtered activities based on school name
-		const filteredActivities = activities.filter(
-			(activity) => activity.school.name === school || format
-		);
-
+		const filteredActivities = activities.filter((activity) => activity.school.name === school);
 		const data = filteredActivities.map((activity) => {
 			return {
 				id: activity.id,
@@ -433,9 +428,11 @@ exports.getFinishedSchoolActivities = async (req, res) => {
 		// check if the school exists
 		const schoolExists = await Schools.findOne({
 			where: {
-				name: school || format,
+				name: school,
 			},
 		});
+
+		const schoolUser = await Schools.findByPk(req.tokenData.schoolId);
 
 		if (!schoolExists) {
 			return res.status(404).json({
@@ -444,10 +441,19 @@ exports.getFinishedSchoolActivities = async (req, res) => {
 			});
 		}
 
+		// check if the query school name is from the logged user school
+		if (schoolUser.name !== school) {
+			return res.status(401).json({
+				success: false,
+				error: "you are not from this school.",
+			});
+		}
+
+		// if there are no activities finished for the logged user school
 		if (data.length === 0) {
 			return res.status(404).json({
 				success: false,
-				error: "No activities finished found for this school.",
+				error: "There are no finished activities for this school.",
 			});
 		}
 
@@ -471,12 +477,9 @@ exports.getFinishedSchoolActivities = async (req, res) => {
 };
 
 exports.getUnfinishedSchoolActivities = async (req, res) => {
-	const { school } = req.query;
+	let { school } = req.query;
 
-	const format =
-		school.charAt(0).toUpperCase() + school.slice(1).toLowerCase() || //to allow to lower case
-		school.toUpperCase() ||
-		school.toLowerCase();
+	school = school.toUpperCase();
 
 	try {
 		const activities = await Activities.findAll({
@@ -494,7 +497,7 @@ exports.getUnfinishedSchoolActivities = async (req, res) => {
 					model: Schools,
 					as: "school",
 					where: {
-						name: school || format,
+						name: school,
 					},
 					attributes: ["name"],
 				},
@@ -510,9 +513,7 @@ exports.getUnfinishedSchoolActivities = async (req, res) => {
 		});
 
 		// Filtered activities based on school name
-		const filteredActivities = activities.filter(
-			(activity) => activity.school.name === school || format
-		);
+		const filteredActivities = activities.filter((activity) => activity.school.name === school);
 
 		const data = filteredActivities.map((activity) => {
 			return {
@@ -530,14 +531,24 @@ exports.getUnfinishedSchoolActivities = async (req, res) => {
 		// check if the school exists
 		const schoolExists = await Schools.findOne({
 			where: {
-				name: school || format,
+				name: school,
 			},
 		});
+
+		const schoolUser = await Schools.findByPk(req.tokenData.schoolId);
 
 		if (!schoolExists) {
 			return res.status(404).json({
 				success: false,
 				error: "School not found.",
+			});
+		}
+
+		// check if the query school name is from the logged user school
+		if (schoolUser.name !== school) {
+			return res.status(401).json({
+				success: false,
+				error: "you are not from this school.",
 			});
 		}
 
@@ -606,8 +617,6 @@ exports.getUnfinishedSchoolActivities = async (req, res) => {
 };
 
 exports.getReport = async (req, res) => {
-	console.log(colors.green("GET REPORT"));
-
 	const { id } = req.params;
 	let { school } = req.query;
 
@@ -660,9 +669,8 @@ exports.getReport = async (req, res) => {
 				error: "you are not from this school.",
 			});
 		}
-	
 
-		// chcek if the user school have reports
+		// check if the user school have reports
 		const schoolHasReports = await Activities.findOne({
 			where: {
 				school_id: req.tokenData.schoolId,
@@ -671,7 +679,7 @@ exports.getReport = async (req, res) => {
 		});
 
 		// check if the school have any activity
-		if(schoolUser.name === school && !schoolHasReports) {
+		if (schoolUser.name === school && !schoolHasReports) {
 			return res.status(404).json({
 				success: false,
 				error: "your school don´t have any reports.",
@@ -693,7 +701,7 @@ exports.getReport = async (req, res) => {
 		}
 
 		// if the activity is not finished
-		if (schoolUser.name === school && activity.report === null){
+		if (schoolUser.name === school && activity.report === null) {
 			return res.status(401).json({
 				success: false,
 				error: "This activity is not finished yet.",
@@ -711,7 +719,6 @@ exports.getReport = async (req, res) => {
 			data: data,
 		});
 	} catch (err) {
-		console.log(colors.red(err.message));
 		return res.status(500).json({
 			success: false,
 			error: "We apologize, but our system is currently experiencing some issues. Please try again later.",
