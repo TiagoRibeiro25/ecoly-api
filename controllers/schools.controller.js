@@ -45,53 +45,58 @@ exports.getSchool = async (req, res) => {
 };
 
 exports.addSchool = async (req, res) => {
-	const { school } = req.body;
+	const { name } = req.body;
 
 	try {
-		const existingSchool = await Schools.findOne({ where: { name: school } });
+		const existingSchool = await Schools.findOne({ where: { name } });
+
 		if (existingSchool) {
 			res.status(409).json({
 				success: false,
 				message: "The school already exists",
 			});
 		} else {
-			const newSchool = await Schools.create({ school });
+			const newSchool = await Schools.create({ name });
+
 			res.status(201).json({
 				success: true,
 				message: "School successfully added",
+				data: newSchool,
 			});
 		}
 	} catch (error) {
-		res.status(500).send({
+		res.status(500).json({
 			success: false,
 			message: "Failed to add new school",
 		});
 	}
 };
 
-exports.deleteSchool = async (req, res) => {
+exports.updateSchoolName = async (req, res) => {
 	const { id } = req.params;
+	const { name } = req.body;
 
 	try {
-		const schoolToDelete = await Schools.findByPk(id);
+		const schoolToUpdate = await Schools.findByPk(id);
 
-		if (!schoolToDelete) {
+		if (!schoolToUpdate) {
 			res.status(404).json({
 				success: false,
 				message: "School was not found",
 			});
 		} else {
-			await schoolToDelete.destroy();
+			schoolToUpdate.name = name;
+			await schoolToUpdate.save();
 
 			res.status(200).json({
 				success: true,
-				message: "The school was deleted",
+				message: "The school name was updated",
 			});
 		}
 	} catch (error) {
 		res.status(500).json({
 			success: false,
-			message: "Failed to delete school",
+			message: "Failed to update school name",
 		});
 	}
 };
