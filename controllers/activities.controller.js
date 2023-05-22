@@ -1,7 +1,7 @@
 const db = require("../models/db");
 const colors = require("colors");
 const jwt = require("jsonwebtoken");
-const { Op, ValidationError } = require("sequelize");
+const { Op } = require("sequelize");
 const Activities = db.activities;
 const activity_images = db.activity_image;
 const activity_report_images = db.activity_report_image;
@@ -22,7 +22,6 @@ function fixDate(date) {
 
 exports.getDetailActivity = async (req, res) => {
 	const { id } = req.params;
-	let isUserLogged = false;
 	try {
 		const activity = await Activities.findByPk(id, {
 			// get the activity theme name, the school name and the creator name  and the images of the activity in array
@@ -157,8 +156,7 @@ exports.getDetailActivity = async (req, res) => {
 				success: true,
 				isUserLogged: true,
 				isUserVerified: !isUnsigned ? true : false,
-				isFromUserSchool:
-					isFromUserSchool_ && !isUnsigned && isUserLogged == true ? true : false,
+				canUserEdit: isFromUserSchool_ && !isUnsigned ? true : false,
 				data: data,
 			});
 		}
@@ -285,8 +283,7 @@ exports.getUnfinishedActivities = async (req, res) => {
 
 			const data = activities.map((activity) => {
 				return {
-					isFromUserSchool:
-						isFromUserSchool_ && !isUnsigned && isUserLogged == true ? true : false,
+					canUserEdit: isFromUserSchool_ && !isUnsigned ? true : false,
 					id: activity.id,
 					is_finished: activity.is_finished,
 					theme: activity.theme.name,
@@ -577,7 +574,6 @@ exports.getUnfinishedSchoolActivities = async (req, res) => {
 		// return the data above by setting the isFromLoggedUserSchool_ key
 		const activities_ = data.map((activity) => {
 			return {
-				isFromUserSchool: isFromUserSchool_ && !isUnsigned ? true : false,
 				id: activity.id,
 				is_finished: activity.is_finished,
 				theme: activity.theme,
@@ -591,6 +587,7 @@ exports.getUnfinishedSchoolActivities = async (req, res) => {
 
 		res.status(200).json({
 			success: true,
+			isUserVerified: !isUnsigned && isFromUserSchool_ ? true : false,
 			data: activities_,
 		});
 	} catch (err) {
@@ -609,14 +606,18 @@ exports.getUnfinishedSchoolActivities = async (req, res) => {
 };
 
 exports.getReport = async (req, res) => {
+	console.log(colors.green("GET REPORT"));
+
 	const { id } = req.params;
+	let { school } = req.query;
+
+	school = school.toUpperCase();
 
 	try {
-		const schoolUser = await Schools.findByPk(req.tokenData.schoolId);
-
 		const activity = await Activities.findByPk(id, {
 			where: {
 				is_finished: true,
+				school_id: req.tokenData.schoolId,
 			},
 			include: [
 				{
@@ -624,9 +625,58 @@ exports.getReport = async (req, res) => {
 					as: "activity_report_images",
 					attributes: ["img"],
 				},
+				{
+					model: Schools,
+					as: "school",
+					where: {
+						name: school,
+					},
+					attributes: ["name"],
+				},
 			],
 			attributes: ["id", "report"],
 		});
+
+		const schoolUser = await Schools.findByPk(req.tokenData.schoolId);
+
+		// check if the school exists
+		const schoolExists = await Schools.findOne({
+			where: {
+				name: school,
+			},
+		});
+
+		if (!schoolExists) {
+			return res.status(404).json({
+				success: false,
+				error: "School not found.",
+			});
+		}
+
+		// check if the query school name is from the logged user school
+		if (schoolUser.name !== school) {
+			return res.status(401).json({
+				success: false,
+				error: "you are not from this school.",
+			});
+		}
+	
+
+		// chcek if the user school have reports
+		const schoolHasReports = await Activities.findOne({
+			where: {
+				school_id: req.tokenData.schoolId,
+				is_finished: true,
+			},
+		});
+
+		// check if the school have any activity
+		if(schoolUser.name === school && !schoolHasReports) {
+			return res.status(404).json({
+				success: false,
+				error: "your school don´t have any reports.",
+			});
+		}
 
 		if (isNaN(id)) {
 			return res.status(400).json({
@@ -642,18 +692,11 @@ exports.getReport = async (req, res) => {
 			});
 		}
 
-		if (activity.report === null) {
-			return res.status(404).json({
+		// if the activity is not finished
+		if (schoolUser.name === school && activity.report === null){
+			return res.status(401).json({
 				success: false,
-				error: "Activity not finished yet",
-			});
-		}
-
-		// check the if the activity finished is from the logged user's school
-		if (activity.school_id !== schoolUser.id) {
-			return res.status(409).json({
-				success: false,
-				error: "This activity is not from your school.",
+				error: "This activity is not finished yet.",
 			});
 		}
 
@@ -668,7 +711,7 @@ exports.getReport = async (req, res) => {
 			data: data,
 		});
 	} catch (err) {
-		console.log(colors.red(`${err.message}`));
+		console.log(colors.red(err.message));
 		return res.status(500).json({
 			success: false,
 			error: "We apologize, but our system is currently experiencing some issues. Please try again later.",
@@ -764,8 +807,7 @@ exports.addActivity = async (req, res) => {
 
 		// if the body includes images add to the activity_images model
 		if (req.body.images && images.length > 0) {
-			const images = req.body.images; // array of images
-			// for each image in the array add the activity_id and the image to the activity_images table
+			const images = req.body.images;
 			images.forEach((image) => {
 				activity_images.create({
 					activity_id: activity.id,
@@ -1066,7 +1108,6 @@ exports.deleteActivity = async (req, res) => {
 			message: `the activity deleted successfully`,
 		});
 	} catch (err) {
-		console.log(err.message);
 		if (err.message === "Activity not found") {
 			return res.status(404).json({
 				success: false,

@@ -13,22 +13,19 @@ router.get("/", activitiesValidator.validateQueries, (req, res) => {
 
 	if (req.query.fields === "activities" && req.query.school) {
 		if (req.query.filter === "finished") {
-				return authController.verifyToken(req, res, () => {
+			return authController.verifyToken(req, res, () => {
+				//next
+				authController.verifyIsVerified(req, res, () => {
 					//next
-					authController.verifyIsVerified(req, res, () => {
-						//next
-						activitiesController.getFinishedSchoolActivities(req, res);
-					});
-				}
-			);
+					activitiesController.getFinishedSchoolActivities(req, res);
+				});
+			});
 		}
 		if (req.query.filter === "unfinished") {
-				return authController.verifyToken(req, res, () => {
-					//next
-						activitiesController.getUnfinishedSchoolActivities(req, res);
-					
-				}
-			);
+			return authController.verifyToken(req, res, () => {
+				//next
+				activitiesController.getUnfinishedSchoolActivities(req, res);
+			});
 		}
 	}
 
@@ -58,21 +55,18 @@ router.get("/", activitiesValidator.validateQueries, (req, res) => {
 
 // GET /api/activities/:id => find a specific activity (activity detail)
 router.get("/:id", activitiesValidator.validateQueries, (req, res) => {
-	if(req.query.fields === "report"){
+	if (req.query.fields === "report" && req.query.school) {
 		return authController.verifyToken(req, res, () => {
 			//next
 			authController.verifyIsVerified(req, res, () => {
 				//next
 				activitiesController.getReport(req, res);
 			});
-		}
-	);
-	}
-	else{
+		});
+	} else {
 		return activitiesController.getDetailActivity(req, res);
 	}
 });
-
 
 // POST /api/activities => add an activity/ theme
 router.post("/", activitiesValidator.validateQueries, (req, res) => {

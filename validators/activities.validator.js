@@ -1,4 +1,3 @@
-const colors = require("colors");
 const moment = require("moment"); //library to handle dates validations
 
 exports.validateQueries = (req, res, next) => {
@@ -53,7 +52,6 @@ exports.validateQueries = (req, res, next) => {
 		!req.query.school &&
 		!req.query.filter
 	) {
-		console.log(colors.red("Missing school or filter parameter"));
 		return res.status(400).json({ success: false, error: "Missing parameters filter or school" });
 	}
 
