@@ -1,7 +1,5 @@
 const db = require("../models/db");
 const Schools = db.schools;
-const jwt = require("jsonwebtoken");
-const bcrypt = require("bcryptjs");
 
 exports.getSchools = async (req, res) => {
 	try {
