@@ -1,3 +1,5 @@
+const FE_URL = process.env.FE_URL;
+
 /** @param {{newId: number, title: string, author: {id: number, name: string}, date: string, unsubscribeKey: string}} */
 function newsLetterTemplate({ newId, title, author, date, unsubscribeKey }) {
 	return `<!DOCTYPE html>
@@ -332,7 +334,7 @@ function newsLetterTemplate({ newId, title, author, date, unsubscribeKey }) {
 																					align-items: center;
 																				"
 																			>
-																				<a href="https://ecoly-tsiw.netlify.app/news/${newId}" style="color: #18516f; text-decoration: none" target="_blank">https://ecoly-tsiw.netlify.app/news/${newId}</a>
+																				<a href="${FE_URL}/news/${newId}" style="color: #18516f; text-decoration: none" target="_blank">${FE_URL}/news/${newId}</a>
 																			</p>
 																			<p
 																				style="
@@ -422,7 +424,7 @@ function newsLetterTemplate({ newId, title, author, date, unsubscribeKey }) {
 																					mso-line-height-alt: 16.8px;
 																				"
 																			>
-																				Esta notícia foi criada por <a href="https://ecoly-tsiw.netlify.app/profile/${author.id}" style="color: #18516f; text-decoration: none" target="_blank">${author.name}</a>
+																				Esta notícia foi criada por <a href="${FE_URL}/profile/${author.id}" style="color: #18516f; text-decoration: none" target="_blank">${author.name}</a>
 																				em ${date}
 																			</p>
 																		</div>
@@ -533,7 +535,7 @@ function newsLetterTemplate({ newId, title, author, date, unsubscribeKey }) {
 																					mso-line-height-alt: 14.399999999999999px;
 																				"
 																			>
-																				&nbsp;<a href="https://ecoly-tsiw.netlify.app/unsubscribe/${unsubscribeKey}" style="color: #18516f; text-decoration: underline" target="_blank">https://ecoly-2023.netlify.app/unsubscribe/${unsubscribeKey}</a>
+																				&nbsp;<a href="${FE_URL}/unsubscribe/${unsubscribeKey}" style="color: #18516f; text-decoration: underline" target="_blank">${FE_URL}/unsubscribe/${unsubscribeKey}</a>
 																			</p>
 																		</div>
 																	</div>

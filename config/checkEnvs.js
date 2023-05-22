@@ -46,6 +46,11 @@ function checkEnvs() {
 		return false;
 	}
 
+	if (!process.env.FE_URL) {
+		console.log(colors.red("-> ") + colors.cyan("FE_URL ") + colors.red("is not defined!"));
+		return false;
+	}
+
 	return true;
 }
 

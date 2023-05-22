@@ -11,10 +11,10 @@ router
 router
 	.route("/:id")
 	.get(schoolsController.getSchool)
-	.delete(
+	.put(
 		authController.verifyToken,
 		authController.verifyIsAdmin,
-		schoolsController.deleteSchool
+		schoolsController.updateSchoolName
 	);
 
 module.exports = router;

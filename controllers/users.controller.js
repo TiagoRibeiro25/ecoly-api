@@ -312,6 +312,9 @@ exports.getUsers = async (req, res) => {
 		// filter users by school
 		if (userSchoolName) result = result.filter((user) => user.school === userSchoolName);
 
+		// removed logged user from the list
+		result = result.filter((user) => user.id !== req.tokenData.userId);
+
 		res.status(200).json({ success: true, data: result });
 	} catch (err) {
 		console.log(colors.red("\n\n-> ") + colors.yellow(err) + "\n");
