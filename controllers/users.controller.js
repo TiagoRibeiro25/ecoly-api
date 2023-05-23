@@ -543,7 +543,7 @@ exports.contactMembers = async (req, res) => {
 
 		res.status(200).json({ success: true, message: `Email sent successfully.` });
 
-		Promise.all([
+		await Promise.all([
 			unlockBadge({ badgeId: 6, userId: req.tokenData.userId }), // unlock the badge "Mensageiro"
 			addSeeds({ amount: 20, userId: req.tokenData.userId }), // add 20 seeds to the user
 		]);
