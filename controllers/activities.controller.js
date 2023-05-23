@@ -102,7 +102,7 @@ exports.getDetailActivity = async (req, res) => {
 		if (!token) {
 			return res.status(200).json({
 				success: true,
-				isUserLogged: false,
+				canUserEdit: false,
 				data: data,
 			});
 		}
@@ -153,9 +153,8 @@ exports.getDetailActivity = async (req, res) => {
 
 			return res.status(200).json({
 				success: true,
-				isUserLogged: true,
 				isUserVerified: !isUnsigned ? true : false,
-				canUserEdit: isFromUserSchool_ && !isUnsigned ? true : false,
+				canUserEdit: isFromUserSchool_  ? true : false,
 				data: data,
 			});
 		}
@@ -207,7 +206,6 @@ exports.searchActivities = async (req, res) => {
 };
 
 exports.getUnfinishedActivities = async (req, res) => {
-	let isUserLogged = false;
 
 	try {
 		// meta objective participants = description
@@ -254,7 +252,7 @@ exports.getUnfinishedActivities = async (req, res) => {
 		if (!token) {
 			return res.status(200).json({
 				success: true,
-				isUserLogged: false,
+				canUserEdit: false,
 				data: data,
 			});
 		}
@@ -282,7 +280,7 @@ exports.getUnfinishedActivities = async (req, res) => {
 
 			const data = activities.map((activity) => {
 				return {
-					canUserEdit: isFromUserSchool_ && !isUnsigned ? true : false,
+					canUserEdit: isFromUserSchool_ ? true : false,
 					id: activity.id,
 					is_finished: activity.is_finished,
 					theme: activity.theme.name,
@@ -296,7 +294,6 @@ exports.getUnfinishedActivities = async (req, res) => {
 
 			res.status(200).json({
 				success: true,
-				isUserLogged: true,
 				isUserVerified: !isUnsigned ? true : false,
 				data: data,
 			});
