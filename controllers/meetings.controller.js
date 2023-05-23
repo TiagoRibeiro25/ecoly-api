@@ -111,6 +111,128 @@ exports.getAtaMeeting = async (req, res) => {
 	}
 };
 
+exports.getOneFutureMeeting = async (req, res) => {
+	const { id } = req.params;
+
+	let { school } = req.query;
+
+	school = school.toUpperCase();
+
+	try {
+		const futureMeeting = await meetings.findByPk(id, {
+			attributes: ["id", "date", "description", "room"],
+			where: {
+				date: {
+					[Op.gt]: new Date(),
+				},
+			},
+			include: [
+				{
+					model: Users,
+					as: "creator",
+					attributes: ["id", "name"],
+				},
+				{
+					model: Schools,
+					as: "school",
+					where: {
+						name: school,
+					},
+					attributes: ["name"],
+				},
+			],
+		});
+
+		const schoolUser = await Schools.findByPk(req.tokenData.schoolId);
+
+		// check if the school exists
+		const schoolExists = await Schools.findOne({
+			where: {
+				name: school,
+			},
+		});
+
+		if (!schoolExists) {
+			throw new Error("School not found.");
+		}
+
+		// check if the query school name is from the logged user school
+		if (schoolUser.name !== school) {
+			throw new Error("you are not from this school.");
+		}
+
+		if (isNaN(id)) {
+			throw new Error("Invalid id.");
+		}
+
+		if (!futureMeeting) {
+			throw new Error("Meeting not found.");
+		}
+
+		if (futureMeeting.date < new Date()) {
+			throw new Error("This his a past meeting.");
+		}
+
+		const futureMeetingData = {
+			id: futureMeeting.id,
+			creator: {
+				id: futureMeeting.creator.id,
+				name: futureMeeting.creator.name,
+			},
+			date: fixDate(futureMeeting.date),
+			room: futureMeeting.room,
+			description: futureMeeting.description,
+		};
+
+		return res.status(200).json({
+			success: true,
+			data: futureMeetingData,
+		});
+	} catch (err) {
+		console.log(colors.red(err.message));
+
+		if (err.message === "School not found.") {
+			return res.status(404).json({
+				success: false,
+				error: err.message,
+			});
+		}
+
+		if (err.message === "you are not from this school.") {
+			return res.status(401).json({
+				success: false,
+				error: err.message,
+			});
+		}
+
+		if (err.message === "Invalid id.") {
+			return res.status(400).json({
+				success: false,
+				error: err.message,
+			});
+		}
+
+		if (err.message === "Meeting not found.") {
+			return res.status(404).json({
+				success: false,
+				error: err.message,
+			});
+		}
+
+		if (err.message === "This his a past meeting.") {
+			return res.status(404).json({
+				success: false,
+				error: err.message,
+			});
+		}
+
+		return res.status(500).json({
+			success: false,
+			error: "We apologize, but our system is currently experiencing some issues. Please try again later.",
+		});
+	}
+};
+
 exports.getPastMeetings = async (req, res) => {
 	let { school } = req.query;
 
@@ -213,7 +335,6 @@ exports.getPastMeetings = async (req, res) => {
 	}
 };
 
-// greater than the current date
 exports.getFutureMeetings = async (req, res) => {
 	let { school } = req.query;
 
