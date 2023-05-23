@@ -1,4 +1,5 @@
 const db = require("../models/db");
+const colors = require("colors");
 const jwt = require("jsonwebtoken");
 const { Op } = require("sequelize");
 const Activities = db.activities;
@@ -154,7 +155,7 @@ exports.getDetailActivity = async (req, res) => {
 			return res.status(200).json({
 				success: true,
 				isUserVerified: !isUnsigned ? true : false,
-				canUserEdit: isFromUserSchool_  ? true : false,
+				canUserEdit: isFromUserSchool_ ? true : false,
 				data: data,
 			});
 		}
@@ -206,7 +207,6 @@ exports.searchActivities = async (req, res) => {
 };
 
 exports.getUnfinishedActivities = async (req, res) => {
-
 	try {
 		// meta objective participants = description
 		const activities = await Activities.findAll({
@@ -231,28 +231,28 @@ exports.getUnfinishedActivities = async (req, res) => {
 			},
 		});
 
-		const data = activities.map((activity) => {
-			return {
-				id: activity.id,
-				is_finished: activity.is_finished,
-				theme: activity.theme.name,
-				title: activity.title,
-				description: `${activity.meta} ${activity.objective} ${activity.participants}`,
-				initial_date: fixDate(activity.initial_date),
-				final_date: fixDate(activity.final_date),
-				image: activity.activity_images[0].img, //main image
-			};
-		});
-
 		// check if there's a token in the request
 		let token = req.headers["x-access-token"] || req.headers.authorization;
 		token = token?.replace("Bearer ", "");
 
 		// with no loggedUser
 		if (!token) {
+			const data = activities.map((activity) => {
+				return {
+					canUserEdit: false,
+					id: activity.id,
+					is_finished: activity.is_finished,
+					theme: activity.theme.name,
+					title: activity.title,
+					description: `${activity.meta}\n${activity.objective}\n${activity.participants}`,
+					initial_date: fixDate(activity.initial_date),
+					final_date: fixDate(activity.final_date),
+					image: activity.activity_images[0].img, //main image
+				};
+			});
+
 			return res.status(200).json({
 				success: true,
-				canUserEdit: false,
 				data: data,
 			});
 		}
@@ -285,7 +285,7 @@ exports.getUnfinishedActivities = async (req, res) => {
 					is_finished: activity.is_finished,
 					theme: activity.theme.name,
 					title: activity.title,
-					description: `${activity.meta} ${activity.objective} ${activity.participants}`,
+					description: `${activity.meta}\n${activity.objective}\n${activity.participants}`,
 					initial_date: fixDate(activity.initial_date),
 					final_date: fixDate(activity.final_date),
 					image: activity.activity_images[0].img, //main image
@@ -299,6 +299,7 @@ exports.getUnfinishedActivities = async (req, res) => {
 			});
 		}
 	} catch (err) {
+		console.log(colors.red(err.message));
 		if (err.message === "jwt expired") {
 			return res.status(401).json({
 				success: false,
@@ -517,7 +518,7 @@ exports.getUnfinishedSchoolActivities = async (req, res) => {
 				is_finished: activity.is_finished,
 				theme: activity.theme.name,
 				title: activity.title,
-				description: `${activity.meta} ${activity.objective} ${activity.participants}`,
+				description: `${activity.meta}\n${activity.objective}\n${activity.participants}`,
 				initial_date: fixDate(activity.initial_date),
 				final_date: fixDate(activity.final_date),
 				image: activity.activity_images[0].img, //main image
@@ -531,20 +532,10 @@ exports.getUnfinishedSchoolActivities = async (req, res) => {
 			},
 		});
 
-		const schoolUser = await Schools.findByPk(req.tokenData.schoolId);
-
 		if (!schoolExists) {
 			return res.status(404).json({
 				success: false,
 				error: "School not found.",
-			});
-		}
-
-		// check if the query school name is from the logged user school
-		if (schoolUser.name !== school) {
-			return res.status(401).json({
-				success: false,
-				error: "you are not from this school.",
 			});
 		}
 
@@ -581,6 +572,7 @@ exports.getUnfinishedSchoolActivities = async (req, res) => {
 		// return the data above by setting the isFromLoggedUserSchool_ key
 		const activities_ = data.map((activity) => {
 			return {
+				canUserEdit: !isUnsigned && isFromUserSchool_ ? true : false,
 				id: activity.id,
 				is_finished: activity.is_finished,
 				theme: activity.theme,
@@ -594,7 +586,7 @@ exports.getUnfinishedSchoolActivities = async (req, res) => {
 
 		res.status(200).json({
 			success: true,
-			isUserVerified: !isUnsigned && isFromUserSchool_ ? true : false,
+			isUserVerified: !isUnsigned ? true : false,
 			data: activities_,
 		});
 	} catch (err) {
