@@ -429,20 +429,10 @@ exports.getFinishedSchoolActivities = async (req, res) => {
 			},
 		});
 
-		const schoolUser = await Schools.findByPk(req.tokenData.schoolId);
-
 		if (!schoolExists) {
 			return res.status(404).json({
 				success: false,
 				error: "School not found.",
-			});
-		}
-
-		// check if the query school name is from the logged user school
-		if (schoolUser.name !== school) {
-			return res.status(401).json({
-				success: false,
-				error: "you are not from this school.",
 			});
 		}
 
@@ -514,6 +504,7 @@ exports.getUnfinishedSchoolActivities = async (req, res) => {
 
 		const data = filteredActivities.map((activity) => {
 			return {
+				canUserEdit: false,
 				id: activity.id,
 				is_finished: activity.is_finished,
 				theme: activity.theme.name,
@@ -550,46 +541,57 @@ exports.getUnfinishedSchoolActivities = async (req, res) => {
 		let token = req.headers["x-access-token"] || req.headers.authorization;
 		token = token?.replace("Bearer ", "");
 
-		// verify token
-		const decoded = jwt.verify(token, process.env.JWT_SECRET);
+		// with no loggedUser
+		if (!token) {
+			return res.status(200).json({
+				success: true,
+				data: data,
+			});
+		}
 
-		// check each activity if it's from the logged user's school
-		const isFromUserSchool_ = await Activities.findOne({
-			where: {
-				id: { [Op.in]: activities.map((activity) => activity.id) },
-				school_id: decoded.schoolId,
-			},
-		});
+		if (token) {
+			// verify token
+			const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-		// check if the role of the logged user is unsigned
-		const isUnsigned = await Roles.findOne({
-			where: {
-				id: decoded.roleId,
-				title: "unsigned",
-			},
-		});
+			// check each activity if it's from the logged user's school
+			const isFromUserSchool_ = await Activities.findOne({
+				where: {
+					id: { [Op.in]: activities.map((activity) => activity.id) },
+					school_id: decoded.schoolId,
+				},
+			});
 
-		// return the data above by setting the isFromLoggedUserSchool_ key
-		const activities_ = data.map((activity) => {
-			return {
-				canUserEdit: !isUnsigned && isFromUserSchool_ ? true : false,
-				id: activity.id,
-				is_finished: activity.is_finished,
-				theme: activity.theme,
-				title: activity.title,
-				description: activity.description,
-				initial_date: activity.initial_date,
-				final_date: activity.final_date,
-				image: activity.image,
-			};
-		});
+			// check if the role of the logged user is unsigned
+			const isUnsigned = await Roles.findOne({
+				where: {
+					id: decoded.roleId,
+					title: "unsigned",
+				},
+			});
 
-		res.status(200).json({
-			success: true,
-			isUserVerified: !isUnsigned ? true : false,
-			data: activities_,
-		});
+			// return the data above by setting the isFromLoggedUserSchool_ key
+			const activities_ = data.map((activity) => {
+				return {
+					canUserEdit: isFromUserSchool_ ? true : false,
+					id: activity.id,
+					is_finished: activity.is_finished,
+					theme: activity.theme,
+					title: activity.title,
+					description: activity.description,
+					initial_date: activity.initial_date,
+					final_date: activity.final_date,
+					image: activity.image,
+				};
+			});
+
+			res.status(200).json({
+				success: true,
+				isUserVerified: !isUnsigned ? true : false,
+				data: activities_,
+			});
+		}
 	} catch (err) {
+		console.log(colors.red(err.message));
 		if (err.message === "jwt expired") {
 			return res.status(401).json({
 				success: false,
