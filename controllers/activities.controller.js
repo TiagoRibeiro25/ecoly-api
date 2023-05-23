@@ -361,15 +361,13 @@ exports.getRecentActivities = async (req, res) => {
 };
 
 exports.getFinishedSchoolActivities = async (req, res) => {
-	let { school } = req.query;
-
-	school = school.toUpperCase();
-
 	try {
+
+		const schoolUser = await Schools.findByPk(req.tokenData.schoolId);
+
 		const activities = await Activities.findAll({
 			where: {
 				is_finished: true,
-				school_id: req.tokenData.schoolId,
 			},
 			include: [
 				{
@@ -380,9 +378,6 @@ exports.getFinishedSchoolActivities = async (req, res) => {
 				{
 					model: Schools,
 					as: "school",
-					where: {
-						name: school,
-					},
 					attributes: ["name"],
 				},
 				{
@@ -401,8 +396,12 @@ exports.getFinishedSchoolActivities = async (req, res) => {
 			},
 		});
 
-		// Filtered activities based on school name
-		const filteredActivities = activities.filter((activity) => activity.school.name === school);
+
+
+		const filteredActivities = activities.filter((activity) => {
+			return activity.school.name === schoolUser.name;
+		});
+
 		const data = filteredActivities.map((activity) => {
 			return {
 				id: activity.id,
@@ -422,25 +421,12 @@ exports.getFinishedSchoolActivities = async (req, res) => {
 			};
 		});
 
-		// check if the school exists
-		const schoolExists = await Schools.findOne({
-			where: {
-				name: school,
-			},
-		});
-
-		if (!schoolExists) {
-			return res.status(404).json({
-				success: false,
-				error: "School not found.",
-			});
-		}
 
 		// if there are no activities finished for the logged user school
 		if (data.length === 0) {
 			return res.status(404).json({
 				success: false,
-				error: "There are no finished activities for this school.",
+				error: "No activities finished yet.",
 			});
 		}
 
@@ -456,6 +442,7 @@ exports.getFinishedSchoolActivities = async (req, res) => {
 			});
 		}
 
+		console.log(colors.red(err.message));
 		return res.status(500).json({
 			success: false,
 			error: "We apologize, but our system is currently experiencing some issues. Please try again later.",

@@ -11,20 +11,21 @@ router.get("/", activitiesValidator.validateQueries, (req, res) => {
 		return activitiesController.searchActivities(req, res);
 	}
 
-	if (req.query.fields === "activities" && req.query.school) {
-		if (req.query.filter === "finished") {
-			return authController.verifyToken(req, res, () => {
+	if(req.query.fields == "activities" && req.query.filter =="unfinished" && req.query.school){
+		return activitiesController.getUnfinishedSchoolActivities(req, res);
+	}
+
+	if(req.query.fields == "activities" && req.query.filter == "finished"){
+		return authController.verifyToken(req, res, () => {
+			//next
+			authController.verifyIsVerified(req, res, () => {
 				//next
-				authController.verifyIsVerified(req, res, () => {
-					//next
-					activitiesController.getFinishedSchoolActivities(req, res);
-				});
+				activitiesController.getFinishedSchoolActivities(req, res);
 			});
 		}
-		if (req.query.filter === "unfinished") {
-			return activitiesController.getUnfinishedSchoolActivities(req, res);
-		}
+		);
 	}
+
 
 	if (req.query.fields === "activities" && req.query.filter === "unfinished") {
 		return activitiesController.getUnfinishedActivities(req, res);
@@ -52,7 +53,7 @@ router.get("/", activitiesValidator.validateQueries, (req, res) => {
 
 // GET /api/activities/:id => find a specific activity (activity detail)
 router.get("/:id", activitiesValidator.validateQueries, (req, res) => {
-	if (req.query.fields === "report" && req.query.school) {
+	if (req.query.fields === "report") {
 		return authController.verifyToken(req, res, () => {
 			//next
 			authController.verifyIsVerified(req, res, () => {
