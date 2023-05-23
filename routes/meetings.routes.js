@@ -26,12 +26,21 @@ router.get("/", meetingsValidator.validateQueries, (req, res) => {
 });
 
 router.get("/:id", meetingsValidator.validateQueries, (req, res) => {
-	if (req.query.fields === "ata") {
+	if (req.query.fields === "ata" && req.query.school) {
 		return authController.verifyToken(req, res, () => {
 			//next
 			authController.verifyIsVerified(req, res, () => {
 				//next
 				meetingsController.getAtaMeeting(req, res);
+			});
+		});
+	}
+	if (req.query.filter === "future" && req.query.school) {
+		return authController.verifyToken(req, res, () => {
+			//next
+			authController.verifyIsVerified(req, res, () => {
+				//next
+				meetingsController.getOneFutureMeeting(req, res);
 			});
 		});
 	}
