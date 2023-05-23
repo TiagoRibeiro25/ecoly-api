@@ -4,6 +4,7 @@ const { Op } = require("sequelize");
 const meetings = db.meetings;
 const meetingAtaImage = db.meeting_ata_image;
 const Schools = db.schools;
+const Users = db.users;
 const unlockBadge = require("../utils/unlockBadge");
 const addSeeds = require("../utils/addSeeds");
 
@@ -25,6 +26,11 @@ exports.getAtaMeeting = async (req, res) => {
 	try {
 		const meeting = await meetings.findByPk(id, {
 			attributes: ["date", "ata"],
+			where: {
+				date: {
+					[Op.lt]: new Date(),
+				},
+			},
 			include: [
 				{
 					model: meetingAtaImage,
@@ -72,6 +78,13 @@ exports.getAtaMeeting = async (req, res) => {
 			});
 		}
 
+		if (meeting.date > new Date()) {
+			return res.status(404).json({
+				success: false,
+				error: "This his a future meeting.",
+			});
+		}
+
 		// if the school don´t have any ata to see
 		if (meeting.ata === null) {
 			return res.status(404).json({
@@ -86,7 +99,6 @@ exports.getAtaMeeting = async (req, res) => {
 			images: meeting.meeting_ata_images.map((image) => image.img),
 		};
 
-        console.log(ata);
 		return res.status(200).json({
 			success: true,
 			data: ata,
@@ -100,11 +112,208 @@ exports.getAtaMeeting = async (req, res) => {
 };
 
 exports.getPastMeetings = async (req, res) => {
-	console.log(colors.green("Past Meetings"));
+	let { school } = req.query;
+
+	school = school.toUpperCase();
+
+	try {
+		const pastMeetings = await meetings.findAll({
+			where: {
+				date: {
+					[Op.lt]: new Date(),
+				},
+			},
+			attributes: ["id", "date", "description", "room"],
+			include: [
+				{
+					model: Users,
+					as: "creator",
+					attributes: ["id", "name"],
+				},
+				{
+					model: Schools,
+					as: "school",
+					where: {
+						name: school,
+					},
+					attributes: ["name"],
+				},
+			],
+		});
+
+		// filter the past meetings based on the school name
+		const filteredMeetings = pastMeetings
+			.filter((meeting) => meeting.school.name === school)
+			.map((meeting) => {
+				return {
+					id: meeting.id,
+					creator: {
+						id: meeting.creator.id,
+						name: meeting.creator.name,
+					},
+					date: fixDate(meeting.date),
+					room: meeting.room,
+					description: meeting.description,
+				};
+			});
+
+		const schoolUser = await Schools.findByPk(req.tokenData.schoolId);
+
+		// check if the school exists
+		const schoolExists = await Schools.findOne({
+			where: {
+				name: school,
+			},
+		});
+
+		if (!schoolExists) {
+			throw new Error("School not found.");
+		}
+
+		// check if the query school name is from the logged user school
+		if (schoolUser.name !== school) {
+			throw new Error("you are not from this school.");
+		}
+
+		// is from the school but don´t have any past meetings
+		if (filteredMeetings.length === 0) {
+			throw new Error("This school don´t have any past meetings.");
+		}
+
+		return res.status(200).json({
+			success: true,
+			data: filteredMeetings,
+		});
+	} catch (err) {
+		if (err.message === "School not found.") {
+			return res.status(404).json({
+				success: false,
+				error: "School not found.",
+			});
+		}
+
+		if (err.message === "you are not from this school.") {
+			return res.status(401).json({
+				success: false,
+				error: "you are not from this school.",
+			});
+		}
+
+		if (err.message === "This school don´t have any past meetings.") {
+			return res.status(404).json({
+				success: false,
+				error: "This school don´t have any past meetings.",
+			});
+		}
+
+		return res.status(500).json({
+			success: false,
+			error: "We apologize, but our system is currently experiencing some issues. Please try again later.",
+		});
+	}
 };
 
+// greater than the current date
 exports.getFutureMeetings = async (req, res) => {
-	console.log(colors.green("Future Meetings"));
+	let { school } = req.query;
+
+	school = school.toUpperCase();
+
+	try {
+		const futureMeetings = await meetings.findAll({
+			where: {
+				date: {
+					[Op.gt]: new Date(),
+				},
+			},
+			attributes: ["id", "date", "description", "room"],
+			include: [
+				{
+					model: Users,
+					as: "creator",
+					attributes: ["id", "name"],
+				},
+				{
+					model: Schools,
+					as: "school",
+					where: {
+						name: school,
+					},
+					attributes: ["name"],
+				},
+			],
+		});
+
+		// filter the past meetings based on the school name
+		const filteredMeetings = futureMeetings
+			.filter((meeting) => meeting.school.name === school)
+			.map((meeting) => {
+				return {
+					id: meeting.id,
+					creator: {
+						id: meeting.creator.id,
+						name: meeting.creator.name,
+					},
+					date: fixDate(meeting.date),
+					room: meeting.room,
+					description: meeting.description,
+				};
+			});
+
+		const schoolUser = await Schools.findByPk(req.tokenData.schoolId);
+
+		// check if the school exists
+		const schoolExists = await Schools.findOne({
+			where: {
+				name: school,
+			},
+		});
+
+		if (!schoolExists) {
+			throw new Error("School not found.");
+		}
+
+		// check if the query school name is from the logged user school
+		if (schoolUser.name !== school) {
+			throw new Error("you are not from this school.");
+		}
+
+		// is from the school but don´t have any past meetings
+		if (filteredMeetings.length === 0) {
+			throw new Error("This school don´t have any future meetings.");
+		}
+
+		return res.status(200).json({
+			success: true,
+			data: filteredMeetings,
+		});
+	} catch (err) {
+		if (err.message === "School not found.") {
+			return res.status(404).json({
+				success: false,
+				error: "School not found.",
+			});
+		}
+
+		if (err.message === "you are not from this school.") {
+			return res.status(401).json({
+				success: false,
+				error: "you are not from this school.",
+			});
+		}
+
+		if (err.message === "This school don´t have any future meetings.") {
+			return res.status(404).json({
+				success: false,
+				error: "This school don´t have any future meetings.",
+			});
+		}
+
+		return res.status(500).json({
+			success: false,
+			error: "We apologize, but our system is currently experiencing some issues. Please try again later.",
+		});
+	}
 };
 
 exports.createMeeting = async (req, res) => {
