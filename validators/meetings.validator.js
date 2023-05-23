@@ -2,7 +2,7 @@ const colors = require("colors");
 const moment = require("moment"); //for dates validation
 
 exports.validateQueries = (req, res, next) => {
-	const validQuery = ["fields", "filter","school"];
+	const validQuery = ["fields", "filter"];
 	const fieldsValid = "ata";
 	const filterValid = ["past", "future"];
 

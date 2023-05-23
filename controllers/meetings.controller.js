@@ -19,9 +19,7 @@ function fixDate(date) {
 exports.getAtaMeeting = async (req, res) => {
 	const { id } = req.params;
 
-	let { school } = req.query;
-
-	school = school.toUpperCase();
+	const schoolUser = await Schools.findByPk(req.tokenData.schoolId);
 
 	try {
 		const meeting = await meetings.findByPk(id, {
@@ -37,32 +35,16 @@ exports.getAtaMeeting = async (req, res) => {
 					as: "meeting_ata_images",
 					attributes: ["img"],
 				},
+				{
+					model: Schools,
+					as: "school",
+					where: {
+						name: schoolUser.name,
+					},
+					attributes: ["name"],
+				},
 			],
 		});
-
-		const schoolUser = await Schools.findByPk(req.tokenData.schoolId);
-
-		// check if the school exists
-		const schoolExists = await Schools.findOne({
-			where: {
-				name: school,
-			},
-		});
-
-		if (!schoolExists) {
-			return res.status(404).json({
-				success: false,
-				error: "School not found.",
-			});
-		}
-
-		// check if the query school name is from the logged user school
-		if (schoolUser.name !== school) {
-			return res.status(401).json({
-				success: false,
-				error: "you are not from this school.",
-			});
-		}
 
 		if (isNaN(id)) {
 			return res.status(400).json({
@@ -114,9 +96,7 @@ exports.getAtaMeeting = async (req, res) => {
 exports.getOneFutureMeeting = async (req, res) => {
 	const { id } = req.params;
 
-	let { school } = req.query;
-
-	school = school.toUpperCase();
+	const schoolUser = await Schools.findByPk(req.tokenData.schoolId);
 
 	try {
 		const futureMeeting = await meetings.findByPk(id, {
@@ -136,30 +116,12 @@ exports.getOneFutureMeeting = async (req, res) => {
 					model: Schools,
 					as: "school",
 					where: {
-						name: school,
+						name: schoolUser.name,
 					},
 					attributes: ["name"],
 				},
 			],
 		});
-
-		const schoolUser = await Schools.findByPk(req.tokenData.schoolId);
-
-		// check if the school exists
-		const schoolExists = await Schools.findOne({
-			where: {
-				name: school,
-			},
-		});
-
-		if (!schoolExists) {
-			throw new Error("School not found.");
-		}
-
-		// check if the query school name is from the logged user school
-		if (schoolUser.name !== school) {
-			throw new Error("you are not from this school.");
-		}
 
 		if (isNaN(id)) {
 			throw new Error("Invalid id.");
@@ -189,22 +151,6 @@ exports.getOneFutureMeeting = async (req, res) => {
 			data: futureMeetingData,
 		});
 	} catch (err) {
-		console.log(colors.red(err.message));
-
-		if (err.message === "School not found.") {
-			return res.status(404).json({
-				success: false,
-				error: err.message,
-			});
-		}
-
-		if (err.message === "you are not from this school.") {
-			return res.status(401).json({
-				success: false,
-				error: err.message,
-			});
-		}
-
 		if (err.message === "Invalid id.") {
 			return res.status(400).json({
 				success: false,
@@ -234,9 +180,7 @@ exports.getOneFutureMeeting = async (req, res) => {
 };
 
 exports.getPastMeetings = async (req, res) => {
-	let { school } = req.query;
-
-	school = school.toUpperCase();
+	const schoolUser = await Schools.findByPk(req.tokenData.schoolId);
 
 	try {
 		const pastMeetings = await meetings.findAll({
@@ -256,77 +200,40 @@ exports.getPastMeetings = async (req, res) => {
 					model: Schools,
 					as: "school",
 					where: {
-						name: school,
+						name: schoolUser.name,
 					},
 					attributes: ["name"],
 				},
 			],
 		});
 
-		// filter the past meetings based on the school name
-		const filteredMeetings = pastMeetings
-			.filter((meeting) => meeting.school.name === school)
-			.map((meeting) => {
-				return {
-					id: meeting.id,
-					creator: {
-						id: meeting.creator.id,
-						name: meeting.creator.name,
-					},
-					date: fixDate(meeting.date),
-					room: meeting.room,
-					description: meeting.description,
-				};
+		const pastMeetingsData = pastMeetings.map((meeting) => {
+			return {
+				id: meeting.id,
+				creator: {
+					id: meeting.creator.id,
+					name: meeting.creator.name,
+				},
+				date: fixDate(meeting.date),
+				room: meeting.room,
+				description: meeting.description,
+			};
+		}
+		);
+
+		if(pastMeetingsData.length === 0){
+			return res.status(404).json({
+				success: false,
+				error: "No meetings found.",
 			});
-
-		const schoolUser = await Schools.findByPk(req.tokenData.schoolId);
-
-		// check if the school exists
-		const schoolExists = await Schools.findOne({
-			where: {
-				name: school,
-			},
-		});
-
-		if (!schoolExists) {
-			throw new Error("School not found.");
-		}
-
-		// check if the query school name is from the logged user school
-		if (schoolUser.name !== school) {
-			throw new Error("you are not from this school.");
-		}
-
-		// is from the school but don´t have any past meetings
-		if (filteredMeetings.length === 0) {
-			throw new Error("This school don´t have any past meetings.");
 		}
 
 		return res.status(200).json({
 			success: true,
-			data: filteredMeetings,
+			data: pastMeetingsData,
 		});
+
 	} catch (err) {
-		if (err.message === "School not found.") {
-			return res.status(404).json({
-				success: false,
-				error: "School not found.",
-			});
-		}
-
-		if (err.message === "you are not from this school.") {
-			return res.status(401).json({
-				success: false,
-				error: "you are not from this school.",
-			});
-		}
-
-		if (err.message === "This school don´t have any past meetings.") {
-			return res.status(404).json({
-				success: false,
-				error: "This school don´t have any past meetings.",
-			});
-		}
 
 		return res.status(500).json({
 			success: false,
@@ -336,9 +243,8 @@ exports.getPastMeetings = async (req, res) => {
 };
 
 exports.getFutureMeetings = async (req, res) => {
-	let { school } = req.query;
 
-	school = school.toUpperCase();
+	const schoolUser = await Schools.findByPk(req.tokenData.schoolId);
 
 	try {
 		const futureMeetings = await meetings.findAll({
@@ -358,78 +264,40 @@ exports.getFutureMeetings = async (req, res) => {
 					model: Schools,
 					as: "school",
 					where: {
-						name: school,
+						name: schoolUser.name,
 					},
 					attributes: ["name"],
 				},
 			],
 		});
 
-		// filter the past meetings based on the school name
-		const filteredMeetings = futureMeetings
-			.filter((meeting) => meeting.school.name === school)
-			.map((meeting) => {
-				return {
-					id: meeting.id,
-					creator: {
-						id: meeting.creator.id,
-						name: meeting.creator.name,
-					},
-					date: fixDate(meeting.date),
-					room: meeting.room,
-					description: meeting.description,
-				};
+		const futureMeetingsData = futureMeetings.map((meeting) => {
+			return {
+				id: meeting.id,
+				creator: {
+					id: meeting.creator.id,
+					name: meeting.creator.name,
+				},
+				date: fixDate(meeting.date),
+				room: meeting.room,
+				description: meeting.description,
+			};
+		}
+		);
+
+		if(futureMeetingsData.length === 0){
+			return res.status(404).json({
+				success: false,
+				error: "No meetings found.",
 			});
-
-		const schoolUser = await Schools.findByPk(req.tokenData.schoolId);
-
-		// check if the school exists
-		const schoolExists = await Schools.findOne({
-			where: {
-				name: school,
-			},
-		});
-
-		if (!schoolExists) {
-			throw new Error("School not found.");
-		}
-
-		// check if the query school name is from the logged user school
-		if (schoolUser.name !== school) {
-			throw new Error("you are not from this school.");
-		}
-
-		// is from the school but don´t have any past meetings
-		if (filteredMeetings.length === 0) {
-			throw new Error("This school don´t have any future meetings.");
 		}
 
 		return res.status(200).json({
 			success: true,
-			data: filteredMeetings,
+			data: futureMeetingsData,
 		});
+		
 	} catch (err) {
-		if (err.message === "School not found.") {
-			return res.status(404).json({
-				success: false,
-				error: "School not found.",
-			});
-		}
-
-		if (err.message === "you are not from this school.") {
-			return res.status(401).json({
-				success: false,
-				error: "you are not from this school.",
-			});
-		}
-
-		if (err.message === "This school don´t have any future meetings.") {
-			return res.status(404).json({
-				success: false,
-				error: "This school don´t have any future meetings.",
-			});
-		}
-
 		return res.status(500).json({
 			success: false,
 			error: "We apologize, but our system is currently experiencing some issues. Please try again later.",

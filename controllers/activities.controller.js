@@ -160,12 +160,6 @@ exports.getDetailActivity = async (req, res) => {
 			});
 		}
 	} catch (err) {
-		if (err.message === "jwt expired") {
-			return res.status(401).json({
-				success: false,
-				error: "Your session has expired. Please log in again.",
-			});
-		}
 		return res.status(500).json({
 			success: false,
 			error: "We apologize, but our system is currently experiencing some issues. Please try again later.",
@@ -299,13 +293,6 @@ exports.getUnfinishedActivities = async (req, res) => {
 			});
 		}
 	} catch (err) {
-		console.log(colors.red(err.message));
-		if (err.message === "jwt expired") {
-			return res.status(401).json({
-				success: false,
-				error: "Your session has expired. Please log in again.",
-			});
-		}
 		return res.status(500).json({
 			success: false,
 			error: "We apologize, but our system is currently experiencing some issues. Please try again later.",
@@ -362,7 +349,6 @@ exports.getRecentActivities = async (req, res) => {
 
 exports.getFinishedSchoolActivities = async (req, res) => {
 	try {
-
 		const schoolUser = await Schools.findByPk(req.tokenData.schoolId);
 
 		const activities = await Activities.findAll({
@@ -396,8 +382,6 @@ exports.getFinishedSchoolActivities = async (req, res) => {
 			},
 		});
 
-
-
 		const filteredActivities = activities.filter((activity) => {
 			return activity.school.name === schoolUser.name;
 		});
@@ -421,7 +405,6 @@ exports.getFinishedSchoolActivities = async (req, res) => {
 			};
 		});
 
-
 		// if there are no activities finished for the logged user school
 		if (data.length === 0) {
 			return res.status(404).json({
@@ -435,14 +418,6 @@ exports.getFinishedSchoolActivities = async (req, res) => {
 			data: data,
 		});
 	} catch (err) {
-		if (err.message === "jwt expired") {
-			return res.status(401).json({
-				success: false,
-				error: "Your session has expired. Please log in again.",
-			});
-		}
-
-		console.log(colors.red(err.message));
 		return res.status(500).json({
 			success: false,
 			error: "We apologize, but our system is currently experiencing some issues. Please try again later.",
@@ -578,14 +553,6 @@ exports.getUnfinishedSchoolActivities = async (req, res) => {
 			});
 		}
 	} catch (err) {
-		console.log(colors.red(err.message));
-		if (err.message === "jwt expired") {
-			return res.status(401).json({
-				success: false,
-				error: "Your session has expired. Please log in again.",
-			});
-		}
-
 		return res.status(500).json({
 			success: false,
 			error: "We apologize, but our system is currently experiencing some issues. Please try again later.",
@@ -595,15 +562,13 @@ exports.getUnfinishedSchoolActivities = async (req, res) => {
 
 exports.getReport = async (req, res) => {
 	const { id } = req.params;
-	let { school } = req.query;
 
-	school = school.toUpperCase();
+	const schoolUser = await Schools.findByPk(req.tokenData.schoolId);
 
 	try {
 		const activity = await Activities.findByPk(id, {
 			where: {
 				is_finished: true,
-				school_id: req.tokenData.schoolId,
 			},
 			include: [
 				{
@@ -615,53 +580,13 @@ exports.getReport = async (req, res) => {
 					model: Schools,
 					as: "school",
 					where: {
-						name: school,
+						name: schoolUser.name,
 					},
 					attributes: ["name"],
 				},
 			],
 			attributes: ["id", "report"],
 		});
-
-		const schoolUser = await Schools.findByPk(req.tokenData.schoolId);
-
-		// check if the school exists
-		const schoolExists = await Schools.findOne({
-			where: {
-				name: school,
-			},
-		});
-
-		if (!schoolExists) {
-			return res.status(404).json({
-				success: false,
-				error: "School not found.",
-			});
-		}
-
-		// check if the query school name is from the logged user school
-		if (schoolUser.name !== school) {
-			return res.status(401).json({
-				success: false,
-				error: "you are not from this school.",
-			});
-		}
-
-		// check if the user school have reports
-		const schoolHasReports = await Activities.findOne({
-			where: {
-				school_id: req.tokenData.schoolId,
-				is_finished: true,
-			},
-		});
-
-		// check if the school have any activity
-		if (schoolUser.name === school && !schoolHasReports) {
-			return res.status(404).json({
-				success: false,
-				error: "your school don´t have any reports.",
-			});
-		}
 
 		if (isNaN(id)) {
 			return res.status(400).json({
@@ -677,11 +602,10 @@ exports.getReport = async (req, res) => {
 			});
 		}
 
-		// if the activity is not finished
-		if (schoolUser.name === school && activity.report === null) {
-			return res.status(401).json({
+		if (activity.report === null) {
+			return res.status(404).json({
 				success: false,
-				error: "This activity is not finished yet.",
+				error: "Activity is not finished yet.",
 			});
 		}
 
