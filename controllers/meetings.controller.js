@@ -372,10 +372,17 @@ exports.createMeeting = async (req, res) => {
 exports.addAta = async (req, res) => {
 	const { ata, images } = req.body;
 
+	const { id } = req.params;
+
 	try {
 		const creator = await Users.findByPk(req.tokenData.userId);
 
 		const meeting = await meetings.findByPk(req.params.id);
+
+
+		if(isNaN(id)) {
+			throw new Error("Invalid id.");
+		}
 
 		if (!meeting) {
 			throw new Error("Meeting not found.");
@@ -430,6 +437,13 @@ exports.addAta = async (req, res) => {
 			});
 		}
 
+		if(err.message === "Invalid id.") {
+			return res.status(400).json({
+				success: false,
+				error: err.message,
+			});
+		}
+
 		return res.status(500).json({
 			success: false,
 			error: "We apologize, but our system is currently experiencing some issues. Please try again later.",
@@ -445,6 +459,7 @@ exports.deleteMeeting = async (req, res) => {
 			throw new Error("Meeting not found.");
 		}
 
+		// if the meeting haves an ata will delete the ata images associated
 		if (meeting.ata != null) {
 			const ataImages = await meetingAtaImage.findAll({
 				where: {
@@ -465,6 +480,7 @@ exports.deleteMeeting = async (req, res) => {
 			});
 		}
 
+		// if the meeting don´t have an ata will delete the meeting only (no ata images)
 		await meeting.destroy({
 			where: {
 				id: meeting.id,
