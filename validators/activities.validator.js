@@ -112,26 +112,14 @@ exports.validateBodyActivity = (req, res, next) => {
 		"participants",
 	];
 
-	const formatImages = [
-		'png',
-		'jpg',
-		'jpeg',
-		'gif',
-		'bmp',
-		'webp',
-		'svg',
-		'svg + xml',
-		'tiff'
-	];
+	const formatImages = ["png", "jpg", "jpeg", "gif", "bmp", "webp", "svg", "svg+xml", "tiff"];
 
 	const { theme_id, complexity, initial_date, final_date, images } = req.body;
-
 
 	const invalidFields = Object.keys(req.body)
 		.filter((key) => !validFields.includes(key))
 		.map((key) => `${key} is a invalid field`);
 
-	
 	if (Object.keys(req.body).length === 0) {
 		return res.status(400).json({
 			success: false,
@@ -289,7 +277,6 @@ exports.validateBodyActivity = (req, res, next) => {
 		});
 	}
 
-
 	// check if the images include on of the formatImages array and starting with base64 string
 	if (
 		!images.every(
@@ -303,8 +290,6 @@ exports.validateBodyActivity = (req, res, next) => {
 			error: "images must be a valid base64 string",
 		});
 	}
-
-
 
 	const validStringFields = stringFields
 		.filter((key) => typeof req.body[key] !== "string")
@@ -353,12 +338,27 @@ exports.validateBodyTheme = (req, res, next) => {
 		});
 	}
 
+	if (
+		!images.every(
+			(image) =>
+				formatImages.some((format) => image.startsWith(`data:image/${format};base64`)) &&
+				image.length > 22
+		)
+	) {
+		return res.status(400).json({
+			success: false,
+			error: "images must be a valid base64 string",
+		});
+	}
+
 	next();
 };
 
 // validations for finish activity - create report of activity
 exports.validateBodyReport = (req, res, next) => {
 	const validFields = ["images", "report"];
+
+	const formatImages = ["png", "jpg", "jpeg", "gif", "bmp", "webp", "svg", "svg+xml", "tiff"];
 
 	const { images, report } = req.body;
 
@@ -445,19 +445,6 @@ exports.validateBodyReport = (req, res, next) => {
 		return res.status(400).json({
 			success: false,
 			error: "images cannot have empty strings",
-		});
-	}
-
-	if (
-		images.some(
-			(image) =>
-				!image.startsWith("data:image/png;base64,") &&
-				!image.startsWith("data:image/jpeg;base64,")
-		)
-	) {
-		return res.status(400).json({
-			success: false,
-			error: "images must be a valid base64 string",
 		});
 	}
 
