@@ -1,5 +1,5 @@
+const moment = require("moment");
 const db = require("../models/db");
-const colors = require("colors");
 const { Op } = require("sequelize");
 const meetings = db.meetings;
 const meetingAtaImage = db.meeting_ata_image;
@@ -218,10 +218,9 @@ exports.getPastMeetings = async (req, res) => {
 				room: meeting.room,
 				description: meeting.description,
 			};
-		}
-		);
+		});
 
-		if(pastMeetingsData.length === 0){
+		if (pastMeetingsData.length === 0) {
 			return res.status(404).json({
 				success: false,
 				error: "No meetings found.",
@@ -232,9 +231,7 @@ exports.getPastMeetings = async (req, res) => {
 			success: true,
 			data: pastMeetingsData,
 		});
-
 	} catch (err) {
-
 		return res.status(500).json({
 			success: false,
 			error: "We apologize, but our system is currently experiencing some issues. Please try again later.",
@@ -243,7 +240,6 @@ exports.getPastMeetings = async (req, res) => {
 };
 
 exports.getFutureMeetings = async (req, res) => {
-
 	const schoolUser = await Schools.findByPk(req.tokenData.schoolId);
 
 	try {
@@ -282,10 +278,9 @@ exports.getFutureMeetings = async (req, res) => {
 				room: meeting.room,
 				description: meeting.description,
 			};
-		}
-		);
+		});
 
-		if(futureMeetingsData.length === 0){
+		if (futureMeetingsData.length === 0) {
 			return res.status(404).json({
 				success: false,
 				error: "No meetings found.",
@@ -296,7 +291,6 @@ exports.getFutureMeetings = async (req, res) => {
 			success: true,
 			data: futureMeetingsData,
 		});
-		
 	} catch (err) {
 		return res.status(500).json({
 			success: false,
@@ -306,13 +300,192 @@ exports.getFutureMeetings = async (req, res) => {
 };
 
 exports.createMeeting = async (req, res) => {
-	console.log(colors.green("Create Meeting"));
+	const { date, room, description } = req.body;
+
+	try {
+		const creator = await Users.findByPk(req.tokenData.userId);
+		const schoolUser = await Schools.findByPk(req.tokenData.schoolId);
+
+		// check if there is a meeting at the same date and room
+		const meeting = await meetings.findOne({
+			where: {
+				date: date,
+				room: room,
+			},
+		});
+
+		if (meeting) {
+			throw new Error("There is already a meeting at this date and room.");
+		}
+
+		// if the hour is delayed on the database (1 hour) increase the date by 1 hour with moment
+		const dateMoment = moment(date).add(1, "hours");
+
+		// if the hour is ahead on the database (1 hour) decrease the date by 1 hour with moment
+		const dateMomentV2 = moment(date).subtract(1, "hours");
+
+		const newMeeting = await meetings.create({
+			creator_id: creator.id, // user
+			school_id: schoolUser.id, // user school
+			date: dateMoment || dateMomentV2,
+			room: room,
+			description: description,
+		});
+
+		const meetingsCount = await meetings.count({
+			where: {
+				creator_id: creator.id,
+			},
+		});
+
+		if (meetingsCount === 1) {
+			await unlockBadge({ badgeId: 4, userId: creator.id });
+		}
+
+		if (meetingsCount === 3) {
+			await unlockBadge({ badgeId: 8, userId: creator.id });
+		}
+
+		if (newMeeting) {
+			addSeeds({ userId: creator.id, amount: 40 });
+		}
+
+		return res.status(201).json({
+			success: true,
+			message: `meeting created ${newMeeting.id}`,
+		});
+	} catch (err) {
+		if (err.message === "There is already a meeting at this date and room.") {
+			return res.status(409).json({
+				success: false,
+				error: err.message,
+			});
+		}
+
+		return res.status(500).json({
+			success: false,
+			error: "We apologize, but our system is currently experiencing some issues. Please try again later.",
+		});
+	}
 };
 
 exports.addAta = async (req, res) => {
-	console.log(colors.green("Add Ata to meeting"));
+	const { ata, images } = req.body;
+
+	try {
+		const creator = await Users.findByPk(req.tokenData.userId);
+
+		const meeting = await meetings.findByPk(req.params.id);
+
+		if (!meeting) {
+			throw new Error("Meeting not found.");
+		}
+
+		// check if the meeting is from the past
+		if (meeting.date > new Date()) {
+			throw new Error("You can only add ATA to past meetings.");
+		}
+
+		if (meeting.ata != null) {
+			throw new Error("ATA already added to this meeting.");
+		}
+
+		const updatedMeeting = await meeting.update({
+			ata: ata,
+		});
+
+		if (req.body.images && req.body.images.length > 0) {
+			images.forEach(async (image) => {
+				await meetingAtaImage.create({
+					meeting_id: meeting.id,
+					img: image,
+				});
+			});
+			await unlockBadge({ badgeId: 5, userId: creator.id }); //if already have the badge only will earn seeds
+			await addSeeds({ userId: creator.id, amount: 40 });
+		}
+
+		return res.status(200).json({
+			success: true,
+			message: `ATA added to meeting ${updatedMeeting.id}`,
+		});
+	} catch (err) {
+		if (err.message === "Meeting not found.") {
+			return res.status(404).json({
+				success: false,
+				error: err.message,
+			});
+		}
+		if (err.message === "You can only add ATA to past meetings.") {
+			return res.status(409).json({
+				success: false,
+				error: err.message,
+			});
+		}
+
+		if (err.message === "ATA already added to this meeting.") {
+			return res.status(409).json({
+				success: false,
+				error: err.message,
+			});
+		}
+
+		return res.status(500).json({
+			success: false,
+			error: "We apologize, but our system is currently experiencing some issues. Please try again later.",
+		});
+	}
 };
 
 exports.deleteMeeting = async (req, res) => {
-	console.log(colors.green("Delete Meeting"));
+	try {
+		const meeting = await meetings.findByPk(req.params.id);
+
+		if (!meeting) {
+			throw new Error("Meeting not found.");
+		}
+
+		if (meeting.ata != null) {
+			const ataImages = await meetingAtaImage.findAll({
+				where: {
+					meeting_id: meeting.id,
+				},
+			});
+
+			if (ataImages) {
+				ataImages.forEach(async (image) => {
+					await image.destroy();
+				});
+			}
+
+			await meeting.destroy({
+				where: {
+					id: meeting.id,
+				},
+			});
+		}
+
+		await meeting.destroy({
+			where: {
+				id: meeting.id,
+			},
+		});
+
+		return res.status(200).json({
+			success: true,
+			message: `Meeting ${meeting.id} deleted.`,
+		});
+	} catch (err) {
+		if (err.message === "Meeting not found.") {
+			return res.status(404).json({
+				success: false,
+				error: err.message,
+			});
+		}
+
+		return res.status(500).json({
+			success: false,
+			error: "We apologize, but our system is currently experiencing some issues. Please try again later.",
+		});
+	}
 };
