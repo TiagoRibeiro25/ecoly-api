@@ -563,7 +563,7 @@ module.exports = {
 			theme_id: 2,
 			title: "Colocação de Caixotes do Lixo",
 			complexity: 3,
-			initial_date: "2023-03-29",
+			initial_date: "2023-07-29",
 			final_date: "2023-08-29",
 			objective:
 				"Contribuir para a limpeza dos espaços exteriores e estimular a utilização das zonas ajardinadas",
