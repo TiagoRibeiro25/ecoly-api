@@ -44,7 +44,7 @@ function initModels(sequelize) {
 	meeting_ata_image.belongsTo(meetings, { as: "meeting", foreignKey: "meeting_id" });
 	meetings.hasMany(meeting_ata_image, { as: "meeting_ata_images", foreignKey: "meeting_id" });
 	new_image.belongsTo(news, { as: "new", foreignKey: "new_id" });
-	news.hasMany(new_image, { as: "new_images", foreignKey: "new_id" });
+	news.hasMany(new_image, { as: "new_images", foreignKey: "new_id", onDelete: "CASCADE" });
 	users.belongsTo(role, { as: "role", foreignKey: "role_id" });
 	role.hasMany(users, { as: "users", foreignKey: "role_id" });
 	activities.belongsTo(schools, { as: "school", foreignKey: "school_id" });
