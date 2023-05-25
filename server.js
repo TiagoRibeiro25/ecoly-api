@@ -13,7 +13,7 @@ app.listen(PORT, HOST, async () => {
 	// await require("./data/resetDB")(); // Reset the database
 	console.log(
 		colors.green("-> ") +
-		colors.cyan("Server is running on ") +
-		colors.green(`https://${HOST}:${PORT}\n`)
+			colors.cyan("Server is running on ") +
+			colors.green(`https://${HOST}:${PORT}\n`)
 	);
 });
