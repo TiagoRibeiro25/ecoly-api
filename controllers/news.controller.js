@@ -9,49 +9,67 @@ const { Op } = require("sequelize");
 const unlockBadge = require("../utils/unlockBadge");
 const addSeeds = require("../utils/addSeeds");
 
+
 exports.getNews = async (req, res) => {
 	try {
 		const { search, filter } = req.query;
 		const formatVal = search ? search.replace(/%20/g, " ") : "";
 
-		const news = await News.findAll({ where: { title: { [Op.like]: `%${formatVal}%` } } });
-		const newsJSON = news.map((item) => item.toJSON());
-		let isUserLogged = false;
-		let isUserAdmin = false;
+		let news = await News.findAll({
+			where: { title: { [Op.like]: `%${formatVal}%` } },
+			order: [["date_created", "DESC"]],
+			limit: filter === "recent" ? 3 : undefined,
+			include: [
+				{
+					model: NewsImage,
+					as: "new_images",
+					attributes: ["img"],
+					limit: 1
+				}
+			]
+		});
 
-		// Add image to each new
+
+		const newsJSON = news.map((item) => {
+			return {
+				id: item.id,
+				title: item.title,
+				content: item.content,
+				date_created: item.date_created,
+				creator_id: item.creator_id,
+				image: item.new_images[0].img
+			};
+		});
+
+
 		for (const item of newsJSON) {
 			const image = await NewsImage.findOne({ where: { new_id: item.id } });
 			item.image = image.img;
 		}
 
+		let isUserLogged = false;
+		let isUserAdmin = false;
+
 		// Check if the person that made the request is an admin
-		let token = req.headers["x-access-token"] || req.headers.authorization;
-		token = token?.replace("Bearer ", "");
-		token = token?.replace("Bearer", "");
+		const token = req.headers["x-access-token"] || req.headers.authorization?.replace("Bearer ", "");
 
 		if (token) {
 			try {
-				// verify the token
+				// Verify the token
 				const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
 				isUserLogged = true;
 
-				// if the token is valid, find the role name from the database
+				// If the token is valid, find the role name from the database
 				const role = await Roles.findByPk(+decoded.roleId);
 
-				// if the role name is admin, add the isLoggedUser field to the response
+				// If the role name is admin, add the isLoggedUser field to the response
 				if (role.title === "admin") isUserAdmin = true;
 			} catch (err) {
 				isUserAdmin = false;
 			}
 		}
 
-		// sort news by date
-		newsJSON.sort((a, b) => new Date(b.date_created) - new Date(a.date_created));
-
-		// only return the first 3 news if the filter is recent
-		if (filter === "recent") newsJSON.splice(3);
 
 		res.status(200).json({ success: true, data: { isUserAdmin, isUserLogged, news: newsJSON } });
 	} catch (error) {
@@ -62,6 +80,7 @@ exports.getNews = async (req, res) => {
 		});
 	}
 };
+
 
 exports.getSingleNew = async (req, res) => {
 	const { id } = req.params;
