@@ -37,14 +37,14 @@ function initModels(sequelize) {
 	activity_report_image.belongsTo(activities, { as: "activity", foreignKey: "activity_id" });
 	activities.hasMany(activity_report_image, {
 		as: "activity_report_images",
-		foreignKey: "activity_id",
+		foreignKey: "activity_id"
 	});
 	user_badge.belongsTo(badges, { as: "badge", foreignKey: "badge_id" });
 	badges.hasMany(user_badge, { as: "user_badges", foreignKey: "badge_id" });
 	meeting_ata_image.belongsTo(meetings, { as: "meeting", foreignKey: "meeting_id" });
 	meetings.hasMany(meeting_ata_image, { as: "meeting_ata_images", foreignKey: "meeting_id" });
 	new_image.belongsTo(news, { as: "new", foreignKey: "new_id" });
-	news.hasMany(new_image, { as: "new_images", foreignKey: "new_id", onDelete: "CASCADE" });
+	news.hasMany(new_image, { as: "new_images", foreignKey: "new_id" });
 	users.belongsTo(role, { as: "role", foreignKey: "role_id" });
 	role.hasMany(users, { as: "users", foreignKey: "role_id" });
 	activities.belongsTo(schools, { as: "school", foreignKey: "school_id" });
@@ -81,9 +81,10 @@ function initModels(sequelize) {
 		seeds,
 		theme,
 		user_badge,
-		users,
+		users
 	};
 }
+
 module.exports = initModels;
 module.exports.initModels = initModels;
 module.exports.default = initModels;
