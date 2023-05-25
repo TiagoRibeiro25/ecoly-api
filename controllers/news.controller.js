@@ -9,7 +9,6 @@ const { Op } = require("sequelize");
 const unlockBadge = require("../utils/unlockBadge");
 const addSeeds = require("../utils/addSeeds");
 
-
 exports.getNews = async (req, res) => {
 	try {
 		const { search, filter } = req.query;
@@ -41,11 +40,6 @@ exports.getNews = async (req, res) => {
 			};
 		});
 
-
-		for (const item of newsJSON) {
-			const image = await NewsImage.findOne({ where: { new_id: item.id } });
-			item.image = image.img;
-		}
 
 		let isUserLogged = false;
 		let isUserAdmin = false;
