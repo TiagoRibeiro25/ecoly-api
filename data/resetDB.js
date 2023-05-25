@@ -4,7 +4,7 @@ const create = require("./createData");
 
 /**
  * @description Deletes all data from the database
- * @param {boolean} logging - Whether or not to log events to the console
+ * @param {boolean} logging - Whether to log events to the console
  * @returns {Promise<void>}
  * @throws {Error}
  */
@@ -16,13 +16,13 @@ async function deleteData(logging) {
 		if (logging) {
 			console.log(
 				colors.blue("Cleared all data from the database - ") +
-					colors.green(end - start + "ms\n")
+				colors.green(end - start + "ms\n")
 			);
 		}
 	} catch (err) {
 		throw new Error(
 			colors.red("An error occurred while deleting all data from the database:\n") +
-				colors.yellow(err)
+			colors.yellow(err)
 		);
 	}
 }
@@ -40,21 +40,25 @@ const resetDB = async (logging = true) => {
 		await deleteData(logging);
 
 		// Create Initial Data
-		await create.roles(logging);
-		await create.schools(logging);
-		await create.users(logging);
-		await create.badges(logging);
-		await create.userBadge(logging);
-		await create.news(logging);
-		await create.newImg(logging);
-		await create.newsLetter(logging);
-		await create.meetings(logging);
-		await create.meetingAtaImage(logging);
-		await create.theme(logging);
-		await create.activities(logging);
-		await create.activityImage(logging);
-		await create.activityReportImage(logging);
-		await create.seeds(logging);
+		await Promise.all([create.roles(logging), create.schools(logging)]);
+
+		await Promise.all([create.users(logging), create.badges(logging), create.theme(logging)]);
+
+		await Promise.all([
+			create.userBadge(logging),
+			create.news(logging),
+			create.newsLetter(logging),
+			create.meetings(logging),
+			create.activities(logging),
+			create.seeds(logging)
+		]);
+
+		await Promise.all([
+			create.newImg(logging),
+			create.meetingAtaImage(logging),
+			create.activityImage(logging),
+			create.activityReportImage(logging)
+		]);
 	} catch (err) {
 		console.log(colors.red("-> ") + colors.yellow(err) + "\n");
 		return;
