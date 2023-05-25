@@ -14,6 +14,6 @@ app.listen(PORT, HOST, async () => {
 	console.log(
 		colors.green("-> ") +
 		colors.cyan("Server is running on ") +
-		colors.green(`http://${HOST}:${PORT}\n`)
+		colors.green(`https://${HOST}:${PORT}\n`)
 	);
 });
