@@ -1,5 +1,6 @@
 const moment = require("moment");
 const db = require("../models/db");
+const colors = require("colors");
 const { Op } = require("sequelize");
 const meetings = db.meetings;
 const meetingAtaImage = db.meeting_ata_image;
@@ -193,6 +194,99 @@ exports.getOneFutureMeeting = async (req, res) => {
 	}
 };
 
+exports.getOnePastMeeting = async (req, res) => {
+	const { id } = req.params;
+
+	const schoolUser = await Schools.findByPk(req.tokenData.schoolId);
+
+	try {
+		const pastMeeting = await meetings.findByPk(id, {
+			attributes: ["id", "date", "description", "room"],
+			where: {
+				date: {
+					[Op.lt]: new Date(),
+				},
+			},
+			include: [
+				{
+					model: Users,
+					as: "creator",
+					attributes: ["id", "name"],
+				},
+				{
+					model: Schools,
+					as: "school",
+					where: {
+						name: schoolUser.name,
+					},
+					attributes: ["name"],
+				},
+			],
+		});
+
+		if (isNaN(id)) {
+			throw new Error("Invalid id.");
+		}
+
+		if (!pastMeeting) {
+			throw new Error("Meeting not found.");
+		}
+
+		if (pastMeeting.date > new Date()) {
+			throw new Error("This his a future meeting.");
+		}
+
+		const pastMeetingData = {
+			id: pastMeeting.id,
+			creator: {
+				id: pastMeeting.creator.id,
+				name: pastMeeting.creator.name,
+			},
+			date: fixDate(pastMeeting.date),
+			room: pastMeeting.room,
+			description: pastMeeting.description,
+		};
+
+		return res.status(200).json({
+			success: true,
+			data: pastMeetingData,
+		});
+	} catch (err) {
+		if (err.message === "jwt expired") {
+			return res.status(401).json({
+				success: false,
+				error: "Your session has expired. Please generate other token.",
+			});
+		}
+
+		if (err.message === "Invalid id.") {
+			return res.status(400).json({
+				success: false,
+				error: err.message,
+			});
+		}
+
+		if (err.message === "Meeting not found.") {
+			return res.status(404).json({
+				success: false,
+				error: err.message,
+			});
+		}
+
+		if (err.message === "This his a future meeting.") {
+			return res.status(404).json({
+				success: false,
+				error: err.message,
+			});
+		}
+
+		return res.status(500).json({
+			success: false,
+			error: "We apologize, but our system is currently experiencing some issues. Please try again later.",
+		});
+	}
+};
+
 exports.getPastMeetings = async (req, res) => {
 	const schoolUser = await Schools.findByPk(req.tokenData.schoolId);
 
@@ -221,8 +315,21 @@ exports.getPastMeetings = async (req, res) => {
 			],
 		});
 
-		const pastMeetingsData = pastMeetings.map((meeting) => {
+		// check if a meeting haves an ata and is images
+		const meetingHasAta = await Promise.all(
+			pastMeetings.map(async (meeting) => {
+				const ata = await meeting.getMeeting_ata_images();
+				if (ata.length > 0) {
+					return true;
+				}
+				return false;
+			})
+		);
+
+		// return for each meeting if it has an ata or not
+		const pastMeetingsData = pastMeetings.map((meeting, index) => {
 			return {
+				hasAta: meetingHasAta[index],
 				id: meeting.id,
 				creator: {
 					id: meeting.creator.id,
@@ -246,6 +353,7 @@ exports.getPastMeetings = async (req, res) => {
 			data: pastMeetingsData,
 		});
 	} catch (err) {
+		console.log(colors.red(err.message));
 		if (err.message === "jwt expired") {
 			return res.status(401).json({
 				success: false,

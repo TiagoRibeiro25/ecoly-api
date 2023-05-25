@@ -44,6 +44,16 @@ router.get("/:id", meetingsValidator.validateQueries, (req, res) => {
 			});
 		});
 	}
+
+	if (req.query.filter === "past") {
+		return authController.verifyToken(req, res, () => {
+			//next
+			authController.verifyIsVerified(req, res, () => {
+				//next
+				meetingsController.getOnePastMeeting(req, res);
+			});
+		});
+	}
 });
 
 router.post(
