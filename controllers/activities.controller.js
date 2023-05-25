@@ -160,6 +160,13 @@ exports.getDetailActivity = async (req, res) => {
 			});
 		}
 	} catch (err) {
+		if (err.message === "jwt expired") {
+			return res.status(401).json({
+				success: false,
+				error: "Your session has expired. Please generate other token.",
+			});
+		}
+
 		return res.status(500).json({
 			success: false,
 			error: "We apologize, but our system is currently experiencing some issues. Please try again later.",
@@ -293,6 +300,13 @@ exports.getUnfinishedActivities = async (req, res) => {
 			});
 		}
 	} catch (err) {
+		if (err.message === "jwt expired") {
+			return res.status(401).json({
+				success: false,
+				error: "Your session has expired. Please generate other token.",
+			});
+		}
+
 		return res.status(500).json({
 			success: false,
 			error: "We apologize, but our system is currently experiencing some issues. Please try again later.",
@@ -418,6 +432,13 @@ exports.getFinishedSchoolActivities = async (req, res) => {
 			data: data,
 		});
 	} catch (err) {
+		if (err.message === "jwt expired") {
+			return res.status(401).json({
+				success: false,
+				error: "Your session has expired. Please generate other token.",
+			});
+		}
+
 		return res.status(500).json({
 			success: false,
 			error: "We apologize, but our system is currently experiencing some issues. Please try again later.",
@@ -553,6 +574,13 @@ exports.getUnfinishedSchoolActivities = async (req, res) => {
 			});
 		}
 	} catch (err) {
+		if (err.message === "jwt expired") {
+			return res.status(401).json({
+				success: false,
+				error: "Your session has expired. Please generate other token.",
+			});
+		}
+
 		return res.status(500).json({
 			success: false,
 			error: "We apologize, but our system is currently experiencing some issues. Please try again later.",
@@ -620,6 +648,13 @@ exports.getReport = async (req, res) => {
 			data: data,
 		});
 	} catch (err) {
+		if (err.message === "jwt expired") {
+			return res.status(401).json({
+				success: false,
+				error: "Your session has expired. Please generate other token.",
+			});
+		}
+
 		return res.status(500).json({
 			success: false,
 			error: "We apologize, but our system is currently experiencing some issues. Please try again later.",
@@ -641,6 +676,13 @@ exports.getThemes = async (req, res) => {
 				data: themes,
 			});
 	} catch (err) {
+		if (err.message === "jwt expired") {
+			return res.status(401).json({
+				success: false,
+				error: "Your session has expired. Please generate other token.",
+			});
+		}
+
 		return res.status(500).json({
 			success: false,
 			error: "We apologize, but our system is currently experiencing some issues. Please try again later.",
@@ -769,6 +811,13 @@ exports.addActivity = async (req, res) => {
 			});
 		}
 
+		if (err.message === "jwt expired") {
+			return res.status(401).json({
+				success: false,
+				error: "Your session has expired. Please generate other token.",
+			});
+		}
+
 		res.status(500).json({
 			success: false,
 			error: "We apologize, but our system is currently experiencing some issues. Please try again later.",
@@ -830,6 +879,13 @@ exports.addTheme = async (req, res) => {
 			});
 		}
 	} catch (err) {
+		if (err.message === "jwt expired") {
+			return res.status(401).json({
+				success: false,
+				error: "Your session has expired. Please generate other token.",
+			});
+		}
+
 		if (err.message === "Theme already exists") {
 			return res.status(409).json({
 				success: false,
@@ -928,6 +984,14 @@ exports.finishActivity = async (req, res) => {
 				error: "Activity is not from your school",
 			});
 		}
+
+		if (err.message === "jwt expired") {
+			return res.status(401).json({
+				success: false,
+				error: "Your session has expired. Please generate other token.",
+			});
+		}
+
 		res.status(500).json({
 			success: false,
 			error: "We apologize, but our system is currently experiencing some issues. Please try again later.",
@@ -977,6 +1041,14 @@ exports.disabledTheme = async (req, res) => {
 				error: "Theme is already disabled",
 			});
 		}
+
+		if (err.message === "jwt expired") {
+			return res.status(401).json({
+				success: false,
+				error: "Your session has expired. Please generate other token.",
+			});
+		}
+
 		res.status(500).json({
 			success: false,
 			error: "We apologize, but our system is currently experiencing some issues. Please try again later.",
@@ -1016,6 +1088,13 @@ exports.deleteActivity = async (req, res) => {
 			message: `the activity deleted successfully`,
 		});
 	} catch (err) {
+		if (err.message === "jwt expired") {
+			return res.status(401).json({
+				success: false,
+				error: "Your session has expired. Please generate other token.",
+			});
+		}
+
 		if (err.message === "Activity not found") {
 			return res.status(404).json({
 				success: false,
