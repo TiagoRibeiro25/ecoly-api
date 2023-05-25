@@ -86,6 +86,13 @@ exports.getAtaMeeting = async (req, res) => {
 			data: ata,
 		});
 	} catch (err) {
+		if (err.message === "jwt expired") {
+			return res.status(401).json({
+				success: false,
+				error: "Your session has expired. Please generate other token.",
+			});
+		}
+
 		return res.status(500).json({
 			success: false,
 			error: "We apologize, but our system is currently experiencing some issues. Please try again later.",
@@ -151,6 +158,13 @@ exports.getOneFutureMeeting = async (req, res) => {
 			data: futureMeetingData,
 		});
 	} catch (err) {
+		if (err.message === "jwt expired") {
+			return res.status(401).json({
+				success: false,
+				error: "Your session has expired. Please generate other token.",
+			});
+		}
+
 		if (err.message === "Invalid id.") {
 			return res.status(400).json({
 				success: false,
@@ -232,6 +246,13 @@ exports.getPastMeetings = async (req, res) => {
 			data: pastMeetingsData,
 		});
 	} catch (err) {
+		if (err.message === "jwt expired") {
+			return res.status(401).json({
+				success: false,
+				error: "Your session has expired. Please generate other token.",
+			});
+		}
+
 		return res.status(500).json({
 			success: false,
 			error: "We apologize, but our system is currently experiencing some issues. Please try again later.",
@@ -292,6 +313,13 @@ exports.getFutureMeetings = async (req, res) => {
 			data: futureMeetingsData,
 		});
 	} catch (err) {
+		if (err.message === "jwt expired") {
+			return res.status(401).json({
+				success: false,
+				error: "Your session has expired. Please generate other token.",
+			});
+		}
+
 		return res.status(500).json({
 			success: false,
 			error: "We apologize, but our system is currently experiencing some issues. Please try again later.",
@@ -355,6 +383,13 @@ exports.createMeeting = async (req, res) => {
 			message: `meeting created ${newMeeting.id}`,
 		});
 	} catch (err) {
+		if (err.message === "jwt expired") {
+			return res.status(401).json({
+				success: false,
+				error: "Your session has expired. Please generate other token.",
+			});
+		}
+
 		if (err.message === "There is already a meeting at this date and room.") {
 			return res.status(409).json({
 				success: false,
@@ -379,8 +414,7 @@ exports.addAta = async (req, res) => {
 
 		const meeting = await meetings.findByPk(req.params.id);
 
-
-		if(isNaN(id)) {
+		if (isNaN(id)) {
 			throw new Error("Invalid id.");
 		}
 
@@ -417,6 +451,13 @@ exports.addAta = async (req, res) => {
 			message: `ATA added to meeting ${updatedMeeting.id}`,
 		});
 	} catch (err) {
+		if (err.message === "jwt expired") {
+			return res.status(401).json({
+				success: false,
+				error: "Your session has expired. Please generate other token.",
+			});
+		}
+
 		if (err.message === "Meeting not found.") {
 			return res.status(404).json({
 				success: false,
@@ -437,7 +478,7 @@ exports.addAta = async (req, res) => {
 			});
 		}
 
-		if(err.message === "Invalid id.") {
+		if (err.message === "Invalid id.") {
 			return res.status(400).json({
 				success: false,
 				error: err.message,
@@ -492,6 +533,13 @@ exports.deleteMeeting = async (req, res) => {
 			message: `Meeting ${meeting.id} deleted.`,
 		});
 	} catch (err) {
+		if (err.message === "jwt expired") {
+			return res.status(401).json({
+				success: false,
+				error: "Your session has expired. Please generate other token.",
+			});
+		}
+
 		if (err.message === "Meeting not found.") {
 			return res.status(404).json({
 				success: false,
