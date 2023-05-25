@@ -58,7 +58,7 @@ exports.getNews = async (req, res) => {
 		console.log(error);
 		res.status(500).send({
 			success: false,
-			message: "Failed to fetch news",
+			message: "Failed to fetch news"
 		});
 	}
 };
@@ -108,7 +108,7 @@ exports.getSingleNew = async (req, res) => {
 
 		res.status(500).json({
 			success: false,
-			message: "Failed to fetch New" + " " + error,
+			message: "Failed to fetch New" + " " + error
 		});
 	}
 };
@@ -132,7 +132,7 @@ exports.deleteNew = async (req, res) => {
 
 		res.status(500).json({
 			success: false,
-			message: "Failed to delete new",
+			message: "Failed to delete new"
 		});
 	}
 };
@@ -150,7 +150,7 @@ exports.addNew = async (req, res) => {
 			title: title,
 			content: content,
 			date_created: new Date().toISOString().split("T")[0],
-			creator_id: creator.id,
+			creator_id: creator.id
 		});
 
 		for (const img of imgs) {
@@ -159,7 +159,7 @@ exports.addNew = async (req, res) => {
 
 		res.status(201).json({
 			success: true,
-			message: "New was successfully added",
+			message: "New was successfully added"
 		});
 
 		Promise.all([
@@ -168,8 +168,8 @@ exports.addNew = async (req, res) => {
 			sendNewsLetter({
 				newId: newNew.id,
 				title: `${title}`,
-				author: { id: `${creator.id}`, name: `${creator.name}` },
-			}),
+				author: { id: `${creator.id}`, name: `${creator.name}` }
+			})
 		]);
 	} catch (error) {
 		if (error.message === "The new already exists") {
@@ -178,7 +178,7 @@ exports.addNew = async (req, res) => {
 
 		res.status(500).send({
 			success: false,
-			message: "Failed to add the new",
+			message: "Failed to add the new"
 		});
 	}
 };
