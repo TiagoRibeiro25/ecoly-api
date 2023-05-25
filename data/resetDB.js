@@ -29,7 +29,7 @@ async function deleteData(logging) {
 
 /**
  * @description Resets the database by deleting all data and creating new data
- * @param {boolean} logging - Whether or not to log events to the console
+ * @param {boolean} logging - Whether to log events to the console
  * @returns {Promise<void>}
  * @throws {Error}
  */
