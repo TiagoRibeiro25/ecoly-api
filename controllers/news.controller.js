@@ -180,7 +180,7 @@ exports.addNew = async (req, res) => {
 			message: "New was successfully added"
 		});
 
-		Promise.all([
+		await Promise.all([
 			unlockBadge({ badgeId: 7, userId: creator.id }), // Add badge to the user
 			addSeeds({ userId: creator.id, amount: 40 }), // Add seeds to the user
 			sendNewsLetter({
