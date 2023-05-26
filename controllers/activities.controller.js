@@ -1,6 +1,7 @@
 const db = require("../models/db");
 const colors = require("colors");
 const jwt = require("jsonwebtoken");
+const cloudinary = require("cloudinary");
 const { Op } = require("sequelize");
 const Activities = db.activities;
 const activity_images = db.activity_image;
@@ -517,9 +518,7 @@ exports.getFinishedSchoolActivitiesByYear = async (req, res) => {
 			throw new Error("Year must be a number.");
 		}
 
-		if (typeof year === "number" && year.length > 4) {
-			throw new Error("invalid year.");
-		}
+		//
 
 		// if there are no activities finished for the logged user school
 		if (data.length === 0) {
@@ -881,7 +880,7 @@ exports.addActivity = async (req, res) => {
 			const images = req.body.images;
 
 			for (let i = 0; i < images.length; i++) {
-				const response = await cloudinary.uploader.upload(images[i], {
+				const response = await cloudinary.upload.upload(images[i], {
 					folder: "activities",
 					crop: "scale",
 				});
@@ -1065,13 +1064,18 @@ exports.finishActivity = async (req, res) => {
 			// if the body includes images add to the activity report_images model
 			if (req.body.images && images.length > 0) {
 				const images = req.body.images; // array of images
-				// for each image in the array add the activity_id and the image to the activity_images table
-				images.forEach((image) => {
-					activity_report_images.create({
-						activity_id: activity.id,
-						img: image,
+
+				for (let i = 0; i < images.length; i++) {
+					const response = await cloudinary.uploader.upload(images[i], {
+						folder: "reports",
+						crop: "scale",
 					});
-				});
+
+					await activity_report_images.create({
+						activity_id: activity.id,
+						img: response.secure_url,
+					});
+				}
 			}
 
 			// Unlock the badge if the activity is finished on the last day
