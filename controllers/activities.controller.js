@@ -880,7 +880,7 @@ exports.addActivity = async (req, res) => {
 			const images = req.body.images;
 
 			for (let i = 0; i < images.length; i++) {
-				const response = await cloudinary.upload.upload(images[i], {
+				const response = await cloudinary.uploader.upload(images[i], {
 					folder: "activities",
 					crop: "scale",
 				});

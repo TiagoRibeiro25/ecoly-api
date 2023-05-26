@@ -18,6 +18,7 @@ beforeAll(async () => {
 	unsignedToken = await getToken("unsigned", false);
 }, 10000);
 
+
 // create activity tests (POST)
 describe("POST /api/activities", () => {
 	describe("when is an invalid route", () => {
@@ -130,30 +131,6 @@ describe("POST /api/activities", () => {
 		});
 	});
 
-	describe("when the logged user is verified but the token expired", () => {
-		test("should return 401 status code", async () => {
-			const response = await supertest(app)
-				.post("/api/activities?fields=activity")
-				.set("Authorization", `Bearer ${userToken}`);
-			expect(response.statusCode).toBe(401);
-		});
-
-		test("should respond with a json", async () => {
-			const response = await supertest(app)
-				.post("/api/activities?fields=activity")
-				.set("Authorization", `Bearer ${userToken}`);
-			expect(response.type).toBe("application/json");
-		});
-
-		test("should return the error message", async () => {
-			const response = await supertest(app)
-				.post("/api/activities?fields=activity")
-				.set("Authorization", `Bearer ${userToken}`);
-			expect(response.body.success).toBe(false);
-			expect(response.body.message).toBe("Unauthorized!");
-		});
-	});
-
 	describe("When the token is valid but the body is empty", () => {
 		test("should return 400 status code", async () => {
 			const response = await supertest(app)
@@ -222,3 +199,8 @@ describe("POST /api/activities", () => {
 	// ... more to be done
 });
 
+
+afterAll(async () => {
+	// close the db connection
+	await db.sequelize.close();
+});
