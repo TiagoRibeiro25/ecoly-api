@@ -1,7 +1,7 @@
 const db = require("../models/db");
 const colors = require("colors");
 const jwt = require("jsonwebtoken");
-const cloudinary = require("cloudinary");
+const cloudinary = require("../config/cloudinary.config");
 const { Op } = require("sequelize");
 const Activities = db.activities;
 const activity_images = db.activity_image;
@@ -916,6 +916,7 @@ exports.addActivity = async (req, res) => {
 			data: `activity created ${activity.id}`,
 		});
 	} catch (err) {
+		console.log(colors.red(err.message));
 		if (err.message === "Activity already exists") {
 			return res.status(409).json({
 				success: false,
