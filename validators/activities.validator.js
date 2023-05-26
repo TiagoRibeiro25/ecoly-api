@@ -1,7 +1,7 @@
 const moment = require("moment"); //library to handle dates validations
 
 exports.validateQueries = (req, res, next) => {
-	const validQueries = ["filter", "school", "fields", "search"];
+	const validQueries = ["filter", "school", "fields", "search", "year"];
 	const fieldsValid = ["activity", "theme", "activities", "themes", "report"];
 	const filterValid = ["finished", "unfinished", "recent"];
 	const ObjectKeys = Object.keys(req.query);
