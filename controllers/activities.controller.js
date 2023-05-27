@@ -811,6 +811,9 @@ exports.getThemes = async (req, res) => {
 };
 
 exports.addActivity = async (req, res) => {
+
+	console.log(colors.green("Starting to add activity..."));
+
 	const {
 		title,
 		diagnostic,
@@ -828,6 +831,9 @@ exports.addActivity = async (req, res) => {
 	} = req.body;
 
 	try {
+
+		console.log(colors.green("inside code block"));
+
 		const existingActivity = await Activities.findOne({
 			where: {
 				title: title,
@@ -916,7 +922,7 @@ exports.addActivity = async (req, res) => {
 			data: `activity created ${activity.id}`,
 		});
 	} catch (err) {
-		console.log(colors.red(err.message));
+		console.log(colors.red(`Error ocurred: ${err}`));
 		if (err.message === "Activity already exists") {
 			return res.status(409).json({
 				success: false,
@@ -1006,6 +1012,7 @@ exports.addTheme = async (req, res) => {
 			});
 		}
 	} catch (err) {
+		console.log(colors.red(err.message));
 		if (err.message === "jwt expired") {
 			return res.status(401).json({
 				success: false,

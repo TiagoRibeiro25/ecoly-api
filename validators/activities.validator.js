@@ -338,19 +338,6 @@ exports.validateBodyTheme = (req, res, next) => {
 		});
 	}
 
-	if (
-		!images.every(
-			(image) =>
-				formatImages.some((format) => image.startsWith(`data:image/${format};base64`)) &&
-				image.length > 22
-		)
-	) {
-		return res.status(400).json({
-			success: false,
-			error: "images must be a valid base64 string",
-		});
-	}
-
 	next();
 };
 
@@ -445,6 +432,20 @@ exports.validateBodyReport = (req, res, next) => {
 		return res.status(400).json({
 			success: false,
 			error: "images cannot have empty strings",
+		});
+	}
+
+	// check if the images include on of the formatImages array and starting with base64 string
+	if (
+		!images.every(
+			(image) =>
+				formatImages.some((format) => image.startsWith(`data:image/${format};base64`)) &&
+				image.length > 22
+		)
+	) {
+		return res.status(400).json({
+			success: false,
+			error: "images must be a valid base64 string",
 		});
 	}
 
