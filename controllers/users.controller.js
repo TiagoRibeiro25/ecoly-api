@@ -46,11 +46,22 @@ function getSeedsMonthAndTotal(seeds) {
  * @returns {Promise<number>}
  */
 async function getBadgeCompletionPercentage(badgeId) {
-	// get the total number of users that have the badge
-	const totalUsers = await UserBadge.count({ where: { badge_id: badgeId } });
-	// get total number of users that exist
-	const totalUsersExist = await Users.count();
-	return Math.round((totalUsers / totalUsersExist) * 100);
+	// Fetch the total number of users that have the badge
+	const totalUsersWithBadgePromise = UserBadge.count({ where: { badge_id: badgeId } });
+
+	// Fetch the total number of users that exist
+	const totalUsersPromise = Users.count();
+
+	// Wait for both queries to complete
+	const [totalUsersWithBadge, totalUsersExist] = await Promise.all([
+		totalUsersWithBadgePromise,
+		totalUsersPromise,
+	]);
+
+	// Calculate the completion percentage
+	const completionPercentage = Math.round((totalUsersWithBadge / totalUsersExist) * 100);
+
+	return completionPercentage;
 }
 
 /**
