@@ -1012,7 +1012,6 @@ exports.addTheme = async (req, res) => {
 			});
 		}
 	} catch (err) {
-		console.log(colors.red(err.message));
 		if (err.message === "jwt expired") {
 			return res.status(401).json({
 				success: false,
