@@ -46,11 +46,22 @@ function getSeedsMonthAndTotal(seeds) {
  * @returns {Promise<number>}
  */
 async function getBadgeCompletionPercentage(badgeId) {
-	// get the total number of users that have the badge
-	const totalUsers = await UserBadge.count({ where: { badge_id: badgeId } });
-	// get total number of users that exist
-	const totalUsersExist = await Users.count();
-	return Math.round((totalUsers / totalUsersExist) * 100);
+	// Fetch the total number of users that have the badge
+	const totalUsersWithBadgePromise = UserBadge.count({ where: { badge_id: badgeId } });
+
+	// Fetch the total number of users that exist
+	const totalUsersPromise = Users.count();
+
+	// Wait for both queries to complete
+	const [totalUsersWithBadge, totalUsersExist] = await Promise.all([
+		totalUsersWithBadgePromise,
+		totalUsersPromise,
+	]);
+
+	// Calculate the completion percentage
+	const completionPercentage = Math.round((totalUsersWithBadge / totalUsersExist) * 100);
+
+	return completionPercentage;
 }
 
 /**
@@ -215,71 +226,56 @@ exports.getUser = async (req, res) => {
 	const { id } = req.params;
 
 	try {
-		/** @type {{ id: number, name: string, email: string, password: string, photo: string, role_id: number, school_id: number, internal_id?: string, course?: string, year?: number }} */
 		const user = await Users.findByPk(id);
-		if (!user) throw new Error("not_found");
+		if (!user) {
+			return res.status(404).json({ success: false, message: `User with id ${id} not found.` });
+		}
+
 		const result = user.toJSON();
 
-		// check if there's a token in the request
-		let token = req.headers["x-access-token"] || req.headers.authorization;
-		token = token?.replace("Bearer ", "");
-		token = token?.replace("Bearer", "");
-
+		const token = req.headers["x-access-token"] || req.headers.authorization;
 		if (token) {
 			try {
-				// verify the token
-				const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-				// check if the user is the same as the one in the token
+				const decoded = jwt.verify(token.replace("Bearer ", ""), process.env.JWT_SECRET);
 				result.isLoggedUser = +decoded.userId === +id;
 			} catch (err) {
-				// if the token is invalid, return the user without the isLoggedUser field
 				result.isLoggedUser = false;
 			}
-		} else result.isLoggedUser = false;
+		} else {
+			result.isLoggedUser = false;
+		}
 
-		// remove password
 		delete result.password;
 
-		// remove unnecessary fields
-		if (!result.internal_id) delete result.internal_id;
-		if (!result.course) delete result.course;
-		if (!result.year) delete result.year;
+		const [role, school, seeds, badges] = await Promise.all([
+			user.getRole(),
+			user.getSchool(),
+			user.getSeeds(),
+			getBadgesInfo(user),
+		]);
 
-		// replace role_id with role name
-		delete result.role_id;
-		result.role = (await user.getRole()).title;
+		result.role = role.title;
+		result.school = school.name;
 
-		// replace school_id with school name
-		delete result.school_id;
-		result.school = (await user.getSchool()).name;
-
-		// add the seeds
-		const { monthSeeds, totalSeeds } = getSeedsMonthAndTotal(await user.getSeeds());
+		const { monthSeeds, totalSeeds } = getSeedsMonthAndTotal(seeds);
 		result.seeds = { month: monthSeeds, total: totalSeeds };
 
-		// add badges
-		result.badges = await getBadgesInfo(user);
+		const allBadges = [...badges.unlocked, ...badges.locked];
+		await Promise.all(
+			allBadges.map(async (badge) => {
+				badge.percentageUnlocked = await getBadgeCompletionPercentage(badge.id);
+			})
+		);
 
-		// add users unlock percentage to the badges
-		for (const badge of result.badges.unlocked) {
-			badge.percentageUnlocked = await getBadgeCompletionPercentage(badge.id);
-		}
-		for (const badge of result.badges.locked) {
-			badge.percentageUnlocked = await getBadgeCompletionPercentage(badge.id);
-		}
+		result.badges = badges;
 
 		res.status(200).json({ success: true, data: result });
 	} catch (err) {
-		if (err.message === "not_found") {
-			res.status(404).json({ success: false, message: `User with id ${id} not found.` });
-		} else {
-			console.log(colors.red("\n\n-> ") + colors.yellow(err) + "\n");
-			res.status(500).json({
-				success: false,
-				message: `Error occurred while retrieving user with id ${id}.`,
-			});
-		}
+		console.log(colors.red("\n\n-> ") + colors.yellow(err) + "\n");
+		res.status(500).json({
+			success: false,
+			message: `Error occurred while retrieving user with id ${id}.`,
+		});
 	}
 };
 

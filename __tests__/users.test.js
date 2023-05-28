@@ -1568,6 +1568,7 @@ describe("POST /api/users/contact", () => {
 });
 
 afterAll(async () => {
+	await resetDB(false);
 	// close the db connection
 	await db.sequelize.close();
 });

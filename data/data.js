@@ -82,7 +82,7 @@ module.exports = {
 			year: 2,
 		},
 		{
-			email: "pedro.teixeira@gmail.com",
+			email: "pedromst2000@gmail.com",
 			name: "Pedro Teixeira",
 			password: "123",
 			photo: "https://api.dicebear.com/5.x/personas/svg?seed=pedro_teixeira",
@@ -376,83 +376,79 @@ module.exports = {
 	new_image: [
 		{
 			new_id: 1,
-			img: base64Data.newImg1,
+			img: "https://res.cloudinary.com/dnfd6se6l/image/upload/v1685112590/news/fud6l529esdqwffemrgj.png",
 		},
 		{
 			new_id: 1,
-			img: base64Data.newImg2,
+			img: "https://res.cloudinary.com/dnfd6se6l/image/upload/v1685112590/news/ijhxmekogxfq9fnetwbc.png",
 		},
 		{
 			new_id: 1,
-			img: base64Data.newImg3,
+			img: "https://res.cloudinary.com/dnfd6se6l/image/upload/v1685112590/news/x9itw6wgfguwsgfgyonn.png",
 		},
 		{
 			new_id: 2,
-			img: base64Data.newImg2,
+			img: "https://res.cloudinary.com/dnfd6se6l/image/upload/v1685112590/news/ijhxmekogxfq9fnetwbc.png",
 		},
 		{
 			new_id: 2,
-			img: base64Data.newImg3,
+			img: "https://res.cloudinary.com/dnfd6se6l/image/upload/v1685112590/news/x9itw6wgfguwsgfgyonn.png",
 		},
 		{
 			new_id: 3,
-			img: base64Data.newImg1,
+			img: "https://res.cloudinary.com/dnfd6se6l/image/upload/v1685112590/news/fud6l529esdqwffemrgj.png",
 		},
 		{
 			new_id: 3,
-			img: base64Data.newImg3,
+			img: "https://res.cloudinary.com/dnfd6se6l/image/upload/v1685112590/news/x9itw6wgfguwsgfgyonn.png",
 		},
 		{
 			new_id: 4,
-			img: base64Data.newImg4,
+			img: "https://res.cloudinary.com/dnfd6se6l/image/upload/v1685112589/news/a2hgx2tsmtisthjlzpbu.jpg",
 		},
 		{
 			new_id: 4,
-			img: base64Data.newImg5,
+			img: "https://res.cloudinary.com/dnfd6se6l/image/upload/v1685112589/news/h6vm7uxhtzozcf220rzy.jpg",
 		},
 		{
 			new_id: 5,
-			img: base64Data.newImg6,
+			img: "https://res.cloudinary.com/dnfd6se6l/image/upload/v1685112590/news/bghldykycnsyg1xazanj.jpg",
 		},
 		{
 			new_id: 5,
-			img: base64Data.newImg7,
+			img: "https://res.cloudinary.com/dnfd6se6l/image/upload/v1685112589/news/qhroy1vazgdtthubzhns.jpg",
 		},
 		{
 			new_id: 5,
-			img: base64Data.newImg8,
+			img: "https://res.cloudinary.com/dnfd6se6l/image/upload/v1685112589/news/ccnp4eywgllmtsyyz4ny.jpg",
 		},
 		{
 			new_id: 6,
-			img: base64Data.newImg9,
+			img: "https://res.cloudinary.com/dnfd6se6l/image/upload/v1685112589/news/qysrmje2lrjzkpwilr7c.jpg",
 		},
 		{
 			new_id: 6,
-			img: base64Data.newImg10,
+			img: "https://res.cloudinary.com/dnfd6se6l/image/upload/v1685112589/news/md3ru5tbqwf2kifgztlc.jpg",
 		},
 		{
 			new_id: 7,
-			img: base64Data.newImg11,
+			img: "https://res.cloudinary.com/dnfd6se6l/image/upload/v1685112589/news/nsddoqd8zrvbpjqp5fzt.jpg",
 		},
 		{
 			new_id: 7,
-			img: base64Data.newImg12,
+			img: "https://res.cloudinary.com/dnfd6se6l/image/upload/v1685112589/news/nmrepwsy7b8jgxhgzaye.jpg",
 		},
 		{
 			new_id: 7,
-			img: base64Data.newImg13,
+			img: "https://res.cloudinary.com/dnfd6se6l/image/upload/v1685112589/news/o5o6e40xxxg9oveiyqve.jpg",
 		},
 		{
 			new_id: 8,
-			img: base64Data.newImg14,
+			img: "https://res.cloudinary.com/dnfd6se6l/image/upload/v1685112589/news/tphuopkziwmngclsipbg.png",
 		},
 		{
 			new_id: 8,
-			img: base64Data.newImg15,
-		},
-		{
-			new_id: 8,
-			img: base64Data.newImg16,
+			img: "https://res.cloudinary.com/dnfd6se6l/image/upload/v1685112589/news/spynnfannv1diqhxsq5l.png",
 		},
 	],
 
@@ -519,8 +515,14 @@ module.exports = {
 	 * @type {Array<{meeting_id: number, img: string}>}
 	 */
 	meeting_ata_image: [
-		{ meeting_id: 1, img: base64Data.ataImg1 },
-		{ meeting_id: 1, img: base64Data.ataImg2 },
+		{
+			meeting_id: 1,
+			img: "https://res.cloudinary.com/dnfd6se6l/image/upload/v1685112590/meetings/wgjrxnhwwzc7eqyfydpi.png",
+		},
+		{
+			meeting_id: 1,
+			img: "https://res.cloudinary.com/dnfd6se6l/image/upload/v1685112590/meetings/cw3trxmdfeeq2b7mbrxu.png",
+		},
 	],
 
 	/**
@@ -656,24 +658,60 @@ module.exports = {
 	 * @type {Array<{activity_id: number, img: string}>}
 	 */
 	activity_image: [
-		{ activity_id: 1, img: base64Data.activityImg1 },
-		{ activity_id: 1, img: base64Data.activityImg2 },
-		{ activity_id: 2, img: base64Data.activityImg3 },
-		{ activity_id: 3, img: base64Data.activityImg4 },
-		{ activity_id: 4, img: base64Data.activityImg5 },
-		{ activity_id: 4, img: base64Data.activityImg6 },
-		{ activity_id: 5, img: base64Data.activityImg7 },
-		{ activity_id: 5, img: base64Data.activityImg8 },
+		{
+			activity_id: 1,
+			img: "https://res.cloudinary.com/dnfd6se6l/image/upload/v1685112589/activities/rmeih6o00igae8yngeyl.png",
+		},
+		{
+			activity_id: 1,
+			img: "https://res.cloudinary.com/dnfd6se6l/image/upload/v1685112589/activities/nupdvekgcd4usxuslrz4.png",
+		},
+		{
+			activity_id: 2,
+			img: "https://res.cloudinary.com/dnfd6se6l/image/upload/v1685112589/activities/o63ibdqvhpjokkq3bmvi.png",
+		},
+		{
+			activity_id: 3,
+			img: "https://res.cloudinary.com/dnfd6se6l/image/upload/v1685112589/activities/ekwvvjnh8as2d1xpn9cc.png",
+		},
+		{
+			activity_id: 4,
+			img: "https://res.cloudinary.com/dnfd6se6l/image/upload/v1685112588/activities/pq9kkujzgk0lerd2mgft.jpg",
+		},
+		{
+			activity_id: 4,
+			img: "https://res.cloudinary.com/dnfd6se6l/image/upload/v1685112590/activities/gdpnvssx66vwdehvt7ww.jpg",
+		},
+		{
+			activity_id: 5,
+			img: "https://res.cloudinary.com/dnfd6se6l/image/upload/v1685112588/activities/im4btkvbqkydcyvmnhgs.jpg",
+		},
+		{
+			activity_id: 5,
+			img: "https://res.cloudinary.com/dnfd6se6l/image/upload/v1685112588/activities/sfq1iy7ev9yxisfofvgv.jpg",
+		},
 	],
 
 	/**
 	 * @type {Array<{activity_id: number, img: string}>}
 	 */
 	activity_report_image: [
-		{ activity_id: 4, img: base64Data.activityReportImg1 },
-		{ activity_id: 4, img: base64Data.activityReportImg2 },
-		{ activity_id: 5, img: base64Data.activityReportImg3 },
-		{ activity_id: 5, img: base64Data.activityReportImg4 },
+		{
+			activity_id: 4,
+			img: "https://res.cloudinary.com/dnfd6se6l/image/upload/v1685112590/reports/anea0cqowasuls1gdalg.png",
+		},
+		{
+			activity_id: 4,
+			img: "https://res.cloudinary.com/dnfd6se6l/image/upload/v1685112589/reports/ypx7kdvstufqqykbhylq.jpg",
+		},
+		{
+			activity_id: 5,
+			img: "https://res.cloudinary.com/dnfd6se6l/image/upload/v1685112589/reports/skkssjalm0afsvn41i2v.jpg",
+		},
+		{
+			activity_id: 5,
+			img: "https://res.cloudinary.com/dnfd6se6l/image/upload/v1685112588/reports/adwtbjkmwno4kuikoz2j.jpg",
+		},
 	],
 
 	/**

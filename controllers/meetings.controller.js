@@ -2,6 +2,7 @@ const moment = require("moment");
 const db = require("../models/db");
 const colors = require("colors");
 const { Op } = require("sequelize");
+const cloudinary = require("../config/cloudinary.config");
 const meetings = db.meetings;
 const meetingAtaImage = db.meeting_ata_image;
 const Schools = db.schools;
@@ -544,12 +545,22 @@ exports.addAta = async (req, res) => {
 		});
 
 		if (req.body.images && req.body.images.length > 0) {
-			images.forEach(async (image) => {
+
+			const images  = req.body.images;
+
+			for(let i = 0; i < images.length; i++) {
+				const response = await cloudinary.uploader.upload(images[i], {
+					folder : "meetings",
+					crop: "scale",
+				});
+
 				await meetingAtaImage.create({
 					meeting_id: meeting.id,
-					img: image,
+					img: response.secure_url,
 				});
-			});
+			}
+
+
 			await unlockBadge({ badgeId: 5, userId: creator.id }); //if already have the badge only will earn seeds
 			await addSeeds({ userId: creator.id, amount: 40 });
 		}

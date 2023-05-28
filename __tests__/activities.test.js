@@ -1,224 +1,184 @@
 require("dotenv").config({ path: __dirname + "/../tests.env" });
 const supertest = require("supertest");
 const app = require("../app");
+const colors = require("colors");
 const db = require("../models/db");
 const resetDB = require("../data/resetDB");
 const getToken = require("../utils/generateTokens");
+const e = require("express");
 let adminToken = "";
 let userToken = "";
 let unsignedToken = "";
 
-// before all tests, reset the database (use on database tests only)
 beforeAll(async () => {
-	await resetDB(false);
-
+	// reset the database
+	// await resetDB(false);
 	// generate tokens for the tests
 	adminToken = await getToken("admin", false);
 	userToken = await getToken("user", false);
 	unsignedToken = await getToken("unsigned", false);
 }, 10000);
 
-// create activity tests (POST)
-describe("POST /api/activities", () => {
-	describe("when is an invalid route", () => {
-		test("should return 404 status code", async () => {
-			const response = await supertest(app).post("/api/activities/invalid");
-			expect(response.statusCode).toBe(404);
-		});
-
-		test("should respond with a json", async () => {
-			const response = await supertest(app).post("/api/activities/invalid");
-			expect(response.type).toBe("application/json");
-		});
-
-		test("should return the error message", async () => {
-			const response = await supertest(app).post("/api/activities/invalid");
-			expect(response.body.success).toBe(false);
-			expect(response.body.message).toBe("Invalid route");
-		});
-	});
-	describe("when the fields parameter is empty", () => {
-		test("should return 400 status code", async () => {
-			const response = await supertest(app).post("/api/activities?fields=");
+// GET activities
+describe("GET /api/activities", () => {
+	describe("when there is any parameter provided", () => {
+		test("should respond with a 400 status code", async () => {
+			const response = await supertest(app).get("/api/activities");
 			expect(response.statusCode).toBe(400);
 		});
 
-		test("should respond with a json", async () => {
-			const response = await supertest(app).post("/api/activities?fields=");
+		test("should respond with JSON", async () => {
+			const response = await supertest(app).get("/api/activities");
 			expect(response.type).toBe("application/json");
 		});
 
-		test("should return the error message", async () => {
-			const response = await supertest(app).post("/api/activities?fields=");
+		test("should respond with a message", async () => {
+			const response = await supertest(app).get("/api/activities");
 			expect(response.body.success).toBe(false);
-			expect(response.body.error).toBe("fields is empty");
+			expect(response.body.error).toBe("provide parameters");
 		});
 	});
-	describe("when the fields parameter is invalid", () => {
-		test("should return 400 status code", async () => {
-			const response = await supertest(app).post("/api/activities?fields=invalid");
-			expect(response.statusCode).toBe(400);
+	// activities with search
+	describe("when searching activities", () => {
+		describe("when is a valid search", () => {
+			test("should respond with a 200 status code", async () => {
+				const response = await supertest(app).get(
+					"/api/activities?search=Limpeza%20da%20Praia"
+				);
+				expect(response.statusCode).toBe(200);
+			});
+
+			test("should respond with JSON", async () => {
+				const response = await supertest(app).get(
+					"/api/activities?search=Limpeza%20da%20Praia"
+				);
+				expect(response.type).toBe("application/json");
+			});
+
+			test("should respond with a message", async () => {
+				const response = await supertest(app).get(
+					"/api/activities?search=Limpeza%20da%20Praia"
+				);
+				expect(response.body.success).toBe(true);
+				expect(response.body.data).toEqual(
+					expect.arrayContaining([
+						expect.objectContaining({
+							id: 2,
+							title: "Limpeza da Praia + separação de resíduos",
+						}),
+					])
+				);
+			});
+		});
+		describe("when search is empty", () => {
+			test("should respond with a 400 status code", async () => {
+				const response = await supertest(app).get("/api/activities?search=");
+				expect(response.statusCode).toBe(400);
+			});
+
+			test("should respond with JSON", async () => {
+				const response = await supertest(app).get("/api/activities?search=");
+				expect(response.type).toBe("application/json");
+			});
+
+			test("should respond with a message", async () => {
+				const response = await supertest(app).get("/api/activities?search=");
+				expect(response.body.success).toBe(false);
+				expect(response.body.error).toBe("search is empty");
+			});
 		});
 
-		test("should respond with a json", async () => {
-			const response = await supertest(app).post("/api/activities?fields=invalid");
-			expect(response.type).toBe("application/json");
+		describe("when there is an invalid parameter instead of search", () => {
+			test("should respond with a 400 status code", async () => {
+				const response = await supertest(app).get(
+					"/api/activities?searchss=Limpeza%20da%20Praia"
+				);
+				expect(response.statusCode).toBe(400);
+			});
+
+			test("should respond with JSON", async () => {
+				const response = await supertest(app).get(
+					"/api/activities?searchss=Limpeza%20da%20Praia"
+				);
+				expect(response.type).toBe("application/json");
+			});
+
+			test("should respond with a message", async () => {
+				const response = await supertest(app).get(
+					"/api/activities?searchss=Limpeza%20da%20Praia"
+				);
+				expect(response.body.success).toBe(false);
+				expect(response.body.error).toBe("searchss is an invalid parameter");
+			});
 		});
 
-		test("should return the error message", async () => {
-			const response = await supertest(app).post("/api/activities?fields=invalid");
-			expect(response.body.success).toBe(false);
-			expect(response.body.error).toBe("invalid is an invalid value for the fields parameter");
-		});
-	});
-	describe("when is a invalid parameter", () => {
-		test("should return 400 status code", async () => {
-			const response = await supertest(app).post("/api/activities?invalid=activity");
-			expect(response.statusCode).toBe(400);
-		});
+		describe("when there is no activities founded", () => {
+			test("should respond with a 404 status code", async () => {
+				const response = await supertest(app).get(
+					"/api/activities?search=hello%20da%20Praia%20aaaa"
+				);
+				expect(response.statusCode).toBe(404);
+			});
 
-		test("should respond with a json", async () => {
-			const response = await supertest(app).post("/api/activities?invalid=activity");
-			expect(response.type).toBe("application/json");
-		});
+			test("should respond with JSON", async () => {
+				const response = await supertest(app).get(
+					"/api/activities?search=hello%20da%20Praia%20aaaa"
+				);
+				expect(response.type).toBe("application/json");
+			});
 
-		test("should return the error message", async () => {
-			const response = await supertest(app).post("/api/activities?invalid=activity");
-			expect(response.body.success).toBe(false);
-			expect(response.body.error).toBe("invalid is an invalid parameter");
-		});
-	});
-
-	describe("when the url is valid but there is no user logged in", () => {
-		test("should return 401 status code", async () => {
-			const response = await supertest(app).post("/api/activities?fields=activity");
-			expect(response.statusCode).toBe(401);
-		});
-
-		test("should respond with a json", async () => {
-			const response = await supertest(app).post("/api/activities?fields=activity");
-			expect(response.type).toBe("application/json");
-		});
-		test("should return the error message", async () => {
-			const response = await supertest(app).post("/api/activities?fields=activity");
-			expect(response.body.success).toBe(false);
-			expect(response.body.message).toBe("Unauthorized!");
-		});
-	});
-
-	describe("when the url is valid but the logged user is not verified", () => {
-		test("should return 403 status code", async () => {
-			const response = await supertest(app)
-				.post("/api/activities?fields=activity")
-				.set("Authorization", `Bearer ${unsignedToken}`);
-			expect(response.statusCode).toBe(403);
-		});
-
-		test("should respond with a json", async () => {
-			const response = await supertest(app)
-				.post("/api/activities?fields=activity")
-				.set("Authorization", `Bearer ${unsignedToken}`);
-			expect(response.type).toBe("application/json");
-		});
-
-		test("should return the error message", async () => {
-			const response = await supertest(app)
-				.post("/api/activities?fields=activity")
-				.set("Authorization", `Bearer ${unsignedToken}`);
-			expect(response.body.success).toBe(false);
-			expect(response.body.message).toBe("Require Verified Role!");
-		});
-	});
-
-	describe("when the logged user is verified but the token expired", () => {
-		test("should return 401 status code", async () => {
-			const response = await supertest(app)
-				.post("/api/activities?fields=activity")
-				.set("Authorization", `Bearer ${userToken}`);
-			expect(response.statusCode).toBe(401);
-		});
-
-		test("should respond with a json", async () => {
-			const response = await supertest(app)
-				.post("/api/activities?fields=activity")
-				.set("Authorization", `Bearer ${userToken}`);
-			expect(response.type).toBe("application/json");
-		});
-
-		test("should return the error message", async () => {
-			const response = await supertest(app)
-				.post("/api/activities?fields=activity")
-				.set("Authorization", `Bearer ${userToken}`);
-			expect(response.body.success).toBe(false);
-			expect(response.body.message).toBe("Unauthorized!");
-		});
-	});
-
-	describe("When the token is valid but the body is empty", () => {
-		test("should return 400 status code", async () => {
-			const response = await supertest(app)
-				.post("/api/activities?fields=activity")
-				.set("Authorization", `Bearer ${adminToken}`);
-			expect(response.statusCode).toBe(400);
-		});
-
-		test("should respond with a json", async () => {
-			const response = await supertest(app)
-				.post("/api/activities?fields=activity")
-				.set("Authorization", `Bearer ${adminToken}`);
-			expect(response.type).toBe("application/json");
-		});
-
-		test("should return the error message", async () => {
-			const response = await supertest(app)
-				.post("/api/activities?fields=activity")
-				.set("Authorization", `Bearer ${adminToken}`);
-			expect(response.body.success).toBe(false);
-			expect(response.body.error).toBe("body is empty");
+			test("should respond with a message", async () => {
+				const response = await supertest(app).get(
+					"/api/activities?search=hello%20da%20Praia%20aaaa"
+				);
+				expect(response.body.success).toBe(false);
+				expect(response.body.error).toBe(`no activities found with title hello da Praia aaaa`);
+			});
 		});
 	});
 
-	// null errors
-	describe("when the body is not empty but is missing required keys", () => {
-		test("should return 400 status code", async () => {
-			const response = await supertest(app)
-				.post("/api/activities?fields=activity")
-				.set("Authorization", `Bearer ${adminToken}`)
-				.send({ theme_id: 3 });
-			expect(response.statusCode).toBe(400);
-		});
+	// recent activities
+	describe("when getting recent activities", () => {
+		describe("when is a valid request", () => {
+			test("should respond with a 200 status code", async () => {
+				const response = await supertest(app).get(
+					"/api/activities?fields=activities&filter=recent"
+				);
+				expect(response.statusCode).toBe(200);
+			});
 
-		test("should respond with a json", async () => {
-			const response = await supertest(app)
-				.post("/api/activities?fields=activity")
-				.set("Authorization", `Bearer ${adminToken}`)
-				.send({ theme_id: 3 });
-			expect(response.type).toBe("application/json");
-		});
+			test("should respond with JSON", async () => {
+				const response = await supertest(app).get(
+					"/api/activities?fields=activities&filter=recent"
+				);
+				expect(response.type).toBe("application/json");
+			});
 
-		test("should return the error message", async () => {
-			const response = await supertest(app)
-				.post("/api/activities?fields=activity")
-				.set("Authorization", `Bearer ${adminToken}`)
-				.send({ theme_id: 3 });
-			expect(response.body.success).toBe(false);
-			expect(response.body.error).toEqual([
-				"title cannot be null",
-				"complexity cannot be null",
-				"initial_date cannot be null",
-				"final_date cannot be null",
-				"objective cannot be null",
-				"diagnostic cannot be null",
-				"meta cannot be null",
-				"resources cannot be null",
-				"participants cannot be null",
-				"evaluation_indicator cannot be null",
-				"evaluation_method cannot be null",
-				"images cannot be null",
-			]);
+			test("should respond with a message", async () => {
+				const response = await supertest(app).get(
+					"/api/activities?fields=activities&filter=recent"
+				);
+				expect(response.body.success).toBe(true);
+				expect(response.body.data).toEqual(
+					expect.arrayContaining([
+						expect.objectContaining({
+							id: expect.any(Number),
+							is_finished: false,
+							theme: expect.any(String),
+							title: expect.any(String),
+							initial_date: expect.any(String),
+							final_date: expect.any(String),
+							images: expect.any(String),
+						}),
+					])
+				);
+			});
 		});
 	});
-
-	// ... more to be done
 });
 
+afterAll(async () => {
+	await resetDB(false);
+	// close the db connectionclea
+	await db.sequelize.close();
+});

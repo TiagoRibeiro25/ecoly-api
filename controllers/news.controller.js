@@ -8,6 +8,7 @@ const sendNewsLetter = require("../utils/sendNewsLetter");
 const { Op } = require("sequelize");
 const unlockBadge = require("../utils/unlockBadge");
 const addSeeds = require("../utils/addSeeds");
+const cloudinary = require("../config/cloudinary.config");
 
 exports.getNews = async (req, res) => {
 	try {
@@ -167,7 +168,11 @@ exports.addNew = async (req, res) => {
 		});
 
 		for (const img of imgs) {
-			await NewsImage.create({ img: img, new_id: newNew.id });
+			const response = await cloudinary.uploader.upload(img, {
+				folder: "news", crop: "scale"
+			});
+
+			await NewsImage.create({ img: response.secure_url, new_id: newNew.id });
 		}
 
 		res.status(201).json({
@@ -175,7 +180,7 @@ exports.addNew = async (req, res) => {
 			message: "New was successfully added"
 		});
 
-		Promise.all([
+		await Promise.all([
 			unlockBadge({ badgeId: 7, userId: creator.id }), // Add badge to the user
 			addSeeds({ userId: creator.id, amount: 40 }), // Add seeds to the user
 			sendNewsLetter({

@@ -1,6 +1,7 @@
 const db = require("../models/db");
 const colors = require("colors");
 const jwt = require("jsonwebtoken");
+const cloudinary = require("../config/cloudinary.config");
 const { Op } = require("sequelize");
 const Activities = db.activities;
 const activity_images = db.activity_image;
@@ -421,10 +422,7 @@ exports.getFinishedSchoolActivities = async (req, res) => {
 
 		// if there are no activities finished for the logged user school
 		if (data.length === 0) {
-			return res.status(404).json({
-				success: false,
-				error: "No activities finished yet.",
-			});
+			throw new Error("No activities finished yet.");
 		}
 
 		return res.status(200).json({
@@ -436,6 +434,128 @@ exports.getFinishedSchoolActivities = async (req, res) => {
 			return res.status(401).json({
 				success: false,
 				error: "Your session has expired. Please generate other token.",
+			});
+		}
+		if (err.message === "No activities finished yet.") {
+			return res.status(404).json({
+				success: false,
+				error: "No activities finished yet.",
+			});
+		}
+
+		return res.status(500).json({
+			success: false,
+			error: "We apologize, but our system is currently experiencing some issues. Please try again later.",
+		});
+	}
+};
+
+exports.getFinishedSchoolActivitiesByYear = async (req, res) => {
+	const { year } = req.query;
+
+	try {
+		const schoolUser = await Schools.findByPk(req.tokenData.schoolId);
+
+		const activities = await Activities.findAll({
+			where: {
+				is_finished: true,
+			},
+			include: [
+				{
+					model: Themes,
+					as: "theme",
+					attributes: ["name"],
+				},
+				{
+					model: Schools,
+					as: "school",
+					attributes: ["name"],
+				},
+				{
+					model: Users,
+					as: "creator",
+					attributes: ["id", "name"],
+				},
+				{
+					model: activity_images,
+					as: "activity_images",
+					attributes: ["img"],
+				},
+			],
+			attributes: {
+				exclude: ["school_id", "theme_id", "creator_id", "report"],
+			},
+		});
+
+		const filteredActivities = activities.filter((activity) => {
+			return activity.school.name === schoolUser.name;
+		});
+
+		const filteredActivitiesByYear = filteredActivities.filter((activity) => {
+			return activity.final_date.getFullYear() === parseInt(year);
+		});
+
+		const data = filteredActivitiesByYear.map((activity) => {
+			return {
+				id: activity.id,
+				is_finished: activity.is_finished,
+				theme: activity.theme.name,
+				title: activity.title,
+				initial_date: fixDate(activity.initial_date),
+				final_date: fixDate(activity.final_date),
+				image: activity.activity_images.map((image) => image.img),
+				participants: activity.participants,
+				diagnostic: activity.diagnostic,
+				objective: activity.objective,
+				meta: activity.meta,
+				resources: activity.resources,
+				evaluation_indicator: activity.evaluation_indicator,
+				evaluation_method: activity.evaluation_method,
+			};
+		});
+
+		if (isNaN(year)) {
+			throw new Error("Year must be a number.");
+		}
+
+		//
+
+		// if there are no activities finished for the logged user school
+		if (data.length === 0) {
+			throw new Error("No activities found.");
+		}
+
+		return res.status(200).json({
+			success: true,
+			data: data,
+		});
+	} catch (err) {
+		console.log(colors.red(err.message));
+		if (err.message === "jwt expired") {
+			return res.status(401).json({
+				success: false,
+				error: "Your session has expired. Please generate other token.",
+			});
+		}
+
+		if (err.message === "Year must be a number.") {
+			return res.status(400).json({
+				success: false,
+				error: "Year must be a number.",
+			});
+		}
+
+		if (err.message === "invalid year.") {
+			return res.status(400).json({
+				success: false,
+				error: "Invalid year.",
+			});
+		}
+
+		if (err.message === "No activities found.") {
+			return res.status(404).json({
+				success: false,
+				error: "No activities found.",
 			});
 		}
 
@@ -691,6 +811,9 @@ exports.getThemes = async (req, res) => {
 };
 
 exports.addActivity = async (req, res) => {
+
+	console.log(colors.green("Starting to add activity..."));
+
 	const {
 		title,
 		diagnostic,
@@ -708,6 +831,9 @@ exports.addActivity = async (req, res) => {
 	} = req.body;
 
 	try {
+
+		console.log(colors.green("inside code block"));
+
 		const existingActivity = await Activities.findOne({
 			where: {
 				title: title,
@@ -758,12 +884,18 @@ exports.addActivity = async (req, res) => {
 		// if the body includes images add to the activity_images model
 		if (req.body.images && images.length > 0) {
 			const images = req.body.images;
-			images.forEach((image) => {
-				activity_images.create({
-					activity_id: activity.id,
-					img: image,
+
+			for (let i = 0; i < images.length; i++) {
+				const response = await cloudinary.uploader.upload(images[i], {
+					folder: "activities",
+					crop: "scale",
 				});
-			});
+
+				await activity_images.create({
+					activity_id: activity.id,
+					img: response.secure_url,
+				});
+			}
 		}
 
 		// count the number of activities created by the user
@@ -790,6 +922,7 @@ exports.addActivity = async (req, res) => {
 			data: `activity created ${activity.id}`,
 		});
 	} catch (err) {
+		console.log(colors.red(`Error ocurred: ${err}`));
 		if (err.message === "Activity already exists") {
 			return res.status(409).json({
 				success: false,
@@ -938,13 +1071,18 @@ exports.finishActivity = async (req, res) => {
 			// if the body includes images add to the activity report_images model
 			if (req.body.images && images.length > 0) {
 				const images = req.body.images; // array of images
-				// for each image in the array add the activity_id and the image to the activity_images table
-				images.forEach((image) => {
-					activity_report_images.create({
-						activity_id: activity.id,
-						img: image,
+
+				for (let i = 0; i < images.length; i++) {
+					const response = await cloudinary.uploader.upload(images[i], {
+						folder: "reports",
+						crop: "scale",
 					});
-				});
+
+					await activity_report_images.create({
+						activity_id: activity.id,
+						img: response.secure_url,
+					});
+				}
 			}
 
 			// Unlock the badge if the activity is finished on the last day

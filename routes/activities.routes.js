@@ -11,21 +11,29 @@ router.get("/", activitiesValidator.validateQueries, (req, res) => {
 		return activitiesController.searchActivities(req, res);
 	}
 
-	if(req.query.fields == "activities" && req.query.filter =="unfinished" && req.query.school){
+	if (req.query.fields == "activities" && req.query.filter == "unfinished" && req.query.school) {
 		return activitiesController.getUnfinishedSchoolActivities(req, res);
 	}
 
-	if(req.query.fields == "activities" && req.query.filter == "finished"){
+	if (req.query.fields == "activities" && req.query.filter == "finished") {
+		if (req.query.year) {
+			return authController.verifyToken(req, res, () => {
+				//next
+				authController.verifyIsVerified(req, res, () => {
+					//next
+					activitiesController.getFinishedSchoolActivitiesByYear(req, res);
+				});
+			});
+		}
+
 		return authController.verifyToken(req, res, () => {
 			//next
 			authController.verifyIsVerified(req, res, () => {
 				//next
 				activitiesController.getFinishedSchoolActivities(req, res);
 			});
-		}
-		);
+		});
 	}
-
 
 	if (req.query.fields === "activities" && req.query.filter === "unfinished") {
 		return activitiesController.getUnfinishedActivities(req, res);
