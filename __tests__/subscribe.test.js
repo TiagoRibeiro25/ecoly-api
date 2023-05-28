@@ -2,6 +2,7 @@ require("dotenv").config({ path: __dirname + "/../tests.env" });
 const supertest = require("supertest");
 const app = require("../app");
 const db = require("../models/db");
+const NewsLetter = db.news_letter;
 const validateEmail = require("../utils/validateEmail");
 
 describe("GET /api/subscribe", () => {
