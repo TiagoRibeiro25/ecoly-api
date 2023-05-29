@@ -5,6 +5,16 @@ const db = require("../models/db");
 const NewsLetter = db.news_letter;
 const validateEmail = require("../utils/validateEmail");
 
+
+beforeAll(async () => {
+	await resetDB(false);
+
+	// generate tokens for the tests
+	adminToken = await getToken("admin", false);
+	userToken = await getToken("user", false);
+	unsignedToken = await getToken("unsigned", false);
+}, 10000);
+
 describe("GET /api/subscribe", () => {
     test("should return 200 if user is subscribed", async () => {
       const email = "josepprn@gmail.com";

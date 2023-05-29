@@ -4,6 +4,16 @@ const app = require("../app");
 const db = require("../models/db");
 const Schools = db.schools;
 
+
+beforeAll(async () => {
+	await resetDB(false);
+
+	// generate tokens for the tests
+	adminToken = await getToken("admin", false);
+	userToken = await getToken("user", false);
+	unsignedToken = await getToken("unsigned", false);
+}, 10000);
+
 describe("GET /api/schools", () => {
     test("should fetch all schools", async () => {
         const expectedSchools = [
