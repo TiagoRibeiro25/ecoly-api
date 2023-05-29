@@ -1,6 +1,7 @@
 require("dotenv").config({ path: __dirname + "/../tests.env" });
 const supertest = require("supertest");
 const app = require("../app");
+const colors = require("colors");
 const db = require("../models/db");
 const resetDB = require("../data/resetDB");
 const getToken = require("../utils/generateTokens");
@@ -1343,6 +1344,529 @@ describe("GET /api/activities", () => {
 				const response = await supertest(app).get(`/api/activities/4`);
 				expect(response.body.success).toBe(false);
 				expect(response.body.error).toBe("activity with id 4 is finished");
+			});
+		});
+	});
+});
+
+// POST /api/activities
+describe("POST /api/activities", () => {
+	// creating a theme
+	describe("when creating a theme", () => {
+		describe("when there is no logged user", () => {
+			test("should respond with a 401 status code", async () => {
+				const response = await supertest(app).post(`/api/activities?fields=theme`);
+				expect(response.statusCode).toBe(401);
+			});
+
+			test("should respond with JSON", async () => {
+				const response = await supertest(app).post(`/api/activities?fields=theme`);
+				expect(response.type).toBe("application/json");
+			});
+
+			test("should respond with a message", async () => {
+				const response = await supertest(app).post(`/api/activities?fields=theme`);
+				expect(response.body.success).toBe(false);
+				expect(response.body.message).toBe("Unauthorized!");
+			});
+		});
+
+		describe("when there is not verified logged in user", () => {
+			test("should respond with a 403 status code", async () => {
+				const response = await supertest(app)
+					.post(`/api/activities?fields=theme`)
+					.set("Authorization", `Bearer ${unsignedToken}`);
+				expect(response.statusCode).toBe(403);
+			});
+
+			test("should respond with JSON", async () => {
+				const response = await supertest(app)
+					.post(`/api/activities?fields=theme`)
+					.set("Authorization", `Bearer ${unsignedToken}`);
+				expect(response.type).toBe("application/json");
+			});
+
+			test("should respond with a message", async () => {
+				const response = await supertest(app)
+					.post(`/api/activities?fields=theme`)
+					.set("Authorization", `Bearer ${unsignedToken}`);
+				expect(response.body.success).toBe(false);
+				expect(response.body.message).toBe("Require Verified Role!");
+			});
+		});
+
+		describe("when there is a logged verified user", () => {
+			describe("when creating a new theme", () => {
+				describe("when the theme is valid", () => {
+					test("should respond with a 201 status code", async () => {
+						const response = await supertest(app)
+							.post(`/api/activities?fields=theme`)
+							.send({ name: "biodiversidade" })
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.statusCode).toBe(201);
+
+						// deleting the theme
+						await db.theme.destroy({ where: { name: "biodiversidade" } });
+					});
+
+					test("should respond with JSON", async () => {
+						const response = await supertest(app)
+							.post(`/api/activities?fields=theme`)
+							.send({ name: "biodiversidade" })
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.type).toBe("application/json");
+
+						// deleting the theme
+						await db.theme.destroy({ where: { name: "biodiversidade" } });
+					});
+
+					test("should respond with a message", async () => {
+						const response = await supertest(app)
+							.post(`/api/activities?fields=theme`)
+							.send({ name: "biodiversidade" })
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.body.success).toBe(true);
+						expect(response.body.data).toBe("theme created successfully");
+
+						// deleting the theme
+						await db.theme.destroy({ where: { name: "biodiversidade" } });
+					});
+				});
+
+				describe("when the theme already exists", () => {
+					test("should respond with a 409 status code", async () => {
+						const response = await supertest(app)
+							.post(`/api/activities?fields=theme`)
+							.send({ name: "Mar" })
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.statusCode).toBe(409);
+					});
+
+					test("should respond with JSON", async () => {
+						const response = await supertest(app)
+							.post(`/api/activities?fields=theme`)
+							.send({ name: "Mar" })
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.type).toBe("application/json");
+					});
+
+					test("should respond with a message", async () => {
+						const response = await supertest(app)
+							.post(`/api/activities?fields=theme`)
+							.send({ name: "Mar" })
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.body.success).toBe(false);
+						expect(response.body.error).toBe("Theme already exists");
+					});
+				});
+
+				describe("when the body is empty", () => {
+					test("should respond with a 400 status code", async () => {
+						const response = await supertest(app)
+							.post(`/api/activities?fields=theme`)
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.statusCode).toBe(400);
+					});
+
+					test("should respond with JSON", async () => {
+						const response = await supertest(app)
+							.post(`/api/activities?fields=theme`)
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.type).toBe("application/json");
+					});
+
+					test("should respond with a message", async () => {
+						const response = await supertest(app)
+							.post(`/api/activities?fields=theme`)
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.body.success).toBe(false);
+						expect(response.body.error).toBe("body is empty");
+					});
+				});
+
+				describe("when the body is invalid", () => {
+					describe("when the key name is invalid", () => {
+						test("should respond with a 400 status code", async () => {
+							const response = await supertest(app)
+								.post(`/api/activities?fields=theme`)
+								.send({ namedd: "biodiversidade" })
+								.set("Authorization", `Bearer ${userToken}`);
+							expect(response.statusCode).toBe(400);
+						});
+
+						test("should respond with JSON", async () => {
+							const response = await supertest(app)
+								.post(`/api/activities?fields=theme`)
+								.send({ namedd: "biodiversidade" })
+								.set("Authorization", `Bearer ${userToken}`);
+							expect(response.type).toBe("application/json");
+						});
+
+						test("should respond with a message", async () => {
+							const response = await supertest(app)
+								.post(`/api/activities?fields=theme`)
+								.send({ namedd: "biodiversidade" })
+								.set("Authorization", `Bearer ${userToken}`);
+							expect(response.body.success).toBe(false);
+							expect(response.body.error).toBe("namedd is not a valid field");
+						});
+					});
+
+					describe("when the key name is empty", () => {
+						test("should respond with a 400 status code", async () => {
+							const response = await supertest(app)
+								.post(`/api/activities?fields=theme`)
+								.send({ name: "" })
+								.set("Authorization", `Bearer ${userToken}`);
+							expect(response.statusCode).toBe(400);
+						});
+
+						test("should respond with JSON", async () => {
+							const response = await supertest(app)
+								.post(`/api/activities?fields=theme`)
+								.send({ name: "" })
+								.set("Authorization", `Bearer ${userToken}`);
+							expect(response.type).toBe("application/json");
+						});
+
+						test("should respond with a message", async () => {
+							const response = await supertest(app)
+								.post(`/api/activities?fields=theme`)
+								.send({ name: "" })
+								.set("Authorization", `Bearer ${userToken}`);
+							expect(response.body.success).toBe(false);
+							expect(response.body.error).toBe("name cannot be empty");
+						});
+					});
+
+					describe("when the key name is not a string", () => {
+						test("should respond with a 400 status code", async () => {
+							const response = await supertest(app)
+								.post(`/api/activities?fields=theme`)
+								.send({ name: 123 })
+								.set("Authorization", `Bearer ${userToken}`);
+							expect(response.statusCode).toBe(400);
+						});
+
+						test("should respond with JSON", async () => {
+							const response = await supertest(app)
+								.post(`/api/activities?fields=theme`)
+								.send({ name: 123 })
+								.set("Authorization", `Bearer ${userToken}`);
+							expect(response.type).toBe("application/json");
+						});
+
+						test("should respond with a message", async () => {
+							const response = await supertest(app)
+								.post(`/api/activities?fields=theme`)
+								.send({ name: 123 })
+								.set("Authorization", `Bearer ${userToken}`);
+							expect(response.body.success).toBe(false);
+							expect(response.body.error).toBe("name must be a string");
+						});
+					});
+				});
+			});
+		});
+	});
+});
+
+// PATCH /api/activities/:id
+describe("PATCH /api/activities/:id", () => {
+	describe("when disabled a theme", () => {
+		describe("when there is no logged user", () => {
+			test("should respond with a 401 status code", async () => {
+				const response = await supertest(app).patch(`/api/activities/4?fields=theme`);
+				expect(response.statusCode).toBe(401);
+			});
+			test("should respond with JSON", async () => {
+				const response = await supertest(app).patch(`/api/activities/4?fields=theme`);
+				expect(response.type).toBe("application/json");
+			});
+
+			test("should respond with a message", async () => {
+				const response = await supertest(app).patch(`/api/activities/4?fields=theme`);
+				expect(response.body.success).toBe(false);
+				expect(response.body.message).toBe("Unauthorized!");
+			});
+		});
+
+		describe("when there is not verfified user logged", () => {
+			test("should respond with a 403 status code", async () => {
+				const response = await supertest(app)
+					.patch(`/api/activities/4?fields=theme`)
+					.set("Authorization", `Bearer ${unsignedToken}`);
+				expect(response.statusCode).toBe(403);
+			});
+
+			test("should respond with JSON", async () => {
+				const response = await supertest(app)
+					.patch(`/api/activities/4?fields=theme`)
+					.set("Authorization", `Bearer ${unsignedToken}`);
+				expect(response.type).toBe("application/json");
+			});
+
+			test("should respond with a message", async () => {
+				const response = await supertest(app)
+					.patch(`/api/activities/4?fields=theme`)
+					.set("Authorization", `Bearer ${unsignedToken}`);
+				expect(response.body.success).toBe(false);
+				expect(response.body.message).toBe("Require Verified Role!");
+			});
+		});
+
+		describe("when there is a verified user logged", () => {
+			describe("when requesting an invalid id", () => {
+				test("should respond with a 400 status code", async () => {
+					const response = await supertest(app)
+						.patch(`/api/activities/1asd?fields=theme`)
+						.set("Authorization", `Bearer ${userToken}`);
+					expect(response.statusCode).toBe(400);
+				});
+
+				test("should respond with JSON", async () => {
+					const response = await supertest(app)
+						.patch(`/api/activities/1asd?fields=theme`)
+						.set("Authorization", `Bearer ${userToken}`);
+					expect(response.type).toBe("application/json");
+				});
+
+				test("should respond with a message", async () => {
+					const response = await supertest(app)
+						.patch(`/api/activities/1asd?fields=theme`)
+						.set("Authorization", `Bearer ${userToken}`);
+					expect(response.body.success).toBe(false);
+					expect(response.body.error).toBe("invalid id");
+				});
+			});
+
+			describe("when disable a valid theme", () => {
+				test("should respond with a 200 status code", async () => {
+					const response = await supertest(app)
+						.patch(`/api/activities/4?fields=theme`)
+						.set("Authorization", `Bearer ${userToken}`);
+					expect(response.statusCode).toBe(200);
+
+					await db.theme.update({ is_active: true }, { where: { id: 4 } });
+				});
+
+				test("should respond with JSON", async () => {
+					const response = await supertest(app)
+						.patch(`/api/activities/4?fields=theme`)
+						.set("Authorization", `Bearer ${userToken}`);
+					expect(response.type).toBe("application/json");
+
+					await db.theme.update({ is_active: true }, { where: { id: 4 } });
+				});
+
+				test("should respond with a message", async () => {
+					const response = await supertest(app)
+						.patch(`/api/activities/4?fields=theme`)
+						.set("Authorization", `Bearer ${userToken}`);
+					expect(response.body.success).toBe(true);
+					expect(response.body.message).toBe("the theme Resíduos is now disabled");
+				});
+			});
+
+			describe("when disable an disable theme", () => {
+				test("should respond with a 409 status code", async () => {
+					const response = await supertest(app)
+						.patch(`/api/activities/5?fields=theme`)
+						.set("Authorization", `Bearer ${userToken}`);
+					expect(response.statusCode).toBe(409);
+				});
+
+				test("should respond with JSON", async () => {
+					const response = await supertest(app)
+						.patch(`/api/activities/5?fields=theme`)
+						.set("Authorization", `Bearer ${userToken}`);
+					expect(response.type).toBe("application/json");
+				});
+
+				test("should respond with a message", async () => {
+					const response = await supertest(app)
+						.patch(`/api/activities/5?fields=theme`)
+						.set("Authorization", `Bearer ${userToken}`);
+					expect(response.body.success).toBe(false);
+					expect(response.body.error).toBe("Theme is already disabled");
+				});
+			});
+
+			describe("when disable not found theme", () => {
+				test("should respond with a 404 status code", async () => {
+					const response = await supertest(app)
+						.patch(`/api/activities/100?fields=theme`)
+						.set("Authorization", `Bearer ${userToken}`);
+					expect(response.statusCode).toBe(404);
+				});
+
+				test("should respond with JSON", async () => {
+					const response = await supertest(app)
+						.patch(`/api/activities/100?fields=theme`)
+						.set("Authorization", `Bearer ${userToken}`);
+					expect(response.type).toBe("application/json");
+				});
+
+				test("should respond with a message", async () => {
+					const response = await supertest(app)
+						.patch(`/api/activities/100?fields=theme`)
+						.set("Authorization", `Bearer ${userToken}`);
+					expect(response.body.success).toBe(false);
+					expect(response.body.error).toBe("Theme not found");
+				});
+			});
+		});
+	});
+});
+
+// DELETE /api/activities/:id
+describe("DELETE /api/activities/:id", () => {
+	describe("when deleting an activity", () => {
+		describe("when there is no logged user", () => {
+			test("should respond with a 401 status code", async () => {
+				const response = await supertest(app).delete(`/api/activities/1`);
+				expect(response.statusCode).toBe(401);
+			});
+
+			test("should respond with JSON", async () => {
+				const response = await supertest(app).delete(`/api/activities/1`);
+				expect(response.type).toBe("application/json");
+			});
+
+			test("should respond with a message", async () => {
+				const response = await supertest(app).delete(`/api/activities/1`);
+				expect(response.body.message).toBe("Unauthorized!");
+			});
+		});
+
+		describe("when there is not a verified user logged", () => {
+			test("should respond with a 403 status code", async () => {
+				const response = await supertest(app)
+					.delete(`/api/activities/1`)
+					.set("Authorization", `Bearer ${unsignedToken}`);
+				expect(response.statusCode).toBe(403);
+			});
+
+			test("should respond with JSON", async () => {
+				const response = await supertest(app)
+					.delete(`/api/activities/1`)
+					.set("Authorization", `Bearer ${unsignedToken}`);
+				expect(response.type).toBe("application/json");
+			});
+
+			test("should respond with a message", async () => {
+				const response = await supertest(app)
+					.delete(`/api/activities/1`)
+					.set("Authorization", `Bearer ${unsignedToken}`);
+				expect(response.body.message).toBe("Require Verified Role!");
+			});
+		});
+
+		describe("when there is a verified user logged", () => {
+			describe("when requesting an invalid id", () => {
+				test("should respond with a 400 status code", async () => {
+					const response = await supertest(app)
+						.delete(`/api/activities/1asd`)
+						.set("Authorization", `Bearer ${userToken}`);
+					expect(response.statusCode).toBe(400);
+				});
+
+				test("should respond with JSON", async () => {
+					const response = await supertest(app)
+						.delete(`/api/activities/1asd`)
+						.set("Authorization", `Bearer ${userToken}`);
+					expect(response.type).toBe("application/json");
+				});
+
+				test("should respond with a message", async () => {
+					const response = await supertest(app)
+						.delete(`/api/activities/1asd`)
+						.set("Authorization", `Bearer ${userToken}`);
+					expect(response.body.success).toBe(false);
+					expect(response.body.error).toBe("invalid id");
+				});
+			});
+
+			describe("when deleting an activity not found", () => {
+				test("should respond with a 404 status code", async () => {
+					const response = await supertest(app)
+						.delete(`/api/activities/100`)
+						.set("Authorization", `Bearer ${userToken}`);
+					expect(response.statusCode).toBe(404);
+				});
+
+				test("should respond with JSON", async () => {
+					const response = await supertest(app)
+						.delete(`/api/activities/100`)
+						.set("Authorization", `Bearer ${userToken}`);
+					expect(response.type).toBe("application/json");
+				});
+
+				test("should respond with a message", async () => {
+					const response = await supertest(app)
+						.delete(`/api/activities/100`)
+						.set("Authorization", `Bearer ${userToken}`);
+					expect(response.body.success).toBe(false);
+					expect(response.body.error).toBe("Activity not found");
+				});
+			});
+
+			describe("when deleting an finished activity", () => {
+				test("should respond with a 409 status code", async () => {
+					const response = await supertest(app)
+						.delete(`/api/activities/5`)
+						.set("Authorization", `Bearer ${userToken}`);
+					expect(response.statusCode).toBe(409);
+				});
+
+				test("should respond with JSON", async () => {
+					const response = await supertest(app)
+						.delete(`/api/activities/5`)
+						.set("Authorization", `Bearer ${userToken}`);
+					expect(response.type).toBe("application/json");
+				});
+
+				test("should respond with a message", async () => {
+					const response = await supertest(app)
+						.delete(`/api/activities/5`)
+						.set("Authorization", `Bearer ${userToken}`);
+					expect(response.body.success).toBe(false);
+					expect(response.body.error).toBe("you can´t delete a finished activity");
+				});
+			});
+
+			describe("when deleting an valid activity", () => {
+				test("should respond with a 200 status code", async () => {
+					const deletedActivity = await db.activities.findByPk(1);
+
+					const response = await supertest(app)
+						.delete(`/api/activities/1`)
+						.set("Authorization", `Bearer ${userToken}`);
+					expect(response.statusCode).toBe(200);
+
+					// return the deleted activity
+					await db.activities.create(deletedActivity.dataValues);
+				});
+
+				test("should respond with JSON", async () => {
+					const deletedActivity = await db.activities.findByPk(1);
+
+					const response = await supertest(app)
+						.delete(`/api/activities/1`)
+						.set("Authorization", `Bearer ${userToken}`);
+					expect(response.type).toBe("application/json");
+
+					// return the deleted activity
+					await db.activities.create(deletedActivity.dataValues);
+				});
+
+				test("should respond with a message", async () => {
+					const response = await supertest(app)
+						.delete(`/api/activities/1`)
+						.set("Authorization", `Bearer ${userToken}`);
+					expect(response.body.success).toBe(true);
+					expect(response.body.message).toBe("the activity deleted successfully");
+				});
 			});
 		});
 	});
