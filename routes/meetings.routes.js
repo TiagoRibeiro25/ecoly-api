@@ -58,11 +58,4 @@ router.patch("/:id", meetingsValidator.validateQueries, (req, res) => {
 	}
 });
 
-router.delete(
-	"/:id",
-	authController.verifyToken,
-	authController.verifyIsAdmin,
-	meetingsController.deleteMeeting
-);
-
 module.exports = router;
