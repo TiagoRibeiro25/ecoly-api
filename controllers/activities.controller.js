@@ -1039,6 +1039,11 @@ exports.finishActivity = async (req, res) => {
 		const creator = await Users.findByPk(req.tokenData.userId);
 		const schoolUser = await Schools.findByPk(req.tokenData.schoolId);
 
+
+		if(isNaN(id)){
+			throw new Error("invalid id");
+		}
+
 		// check if the activity exists
 		if (!activity) {
 			throw new Error("Activity not found");
@@ -1103,6 +1108,15 @@ exports.finishActivity = async (req, res) => {
 			});
 		}
 	} catch (err) {
+
+
+		if (err.message === "invalid id") {
+			return res.status(400).json({
+				success: false,
+				error: "invalid id",
+			});
+		}
+
 		if (err.message === "Activity not found") {
 			return res.status(404).json({
 				success: false,
@@ -1145,6 +1159,10 @@ exports.disabledTheme = async (req, res) => {
 			throw new Error("Theme not found");
 		}
 
+		if(isNaN(id)) {
+			throw new Error("invalid id");
+		}
+
 		if (theme.is_active === false) {
 			throw new Error("Theme is already disabled");
 		}
@@ -1166,6 +1184,14 @@ exports.disabledTheme = async (req, res) => {
 			message: `the theme ${theme.name} is now disabled`,
 		});
 	} catch (err) {
+
+		if(err.message === "invalid id"){
+			return res.status(400).json({
+				success: false,
+				error: "invalid id",
+			});
+		}
+
 		if (err.message === "Theme not found") {
 			return res.status(404).json({
 				success: false,
@@ -1199,6 +1225,11 @@ exports.deleteActivity = async (req, res) => {
 	try {
 		const activity = await Activities.findByPk(id);
 
+
+		if(isNaN(id)) {
+			throw new Error("invalid id");
+		}
+
 		if (!activity) {
 			throw new Error("Activity not found");
 		}
@@ -1225,6 +1256,14 @@ exports.deleteActivity = async (req, res) => {
 			message: `the activity deleted successfully`,
 		});
 	} catch (err) {
+
+		if(err.message === "invalid id"){
+			return res.status(400).json({
+				success: false,
+				error: "invalid id",
+			});
+		}
+
 		if (err.message === "jwt expired") {
 			return res.status(401).json({
 				success: false,
