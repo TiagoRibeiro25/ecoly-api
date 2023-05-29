@@ -93,7 +93,7 @@ module.exports = {
 			year: 2,
 		},
 		{
-			email: "jose.nogueira@gmail.com",
+			email: "josepprn@gmail.com",
 			name: "José Nogueira",
 			password: "123",
 			photo: "https://api.dicebear.com/5.x/personas/svg?seed=jose_nogueira",
@@ -453,7 +453,7 @@ module.exports = {
 	],
 
 	/** @type {Array<{email: string}>} */
-	news_letter: [{email: "josepprn@gmail.com"}],
+	news_letter: [{email: "josepprn@gmail.com"}, {email: "User@esmad.ipp.pt"}],
 
 	/**
 	 * @type {Array<{
