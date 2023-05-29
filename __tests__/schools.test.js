@@ -3,6 +3,21 @@ const supertest = require("supertest");
 const app = require("../app");
 const db = require("../models/db");
 const Schools = db.schools;
+const resetDB = require("../data/resetDB");
+const getToken = require("../utils/generateTokens");
+let adminToken = "";
+let userToken = "";
+let unsignedToken = "";
+
+
+beforeAll(async () => {
+	await resetDB(false);
+
+	// generate tokens for the tests
+	adminToken = await getToken("admin", false);
+	userToken = await getToken("user", false);
+	unsignedToken = await getToken("unsigned", false);
+}, 10000);
 
 describe("GET /api/schools", () => {
     test("should fetch all schools", async () => {
@@ -37,9 +52,9 @@ describe("GET /api/schools/:id", () => {
 
         expect(response.statusCode).toBe(200);
         expect(response.body.success).toBe(true);
-        expect(response.body.data.id).toBe(schoolId);
-
+        expect(response.body.school.id).toBe(schoolId);
     })
+
     test("should return 404 if school does not exist", async () => {
         const schoolId = 100;
 
@@ -57,12 +72,14 @@ describe("POST /api/schools", () => {
 
         const response = await supertest(app)
         .post("/api/schools")
-        .send({ name: newSchoolName });
+        .send({ name: newSchoolName })
+        .set("Authorization", `Bearer ${adminToken}`);
 
         expect(response.statusCode).toBe(201);
         expect(response.body.success).toBe(true);
         expect(response.body.message).toBe("School successfully added");
         expect(response.body.data.name).toBe(newSchoolName);
+        
     })
 
     test("should return 409 if school already exists", async () => {
@@ -70,7 +87,8 @@ describe("POST /api/schools", () => {
 
         const response = await supertest(app)
         .post("/api/schools")
-        .send({ name: existingSchoolName });
+        .send({ name: existingSchoolName })
+        .set("Authorization", `Bearer ${adminToken}`);
 
         expect(response.statusCode).toBe(409);
         expect(response.body.success).toBe(false);
@@ -85,7 +103,8 @@ describe("PUT /api/schools/:id", () => {
 
         const response = await supertest(app)
         .put(`/api/schools/${existingSchoolId}`)
-        .send({ name: updatedSchoolName });
+        .send({ name: updatedSchoolName })
+        .set("Authorization", `Bearer ${adminToken}`);
 
         expect(response.statusCode).toBe(200);
         expect(response.body.success).toBe(true);
@@ -101,7 +120,8 @@ describe("PUT /api/schools/:id", () => {
     
         const response = await supertest(app)
           .put(`/api/schools/${nonExistingSchoolId}`)
-          .send({ name: updatedSchoolName });
+          .send({ name: updatedSchoolName })
+          .set("Authorization", `Bearer ${adminToken}`);
     
         expect(response.statusCode).toBe(404);
         expect(response.body.success).toBe(false);
