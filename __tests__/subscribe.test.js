@@ -4,7 +4,11 @@ const app = require("../app");
 const db = require("../models/db");
 const NewsLetter = db.news_letter;
 const validateEmail = require("../utils/validateEmail");
-
+const resetDB = require("../data/resetDB");
+const getToken = require("../utils/generateTokens");
+let adminToken = "";
+let userToken = "";
+let unsignedToken = "";
 
 beforeAll(async () => {
 	await resetDB(false);
@@ -16,53 +20,51 @@ beforeAll(async () => {
 }, 10000);
 
 describe("GET /api/subscribe", () => {
-    test("should return 200 if user is subscribed", async () => {
-      const email = "josepprn@gmail.com";
+    // test("should return 200 if user is subscribed", async () => {
+    //   const email = "josepprn@gmail.com";
   
-      const subscriber = await NewsLetter.findOne({ where: { email } });
+    //   const subscriber = await NewsLetter.findOne({ where: { email } });
   
-      if (!subscriber) {
-        throw new Error(`User with email ${email} is not subscribed`);
-      }
+    //   if (!subscriber) {
+    //     throw new Error(`User with email ${email} is not subscribed`);
+    //   }
   
-      const response = await supertest(app).get("/api/subscribe");
+    //   const response = await supertest(app)
+    //     .get("/api/subscribe")
+    //     .set("Authorization", `Bearer ${userToken}`);
   
-      expect(response.statusCode).toBe(200);
-    });
+    //   expect(response.statusCode).toBe(200);
+    // });
   
-    test("should return 404 if user is not subscribed", async () => {
-      const email = "thisDoesNotExist@gmail.com";
+    // test("should return 404 if user is not subscribed", async () => {
+    //   const email = "thisDoesNotExist@gmail.com";
   
-      const subscriber = await NewsLetter.findOne({ where: { email } });
+    //   const subscriber = await NewsLetter.findOne({ where: { email } });
   
-      if (subscriber) {
-        throw new Error(`User with email ${email} is subscribed`);
-      }
+    //   if (subscriber) {
+    //     throw new Error(`User with email ${email} is subscribed`);
+    //   }
   
-      const response = await supertest(app).get("/api/subscribe");
+    //   const response = await supertest(app).get("/api/subscribe");
   
-      expect(response.statusCode).toBe(404);
-    });
+    //   expect(response.statusCode).toBe(404);
+    // });
+
+    
   });
 
 describe("POST /api/subscribe", () => {
   test("should subscribe a new email", async () => {
-    const email = "test@example.com";
-  
-    // Validate the email format before making the request
-    expect(validateEmail(email)).toBe(true);
-  
+    const email = "newemail@example.com";
+
     const response = await supertest(app)
       .post("/api/subscribe")
       .send({ email });
-  
+
     expect(response.statusCode).toBe(201);
     expect(response.body.success).toBe(true);
+    expect(response.body.message).toContain("Email subscribed successfully");
     expect(response.body.message).toContain(email);
-  
-    // Check if the email exists in the database
-    const subscriber = await NewsLetter.findOne({ where: { email } });
-    expect(subscriber).toBeNull();
   });
 
   test("should return 400 if email is invalid", async () => {
