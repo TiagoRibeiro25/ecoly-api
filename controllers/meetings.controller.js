@@ -1,4 +1,3 @@
-const moment = require("moment");
 const db = require("../models/db");
 const { Op } = require("sequelize");
 const cloudinary = require("../config/cloudinary.config");
@@ -256,28 +255,28 @@ exports.createMeeting = async (req, res) => {
 		const creator = await Users.findByPk(req.tokenData.userId);
 		const schoolUser = await Schools.findByPk(req.tokenData.schoolId);
 
-		// check if there is a meeting at the same date and room
-		const meeting = await meetings.findOne({
-			where: {
-				date: date,
-				room: room,
-			},
+		const findAllMeetings = await meetings.findAll();
+
+		const meetingsData = findAllMeetings.map((meeting) => {
+			const dateDB = new Date(meeting.dataValues.date);
+			const hourDB = dateDB.getUTCHours(); // hour
+			const dayDB = dateDB.toISOString().split("T")[0]; //day
+			const hour = new Date(date).getUTCHours(); // hour
+			const day = new Date(date).toISOString().split("T")[0]; //day
+
+			if (dayDB === day && hourDB === hour && meeting.room === room) {
+				return true;
+			}
 		});
 
-		if (meeting) {
-			throw new Error("There is already a meeting at this date and room.");
+		if (meetingsData.includes(true)) {
+			throw new Error("There is already a meeting schedule for this room, day and hour.");
 		}
-
-		// if the hour is delayed on the database (1 hour) increase the date by 1 hour with moment
-		const dateMoment = moment(date).add(1, "hours");
-
-		// if the hour is ahead on the database (1 hour) decrease the date by 1 hour with moment
-		const dateMomentV2 = moment(date).subtract(1, "hours");
 
 		const newMeeting = await meetings.create({
 			creator_id: creator.id, // user
 			school_id: schoolUser.id, // user school
-			date: dateMoment || dateMomentV2,
+			date: date,
 			room: room,
 			description: description,
 		});
@@ -312,10 +311,10 @@ exports.createMeeting = async (req, res) => {
 			});
 		}
 
-		if (err.message === "There is already a meeting at this date and room.") {
+		if (err.message === "There is already a meeting schedule for this room, day and hour.") {
 			return res.status(409).json({
 				success: false,
-				error: err.message,
+				error: "There is already a meeting schedule for this room, day and hour.",
 			});
 		}
 
@@ -358,12 +357,11 @@ exports.addAta = async (req, res) => {
 		});
 
 		if (req.body.images && req.body.images.length > 0) {
+			const images = req.body.images;
 
-			const images  = req.body.images;
-
-			for(let i = 0; i < images.length; i++) {
+			for (let i = 0; i < images.length; i++) {
 				const response = await cloudinary.uploader.upload(images[i], {
-					folder : "meetings",
+					folder: "meetings",
 					crop: "scale",
 				});
 
@@ -372,7 +370,6 @@ exports.addAta = async (req, res) => {
 					img: response.secure_url,
 				});
 			}
-
 
 			await unlockBadge({ badgeId: 5, userId: creator.id }); //if already have the badge only will earn seeds
 			await addSeeds({ userId: creator.id, amount: 40 });
@@ -383,6 +380,7 @@ exports.addAta = async (req, res) => {
 			message: `ATA added to meeting ${updatedMeeting.id}`,
 		});
 	} catch (err) {
+		console.log(colors.red(err.message));
 		if (err.message === "jwt expired") {
 			return res.status(401).json({
 				success: false,
