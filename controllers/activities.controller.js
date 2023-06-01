@@ -1099,7 +1099,7 @@ exports.finishActivity = async (req, res) => {
 
 			return res.status(200).json({
 				success: true,
-				data: `activity finished with success ${activity.id}`,
+				message: `activity finished with success ${activity.id}`,
 			});
 		}
 	} catch (err) {
@@ -1248,7 +1248,7 @@ exports.deleteActivity = async (req, res) => {
 
 		return res.status(200).json({
 			success: true,
-			message: `the activity deleted successfully`,
+			message: `activity deleted successfully`,
 		});
 	} catch (err) {
 

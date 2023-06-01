@@ -2341,15 +2341,15 @@ describe("POST /api/activities", () => {
 						.post(`/api/activities?fields=activity`)
 						.send(bodyActivity)
 						.set("Authorization", `Bearer ${userToken}`);
-					
-						const lastActivity = await db.activities.findOne({
-							order: [["id", "DESC"]],
-						});
-					
-						expect(response.statusCode).toBe(201);
+
+					const lastActivity = await db.activities.findOne({
+						order: [["id", "DESC"]],
+					});
+
+					expect(response.statusCode).toBe(201);
+					expect(response.type).toBe("application/json");
 					expect(response.body.success).toBe(true);
 					expect(response.body.message).toBe(`activity created ${lastActivity.id}`);
-
 				});
 			});
 		});
@@ -2721,6 +2721,492 @@ describe("PATCH /api/activities/:id", () => {
 			});
 		});
 	});
+
+	// finish an activity
+	describe("when finishing an activity", () => {
+		describe("when there is no logged user", () => {
+			test("should respond with a 401 status code", async () => {
+				const response = await supertest(app).patch(`/api/activities/6?fields=activity`);
+				expect(response.statusCode).toBe(401);
+			});
+
+			test("should respond with JSON", async () => {
+				const response = await supertest(app).patch(`/api/activities/6?fields=activity`);
+				expect(response.type).toBe("application/json");
+			});
+
+			test("should respond with a message", async () => {
+				const response = await supertest(app).patch(`/api/activities/6?fields=activity`);
+				expect(response.body.message).toBe("Unauthorized!");
+			});
+		});
+
+		describe("when there is not a verified user logged", () => {
+			test("should respond with a 403 status code", async () => {
+				const response = await supertest(app)
+					.patch(`/api/activities/6?fields=activity`)
+					.set("Authorization", `Bearer ${unsignedToken}`);
+				expect(response.statusCode).toBe(403);
+			});
+
+			test("should respond with JSON", async () => {
+				const response = await supertest(app)
+					.patch(`/api/activities/6?fields=activity`)
+					.set("Authorization", `Bearer ${unsignedToken}`);
+				expect(response.type).toBe("application/json");
+			});
+
+			test("should respond with a message", async () => {
+				const response = await supertest(app)
+					.patch(`/api/activities/6?fields=activity`)
+					.set("Authorization", `Bearer ${unsignedToken}`);
+				expect(response.body.success).toBe(false);
+				expect(response.body.message).toBe("Require Verified Role!");
+			});
+		});
+
+		describe("when there is a verified user logged", () => {
+			describe("when finish an activity with invalid request", () => {
+				describe("when the body is empty", () => {
+					test("should respond with a 400 status code", async () => {
+						const response = await supertest(app)
+							.patch(`/api/activities/6?fields=activity`)
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.statusCode).toBe(400);
+					});
+
+					test("should respond with JSON", async () => {
+						const response = await supertest(app)
+							.patch(`/api/activities/6?fields=activity`)
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.type).toBe("application/json");
+					});
+
+					test("should respond with a message", async () => {
+						const response = await supertest(app)
+							.patch(`/api/activities/6?fields=activity`)
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.body.success).toBe(false);
+						expect(response.body.error).toBe("body is empty");
+					});
+				});
+
+				describe("when there is invalid keys instead of the required ones", () => {
+					const report = {
+						reportdsa: "A atividade foi um êxito",
+						imagesdsa: [base64Data.activityReportImg1],
+					};
+
+					test("should respond with a 400 status code", async () => {
+						const response = await supertest(app)
+							.patch(`/api/activities/6?fields=activity`)
+							.send(report)
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.statusCode).toBe(400);
+					});
+
+					test("should respond with JSON", async () => {
+						const response = await supertest(app)
+							.patch(`/api/activities/6?fields=activity`)
+							.send(report)
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.type).toBe("application/json");
+					});
+
+					test("should respond with a message", async () => {
+						const response = await supertest(app)
+							.patch(`/api/activities/6?fields=activity`)
+							.send(report)
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.body.success).toBe(false);
+						expect(response.body.error).toEqual(
+							expect.arrayContaining([
+								"reportdsa is not a valid field",
+								"imagesdsa is not a valid field",
+							])
+						);
+					});
+				});
+
+				describe("when the keys are empty", () => {
+					const report = {
+						report: "",
+						images: "",
+					};
+
+					test("should respond with a 400 status code", async () => {
+						const response = await supertest(app)
+							.patch(`/api/activities/6?fields=activity`)
+							.send(report)
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.statusCode).toBe(400);
+					});
+
+					test("should respond with JSON", async () => {
+						const response = await supertest(app)
+							.patch(`/api/activities/6?fields=activity`)
+							.send(report)
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.type).toBe("application/json");
+					});
+
+					test("should respond with a message", async () => {
+						const response = await supertest(app)
+							.patch(`/api/activities/6?fields=activity`)
+							.send(report)
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.body.success).toBe(false);
+						expect(response.body.error).toEqual(
+							expect.arrayContaining(["report cannot be empty", "images cannot be empty"])
+						);
+					});
+				});
+
+				describe("when there are missing keys", () => {
+					const report = {
+						report: "A atividade foi um êxito",
+					};
+
+					test("should respond with a 400 status code", async () => {
+						const response = await supertest(app)
+							.patch(`/api/activities/6?fields=activity`)
+							.send(report)
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.statusCode).toBe(400);
+					});
+
+					test("should respond with JSON", async () => {
+						const response = await supertest(app)
+							.patch(`/api/activities/6?fields=activity`)
+							.send(report)
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.type).toBe("application/json");
+					});
+
+					test("should respond with a message", async () => {
+						const response = await supertest(app)
+							.patch(`/api/activities/6?fields=activity`)
+							.send(report)
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.body.success).toBe(false);
+						expect(response.body.error).toBe("images cannot be null");
+					});
+				});
+
+				describe("when there integer keys instead of string", () => {
+					const report = {
+						report: 12321,
+						images: [base64Data.activityReportImg1],
+					};
+
+					test("should respond with a 400 status code", async () => {
+						const response = await supertest(app)
+							.patch(`/api/activities/6?fields=activity`)
+							.send(report)
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.statusCode).toBe(400);
+					});
+
+					test("should respond with JSON", async () => {
+						const response = await supertest(app)
+							.patch(`/api/activities/6?fields=activity`)
+							.send(report)
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.type).toBe("application/json");
+					});
+
+					test("should respond with a message", async () => {
+						const response = await supertest(app)
+							.patch(`/api/activities/6?fields=activity`)
+							.send(report)
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.body.success).toBe(false);
+						expect(response.body.error).toBe("report must be a string");
+					});
+				});
+
+				describe("when images are empty", () => {
+					const report = {
+						report: "A atividade foi um êxito",
+						images: [],
+					};
+
+					test("should respond with a 400 status code", async () => {
+						const response = await supertest(app)
+							.patch(`/api/activities/6?fields=activity`)
+							.send(report)
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.statusCode).toBe(400);
+					});
+
+					test("should respond with JSON", async () => {
+						const response = await supertest(app)
+							.patch(`/api/activities/6?fields=activity`)
+							.send(report)
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.type).toBe("application/json");
+					});
+
+					test("should respond with a message", async () => {
+						const response = await supertest(app)
+							.patch(`/api/activities/6?fields=activity`)
+							.send(report)
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.body.success).toBe(false);
+						expect(response.body.error).toBe("images are required");
+					});
+				});
+
+				describe("when images haves empty strings", () => {
+					const report = {
+						report: "A atividade foi um êxito",
+						images: ["", base64Data.activityReportImg1],
+					};
+
+					test("should respond with a 400 status code", async () => {
+						const response = await supertest(app)
+							.patch(`/api/activities/6?fields=activity`)
+							.send(report)
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.statusCode).toBe(400);
+					});
+
+					test("should respond with JSON", async () => {
+						const response = await supertest(app)
+							.patch(`/api/activities/6?fields=activity`)
+							.send(report)
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.type).toBe("application/json");
+					});
+
+					test("should respond with a message", async () => {
+						const response = await supertest(app)
+							.patch(`/api/activities/6?fields=activity`)
+							.send(report)
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.body.success).toBe(false);
+						expect(response.body.error).toBe("images cannot have empty strings");
+					});
+				});
+
+				describe("when images have invalid base64 strings", () => {
+					const report = {
+						report: "A atividade foi um êxito",
+						images: ["invalidBase64", base64Data.activityReportImg1],
+					};
+
+					test("should respond with a 400 status code", async () => {
+						const response = await supertest(app)
+							.patch(`/api/activities/6?fields=activity`)
+							.send(report)
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.statusCode).toBe(400);
+					});
+
+					test("should respond with JSON", async () => {
+						const response = await supertest(app)
+							.patch(`/api/activities/6?fields=activity`)
+							.send(report)
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.type).toBe("application/json");
+					});
+
+					test("should respond with a message", async () => {
+						const response = await supertest(app)
+							.patch(`/api/activities/6?fields=activity`)
+							.send(report)
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.body.success).toBe(false);
+						expect(response.body.error).toBe("images must be a valid base64 string");
+					});
+				});
+
+				describe("when images are not an array", () => {
+					const report = {
+						report: "A atividade foi um êxito",
+						images: 213123,
+					};
+
+					test("should respond with a 400 status code", async () => {
+						const response = await supertest(app)
+							.patch(`/api/activities/6?fields=activity`)
+							.send(report)
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.statusCode).toBe(400);
+					});
+
+					test("should respond with JSON", async () => {
+						const response = await supertest(app)
+							.patch(`/api/activities/6?fields=activity`)
+							.send(report)
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.type).toBe("application/json");
+					});
+
+					test("should respond with a message", async () => {
+						const response = await supertest(app)
+							.patch(`/api/activities/6?fields=activity`)
+							.send(report)
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.body.success).toBe(false);
+						expect(response.body.error).toBe("images must be an array or list");
+					});
+				});
+
+				describe("when images are not an array of strings", () => {
+					const report = {
+						report: "A atividade foi um êxito",
+						images: [213123, base64Data.activityReportImg1],
+					};
+
+					test("should respond with a 400 status code", async () => {
+						const response = await supertest(app)
+							.patch(`/api/activities/6?fields=activity`)
+							.send(report)
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.statusCode).toBe(400);
+					});
+
+					test("should respond with JSON", async () => {
+						const response = await supertest(app)
+							.patch(`/api/activities/6?fields=activity`)
+							.send(report)
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.type).toBe("application/json");
+					});
+
+					test("should respond with a message", async () => {
+						const response = await supertest(app)
+							.patch(`/api/activities/6?fields=activity`)
+							.send(report)
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.body.success).toBe(false);
+						expect(response.body.error).toBe("images must be an array of strings");
+					});
+				});
+
+				describe("when there more then four images", () => {
+					const report = {
+						report: "A atividade foi um êxito",
+						images: [
+							base64Data.activityReportImg1,
+							base64Data.activityReportImg2,
+							base64Data.activityReportImg3,
+							base64Data.activityReportImg4,
+							base64Data.activityReportImg4,
+						],
+					};
+
+					test("should respond with a 400 status code", async () => {
+						const response = await supertest(app)
+							.patch(`/api/activities/6?fields=activity`)
+							.send(report)
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.statusCode).toBe(400);
+					});
+
+					test("should respond with JSON", async () => {
+						const response = await supertest(app)
+							.patch(`/api/activities/6?fields=activity`)
+							.send(report)
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.type).toBe("application/json");
+					});
+
+					test("should respond with a message", async () => {
+						const response = await supertest(app)
+							.patch(`/api/activities/6?fields=activity`)
+							.send(report)
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.body.success).toBe(false);
+						expect(response.body.error).toBe("you can only add 4 images");
+					});
+				});
+
+				describe("when the activity does not exist", () => {
+					const report = {
+						report: "A atividade foi um êxito",
+						images: [base64Data.activityReportImg1],
+					};
+
+					test("should respond with a 404 status code", async () => {
+						const response = await supertest(app)
+							.patch(`/api/activities/999?fields=activity`)
+							.send(report)
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.statusCode).toBe(404);
+					});
+
+					test("should respond with JSON", async () => {
+						const response = await supertest(app)
+							.patch(`/api/activities/999?fields=activity`)
+							.send(report)
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.type).toBe("application/json");
+					});
+
+					test("should respond with a message", async () => {
+						const response = await supertest(app)
+							.patch(`/api/activities/999?fields=activity`)
+							.send(report)
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.body.success).toBe(false);
+						expect(response.body.error).toBe("Activity not found");
+					});
+				});
+
+				describe("when finishing an activity that is already finished", () => {
+					const report = {
+						report: "A atividade foi um êxito",
+						images: [base64Data.activityReportImg1],
+					};
+
+					test("should respond with a 409 status code", async () => {
+						const response = await supertest(app)
+							.patch(`/api/activities/5?fields=activity`)
+							.send(report)
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.statusCode).toBe(409);
+					});
+
+					test("should respond with JSON", async () => {
+						const response = await supertest(app)
+							.patch(`/api/activities/5?fields=activity`)
+							.send(report)
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.type).toBe("application/json");
+					});
+
+					test("should respond with a message", async () => {
+						const response = await supertest(app)
+							.patch(`/api/activities/5?fields=activity`)
+							.send(report)
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.body.success).toBe(false);
+						expect(response.body.error).toBe("Activity is already finished");
+					});
+				});
+			});
+
+			describe("when finishing an activity with a valid request body", () => {
+				const report = {
+					report: "A atividade foi um êxito",
+					images: [base64Data.activityReportImg1],
+				};
+
+				test("should respond with a 200 status code", async () => {
+					const response = await supertest(app)
+						.patch(`/api/activities/1?fields=activity`)
+						.send(report)
+						.set("Authorization", `Bearer ${userToken}`);
+					expect(response.statusCode).toBe(200);
+					expect(response.type).toBe("application/json");
+					expect(response.body.success).toBe(true);
+					expect(response.body.message).toBe("activity finished with success 1");
+				}, 10000);
+			});
+		});
+	});
 });
 
 // DELETE /api/activities/:id
@@ -2841,35 +3327,13 @@ describe("DELETE /api/activities/:id", () => {
 
 			describe("when deleting an valid activity", () => {
 				test("should respond with a 200 status code", async () => {
-					const deletedActivity = await db.activities.findByPk(1);
-
 					const response = await supertest(app)
-						.delete(`/api/activities/1`)
+						.delete(`/api/activities/3`)
 						.set("Authorization", `Bearer ${userToken}`);
 					expect(response.statusCode).toBe(200);
-
-					// return the deleted activity
-					await db.activities.create(deletedActivity.dataValues);
-				});
-
-				test("should respond with JSON", async () => {
-					const deletedActivity = await db.activities.findByPk(1);
-
-					const response = await supertest(app)
-						.delete(`/api/activities/1`)
-						.set("Authorization", `Bearer ${userToken}`);
 					expect(response.type).toBe("application/json");
-
-					// return the deleted activity
-					await db.activities.create(deletedActivity.dataValues);
-				});
-
-				test("should respond with a message", async () => {
-					const response = await supertest(app)
-						.delete(`/api/activities/1`)
-						.set("Authorization", `Bearer ${userToken}`);
 					expect(response.body.success).toBe(true);
-					expect(response.body.message).toBe("the activity deleted successfully");
+					expect(response.body.message).toBe("activity deleted successfully");
 				});
 			});
 		});
