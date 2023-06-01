@@ -5,6 +5,7 @@ const colors = require("colors");
 const db = require("../models/db");
 const resetDB = require("../data/resetDB");
 const getToken = require("../utils/generateTokens");
+const base64Data = require("../data/base64");
 let adminToken = "";
 let userToken = "";
 let unsignedToken = "";
@@ -1351,6 +1352,1009 @@ describe("GET /api/activities", () => {
 
 // POST /api/activities
 describe("POST /api/activities", () => {
+	describe("invalid requests", () => {
+		describe("when there any parameter provided", () => {
+			test("should respond with a 400 status code", async () => {
+				const response = await supertest(app)
+					.post(`/api/activities`)
+					.set("Authorization", `Bearer ${userToken}`);
+				expect(response.statusCode).toBe(400);
+			});
+
+			test("should respond with JSON", async () => {
+				const response = await supertest(app)
+					.post(`/api/activities`)
+					.set("Authorization", `Bearer ${userToken}`);
+				expect(response.type).toBe("application/json");
+			});
+
+			test("should respond with a message", async () => {
+				const response = await supertest(app)
+					.post(`/api/activities`)
+					.set("Authorization", `Bearer ${userToken}`);
+				expect(response.body.success).toBe(false);
+				expect(response.body.error).toBe("provide parameters");
+			});
+		});
+
+		describe("when the fields key is empty", () => {
+			test("should respond with a 400 status code", async () => {
+				const response = await supertest(app)
+					.post(`/api/activities?fields=`)
+					.set("Authorization", `Bearer ${userToken}`);
+				expect(response.statusCode).toBe(400);
+			});
+
+			test("should respond with JSON", async () => {
+				const response = await supertest(app)
+					.post(`/api/activities?fields=`)
+					.set("Authorization", `Bearer ${userToken}`);
+				expect(response.type).toBe("application/json");
+			});
+
+			test("should respond with a message", async () => {
+				const response = await supertest(app)
+					.post(`/api/activities?fields=`)
+					.set("Authorization", `Bearer ${userToken}`);
+				expect(response.body.success).toBe(false);
+				expect(response.body.error).toBe("fields is empty");
+			});
+		});
+
+		describe("when the fields key is invalid", () => {
+			test("should respond with a 400 status code", async () => {
+				const response = await supertest(app)
+					.post(`/api/activities?fields=adas`)
+					.set("Authorization", `Bearer ${userToken}`);
+				expect(response.statusCode).toBe(400);
+			});
+
+			test("should respond with JSON", async () => {
+				const response = await supertest(app)
+					.post(`/api/activities?fields=adas`)
+					.set("Authorization", `Bearer ${userToken}`);
+				expect(response.type).toBe("application/json");
+			});
+
+			test("should respond with a message", async () => {
+				const response = await supertest(app)
+					.post(`/api/activities?fields=adas`)
+					.set("Authorization", `Bearer ${userToken}`);
+				expect(response.body.success).toBe(false);
+				expect(response.body.error).toBe("adas is an invalid value for the fields parameter");
+			});
+		});
+
+		describe("when there is an invalid parameter instead of fields", () => {
+			test("should respond with a 400 status code", async () => {
+				const response = await supertest(app)
+					.post(`/api/activities?fieldsssas=activity`)
+					.set("Authorization", `Bearer ${userToken}`);
+				expect(response.statusCode).toBe(400);
+			});
+
+			test("should respond with JSON", async () => {
+				const response = await supertest(app)
+					.post(`/api/activities?fieldsssas=activity`)
+					.set("Authorization", `Bearer ${userToken}`);
+				expect(response.type).toBe("application/json");
+			});
+
+			test("should respond with a message", async () => {
+				const response = await supertest(app)
+					.post(`/api/activities?fieldsssas=activity`)
+					.set("Authorization", `Bearer ${userToken}`);
+				expect(response.body.success).toBe(false);
+				expect(response.body.error).toBe("fieldsssas is an invalid parameter");
+			});
+		});
+	});
+
+	// creating an activity
+	describe("when creating an activity", () => {
+		describe("when there is no logged user", () => {
+			test("should respond with a 401 status code", async () => {
+				const response = await supertest(app).post(`/api/activities?fields=activity`);
+				expect(response.statusCode).toBe(401);
+			});
+
+			test("should respond with JSON", async () => {
+				const response = await supertest(app).post(`/api/activities?fields=activity`);
+				expect(response.type).toBe("application/json");
+			});
+
+			test("should respond with a message", async () => {
+				const response = await supertest(app).post(`/api/activities?fields=activity`);
+				expect(response.body.success).toBe(false);
+				expect(response.body.message).toBe("Unauthorized!");
+			});
+		});
+
+		describe("when there is not verified user logged", () => {
+			test("should respond with a 403 status code", async () => {
+				const response = await supertest(app)
+					.post(`/api/activities?fields=activity`)
+					.set("Authorization", `Bearer ${unsignedToken}`);
+				expect(response.statusCode).toBe(403);
+			});
+
+			test("should respond with JSON", async () => {
+				const response = await supertest(app)
+					.post(`/api/activities?fields=activity`)
+					.set("Authorization", `Bearer ${unsignedToken}`);
+				expect(response.type).toBe("application/json");
+			});
+
+			test("should respond with a message", async () => {
+				const response = await supertest(app)
+					.post(`/api/activities?fields=activity`)
+					.set("Authorization", `Bearer ${unsignedToken}`);
+				expect(response.body.success).toBe(false);
+				expect(response.body.message).toBe("Require Verified Role!");
+			});
+		});
+
+		describe("when there is a logged user", () => {
+			describe("when the create activity request is invalid", () => {
+				describe("when is missing data on the request body", () => {
+					test("should respond with a 400 status code", async () => {
+						const response = await supertest(app)
+							.post(`/api/activities?fields=activity`)
+							.send({
+								theme_id: 3,
+							})
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.statusCode).toBe(400);
+					});
+
+					test("should respond with JSON", async () => {
+						const response = await supertest(app)
+							.post(`/api/activities?fields=activity`)
+							.send({
+								theme_id: 3,
+							})
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.type).toBe("application/json");
+					});
+
+					test("should response with a message", async () => {
+						const response = await supertest(app)
+							.post(`/api/activities?fields=activity`)
+							.send({
+								theme_id: 3,
+							})
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.body.success).toBe(false);
+						expect(response.body.error).toEqual([
+							"title cannot be null",
+							"complexity cannot be null",
+							"initial_date cannot be null",
+							"final_date cannot be null",
+							"objective cannot be null",
+							"diagnostic cannot be null",
+							"meta cannot be null",
+							"resources cannot be null",
+							"participants cannot be null",
+							"evaluation_indicator cannot be null",
+							"evaluation_method cannot be null",
+							"images cannot be null",
+						]);
+					});
+				});
+
+				describe("when there is empty data on the body request", () => {
+					const bodyActivity = {
+						theme_id: 3,
+						title: "",
+						complexity: "",
+						initial_date: "",
+						final_date: "",
+						objective: "",
+						diagnostic: "",
+						meta: "",
+						resources: "",
+						participants: "",
+						evaluation_indicator: "",
+						evaluation_method: "",
+						images: "",
+					};
+
+					test("should respond with a 400 status code", async () => {
+						const response = await supertest(app)
+							.post(`/api/activities?fields=activity`)
+							.send(bodyActivity)
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.statusCode).toBe(400);
+					});
+
+					test("should respond with JSON", async () => {
+						const response = await supertest(app)
+							.post(`/api/activities?fields=activity`)
+							.send(bodyActivity)
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.type).toBe("application/json");
+					});
+
+					test("should response with a message", async () => {
+						const response = await supertest(app)
+							.post(`/api/activities?fields=activity`)
+							.send(bodyActivity)
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.body.success).toBe(false);
+						expect(response.body.error).toEqual(
+							expect.arrayContaining([
+								"title cannot be empty",
+								"complexity cannot be empty",
+								"initial_date cannot be empty",
+								"final_date cannot be empty",
+								"objective cannot be empty",
+								"diagnostic cannot be empty",
+								"meta cannot be empty",
+								"resources cannot be empty",
+								"participants cannot be empty",
+								"evaluation_indicator cannot be empty",
+								"evaluation_method cannot be empty",
+								"images cannot be empty",
+							])
+						);
+					});
+				});
+
+				describe("when the keys body are invalid", () => {
+					const invalidBodyActivity = {
+						theme_ids: 3,
+						titles: "colocação de caixotes de água",
+						complexitys: 3,
+						initialDdate: "2023-06-12",
+						finalfdate: "2023-07-12",
+						objectivesaa:
+							"Sensibilizar a comunidade escolar para a necessidade de poupar água",
+						diagnosticdsa: "Excesso de água dispendida em tarefas domésticas",
+						metaas:
+							"Divulgação, nas redes sociais, de informação de sensibilização para a poupança de água",
+						resourcedsas:
+							"Material de divulgação produzido ao abrigo do Concurso Eco-P.PORTO",
+						participantdsas: "Estudantes da ESHT",
+						evaluation_inddsaicator: "Divulgação no facebook e no instagram",
+						evaluation_methodsd: "Registo Fotográfico",
+						imagesdas: [`${base64Data.activityImg1}`],
+					};
+
+					test("should respond with a 400 status code", async () => {
+						const response = await supertest(app)
+							.post(`/api/activities?fields=activity`)
+							.send(invalidBodyActivity)
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.statusCode).toBe(400);
+					});
+
+					test("should respond with JSON", async () => {
+						const response = await supertest(app)
+							.post(`/api/activities?fields=activity`)
+							.send(invalidBodyActivity)
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.type).toBe("application/json");
+					});
+
+					test("should response with a message", async () => {
+						const response = await supertest(app)
+							.post(`/api/activities?fields=activity`)
+							.send(invalidBodyActivity)
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.body.success).toBe(false);
+						expect(response.body.error).toEqual(
+							expect.arrayContaining([
+								"theme_ids is a invalid field",
+								"titles is a invalid field",
+								"complexitys is a invalid field",
+								"initialDdate is a invalid field",
+								"finalfdate is a invalid field",
+								"objectivesaa is a invalid field",
+								"diagnosticdsa is a invalid field",
+								"metaas is a invalid field",
+								"resourcedsas is a invalid field",
+								"participantdsas is a invalid field",
+								"evaluation_inddsaicator is a invalid field",
+								"evaluation_methodsd is a invalid field",
+								"imagesdas is a invalid field",
+							])
+						);
+					});
+				});
+
+				describe("when theme id is not a number", () => {
+					const bodyActivity = {
+						theme_id: "3",
+						title: "colocação de caixotes de água",
+						complexity: 3,
+						initial_date: "2023-06-12",
+						final_date: "2023-07-12",
+						objective: "Sensibilizar a comunidade escolar para a necessidade de poupar água",
+						diagnostic: "Excesso de água dispendida em tarefas domésticas",
+						meta: "Divulgação, nas redes sociais, de informação de sensibilização para a poupança de água",
+						resources: "Material de divulgação produzido ao abrigo do Concurso Eco-P.PORTO",
+						participants: "Estudantes da ESHT",
+						evaluation_indicator: "Divulgação no facebook e no instagram",
+						evaluation_method: "Registo Fotográfico",
+						images: [`${base64Data.activityImg1}`],
+					};
+
+					test("should respond with a 400 status code", async () => {
+						const response = await supertest(app)
+							.post(`/api/activities?fields=activity`)
+							.send(bodyActivity)
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.statusCode).toBe(400);
+					});
+
+					test("should respond with JSON", async () => {
+						const response = await supertest(app)
+							.post(`/api/activities?fields=activity`)
+							.send(bodyActivity)
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.type).toBe("application/json");
+					});
+
+					test("should response with a message", async () => {
+						const response = await supertest(app)
+							.post(`/api/activities?fields=activity`)
+							.send(bodyActivity)
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.body.success).toBe(false);
+						expect(response.body.error).toBe("theme_id must be a number");
+					});
+				});
+
+				describe("when complexity is not a number", () => {
+					const bodyActivity = {
+						theme_id: 3,
+						title: "colocação de caixotes de água",
+						complexity: "3",
+						initial_date: "2023-06-12",
+						final_date: "2023-07-12",
+						objective: "Sensibilizar a comunidade escolar para a necessidade de poupar água",
+						diagnostic: "Excesso de água dispendida em tarefas domésticas",
+						meta: "Divulgação, nas redes sociais, de informação de sensibilização para a poupança de água",
+						resources: "Material de divulgação produzido ao abrigo do Concurso Eco-P.PORTO",
+						participants: "Estudantes da ESHT",
+						evaluation_indicator: "Divulgação no facebook e no instagram",
+						evaluation_method: "Registo Fotográfico",
+						images: [`${base64Data.activityImg1}`],
+					};
+
+					test("should respond with a 400 status code", async () => {
+						const response = await supertest(app)
+							.post(`/api/activities?fields=activity`)
+							.send(bodyActivity)
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.statusCode).toBe(400);
+					});
+
+					test("should respond with JSON", async () => {
+						const response = await supertest(app)
+							.post(`/api/activities?fields=activity`)
+							.send(bodyActivity)
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.type).toBe("application/json");
+					});
+
+					test("should response with a message", async () => {
+						const response = await supertest(app)
+							.post(`/api/activities?fields=activity`)
+							.send(bodyActivity)
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.body.success).toBe(false);
+						expect(response.body.error).toBe("complexity must be a number");
+					});
+				});
+
+				describe("when complexity is not between 1 and 5", () => {
+					const bodyActivity = {
+						theme_id: 3,
+						title: "colocação de caixotes de água",
+						complexity: 6,
+						initial_date: "2023-06-12",
+						final_date: "2023-07-12",
+						objective: "Sensibilizar a comunidade escolar para a necessidade de poupar água",
+						diagnostic: "Excesso de água dispendida em tarefas domésticas",
+						meta: "Divulgação, nas redes sociais, de informação de sensibilização para a poupança de água",
+						resources: "Material de divulgação produzido ao abrigo do Concurso Eco-P.PORTO",
+						participants: "Estudantes da ESHT",
+						evaluation_indicator: "Divulgação no facebook e no instagram",
+						evaluation_method: "Registo Fotográfico",
+						images: [`${base64Data.activityImg1}`],
+					};
+
+					test("should respond with a 400 status code", async () => {
+						const response = await supertest(app)
+							.post(`/api/activities?fields=activity`)
+							.send(bodyActivity)
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.statusCode).toBe(400);
+					});
+
+					test("should respond with JSON", async () => {
+						const response = await supertest(app)
+							.post(`/api/activities?fields=activity`)
+							.send(bodyActivity)
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.type).toBe("application/json");
+					});
+
+					test("should response with a message", async () => {
+						const response = await supertest(app)
+							.post(`/api/activities?fields=activity`)
+							.send(bodyActivity)
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.body.success).toBe(false);
+						expect(response.body.error).toBe("complexity must be between 1 and 5");
+					});
+				});
+
+				describe("when adding more then four images", () => {
+					const bodyActivity = {
+						theme_id: 1,
+						title: "Colocação de Caixotes de água 13",
+						complexity: 4,
+						initial_date: "2023-06-12",
+						final_date: "2023-07-12",
+						objective: "aa",
+						diagnostic: "aa",
+						meta: "aa",
+						resources: "aa",
+						participants: "aa",
+						evaluation_indicator: "aa",
+						evaluation_method: "aa",
+						images: [
+							`${base64Data.activityImg1}`,
+							`${base64Data.activityImg2}`,
+							`${base64Data.activityImg3}`,
+							`${base64Data.activityImg4}`,
+							`${base64Data.activityImg5}`,
+						],
+					};
+
+					test("should respond with a 400 status code", async () => {
+						const response = await supertest(app)
+							.post(`/api/activities?fields=activity`)
+							.send(bodyActivity)
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.statusCode).toBe(400);
+					});
+
+					test("should respond with JSON", async () => {
+						const response = await supertest(app)
+							.post(`/api/activities?fields=activity`)
+							.send(bodyActivity)
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.type).toBe("application/json");
+					});
+
+					test("should response with a message", async () => {
+						const response = await supertest(app)
+							.post(`/api/activities?fields=activity`)
+							.send(bodyActivity)
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.body.success).toBe(false);
+						expect(response.body.error).toBe("you can only add 4 images");
+					});
+				});
+
+				describe("when initial date is not a valid date", () => {
+					const bodyActivity = {
+						theme_id: 3,
+						title: "colocação de caixotes de água",
+						complexity: 3,
+						initial_date: "2023-06-40",
+						final_date: "2023-07-12",
+						objective: "Sensibilizar a comunidade escolar para a necessidade de poupar água",
+						diagnostic: "Excesso de água dispendida em tarefas domésticas",
+						meta: "Divulgação, nas redes sociais, de informação de sensibilização para a poupança de água",
+						resources: "Material de divulgação produzido ao abrigo do Concurso Eco-P.PORTO",
+						participants: "Estudantes da ESHT",
+						evaluation_indicator: "Divulgação no facebook e no instagram",
+						evaluation_method: "Registo Fotográfico",
+						images: [`${base64Data.activityImg1}`],
+					};
+
+					test("should respond with a 400 status code", async () => {
+						const response = await supertest(app)
+							.post(`/api/activities?fields=activity`)
+							.send(bodyActivity)
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.statusCode).toBe(400);
+					});
+
+					test("should respond with JSON", async () => {
+						const response = await supertest(app)
+							.post(`/api/activities?fields=activity`)
+							.send(bodyActivity)
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.type).toBe("application/json");
+					});
+
+					test("should response with a message", async () => {
+						const response = await supertest(app)
+							.post(`/api/activities?fields=activity`)
+							.send(bodyActivity)
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.body.success).toBe(false);
+						expect(response.body.error).toBe("initial_date must be a valid date");
+					});
+				});
+
+				describe("when intial date haves a invalid year", () => {
+					const bodyActivity = {
+						theme_id: 3,
+						title: "colocação de caixotes de água",
+						complexity: 3,
+						initial_date: "2001-06-12",
+						final_date: "2023-07-12",
+						objective: "Sensibilizar a comunidade escolar para a necessidade de poupar água",
+						diagnostic: "Excesso de água dispendida em tarefas domésticas",
+						meta: "Divulgação, nas redes sociais, de informação de sensibilização para a poupança de água",
+						resources: "Material de divulgação produzido ao abrigo do Concurso Eco-P.PORTO",
+						participants: "Estudantes da ESHT",
+						evaluation_indicator: "Divulgação no facebook e no instagram",
+						evaluation_method: "Registo Fotográfico",
+						images: [`${base64Data.activityImg1}`],
+					};
+
+					test("should respond with a 400 status code", async () => {
+						const response = await supertest(app)
+							.post(`/api/activities?fields=activity`)
+							.send(bodyActivity)
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.statusCode).toBe(400);
+					});
+
+					test("should respond with JSON", async () => {
+						const response = await supertest(app)
+							.post(`/api/activities?fields=activity`)
+							.send(bodyActivity)
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.type).toBe("application/json");
+					});
+
+					test("should response with a message", async () => {
+						const response = await supertest(app)
+							.post(`/api/activities?fields=activity`)
+							.send(bodyActivity)
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.body.success).toBe(false);
+						expect(response.body.error).toBe("invalid year for initial_date");
+					});
+				});
+
+				describe("when there is keys with integer values but should be string", () => {
+					const bodyActivity = {
+						theme_id: 3,
+						title: "colocação de caixotes de água",
+						complexity: 3,
+						initial_date: "2023-06-12",
+						final_date: "2023-07-12",
+						objective: 123,
+						diagnostic: 123,
+						meta: "Divulgação, nas redes sociais, de informação de sensibilização para a poupança de água",
+						resources: "Material de divulgação produzido ao abrigo do Concurso Eco-P.PORTO",
+						participants: "Estudantes da ESHT",
+						evaluation_indicator: "Divulgação no facebook e no instagram",
+						evaluation_method: "Registo Fotográfico",
+						images: [`${base64Data.activityImg1}`],
+					};
+
+					test("should respond with a 400 status code", async () => {
+						const response = await supertest(app)
+							.post(`/api/activities?fields=activity`)
+							.send(bodyActivity)
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.statusCode).toBe(400);
+					});
+
+					test("should respond with JSON", async () => {
+						const response = await supertest(app)
+							.post(`/api/activities?fields=activity`)
+							.send(bodyActivity)
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.type).toBe("application/json");
+					});
+
+					test("should response with a message", async () => {
+						const response = await supertest(app)
+							.post(`/api/activities?fields=activity`)
+							.send(bodyActivity)
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.body.success).toBe(false);
+						expect(response.body.error).toEqual(
+							expect.arrayContaining([
+								"objective must be a string",
+								"diagnostic must be a string",
+							])
+						);
+					});
+				});
+
+				describe("when images is not an array", () => {
+					const bodyActivity = {
+						theme_id: 3,
+						title: "colocação de caixotes de água",
+						complexity: 3,
+						initial_date: "2023-06-12",
+						final_date: "2023-07-12",
+						objective: "Sensibilizar a comunidade escolar para a necessidade de poupar água",
+						diagnostic: "Excesso de água dispendida em tarefas domésticas",
+						meta: "Divulgação, nas redes sociais, de informação de sensibilização para a poupança de água",
+						resources: "Material de divulgação produzido ao abrigo do Concurso Eco-P.PORTO",
+						participants: "Estudantes da ESHT",
+						evaluation_indicator: "Divulgação no facebook e no instagram",
+						evaluation_method: "Registo Fotográfico",
+						images: "asd",
+					};
+
+					test("should respond with a 400 status code", async () => {
+						const response = await supertest(app)
+							.post(`/api/activities?fields=activity`)
+							.send(bodyActivity)
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.statusCode).toBe(400);
+					});
+
+					test("should respond with JSON", async () => {
+						const response = await supertest(app)
+							.post(`/api/activities?fields=activity`)
+							.send(bodyActivity)
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.type).toBe("application/json");
+					});
+
+					test("should response with a message", async () => {
+						const response = await supertest(app)
+							.post(`/api/activities?fields=activity`)
+							.send(bodyActivity)
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.body.success).toBe(false);
+						expect(response.body.error).toBe("images must be an array or list");
+					});
+				});
+
+				describe("when images is an empty array", () => {
+					const bodyActivity = {
+						theme_id: 3,
+						title: "colocação de caixotes de água",
+						complexity: 3,
+						initial_date: "2023-06-12",
+						final_date: "2023-07-12",
+						objective: "Sensibilizar a comunidade escolar para a necessidade de poupar água",
+						diagnostic: "Excesso de água dispendida em tarefas domésticas",
+						meta: "Divulgação, nas redes sociais, de informação de sensibilização para a poupança de água",
+						resources: "Material de divulgação produzido ao abrigo do Concurso Eco-P.PORTO",
+						participants: "Estudantes da ESHT",
+						evaluation_indicator: "Divulgação no facebook e no instagram",
+						evaluation_method: "Registo Fotográfico",
+						images: [],
+					};
+
+					test("should respond with a 400 status code", async () => {
+						const response = await supertest(app)
+							.post(`/api/activities?fields=activity`)
+							.send(bodyActivity)
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.statusCode).toBe(400);
+					});
+
+					test("should respond with JSON", async () => {
+						const response = await supertest(app)
+							.post(`/api/activities?fields=activity`)
+							.send(bodyActivity)
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.type).toBe("application/json");
+					});
+
+					test("should response with a message", async () => {
+						const response = await supertest(app)
+							.post(`/api/activities?fields=activity`)
+							.send(bodyActivity)
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.body.success).toBe(false);
+						expect(response.body.error).toBe("images are required");
+					});
+				});
+
+				describe("when images is an array of empty strings", () => {
+					const bodyActivity = {
+						theme_id: 3,
+						title: "colocação de caixotes de água",
+						complexity: 3,
+						initial_date: "2023-06-12",
+						final_date: "2023-07-12",
+						objective: "Sensibilizar a comunidade escolar para a necessidade de poupar água",
+						diagnostic: "Excesso de água dispendida em tarefas domésticas",
+						meta: "Divulgação, nas redes sociais, de informação de sensibilização para a poupança de água",
+						resources: "Material de divulgação produzido ao abrigo do Concurso Eco-P.PORTO",
+						participants: "Estudantes da ESHT",
+						evaluation_indicator: "Divulgação no facebook e no instagram",
+						evaluation_method: "Registo Fotográfico",
+						images: [""],
+					};
+
+					test("should respond with a 400 status code", async () => {
+						const response = await supertest(app)
+							.post(`/api/activities?fields=activity`)
+							.send(bodyActivity)
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.statusCode).toBe(400);
+					});
+
+					test("should respond with JSON", async () => {
+						const response = await supertest(app)
+							.post(`/api/activities?fields=activity`)
+							.send(bodyActivity)
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.type).toBe("application/json");
+					});
+
+					test("should response with a message", async () => {
+						const response = await supertest(app)
+							.post(`/api/activities?fields=activity`)
+							.send(bodyActivity)
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.body.success).toBe(false);
+						expect(response.body.error).toBe("images cannot have empty strings");
+					});
+				});
+
+				describe("when images does not have base64 strings", () => {
+					const bodyActivity = {
+						theme_id: 3,
+						title: "colocação de caixotes de água",
+						complexity: 3,
+						initial_date: "2023-06-12",
+						final_date: "2023-07-12",
+						objective: "Sensibilizar a comunidade escolar para a necessidade de poupar água",
+						diagnostic: "Excesso de água dispendida em tarefas domésticas",
+						meta: "Divulgação, nas redes sociais, de informação de sensibilização para a poupança de água",
+						resources: "Material de divulgação produzido ao abrigo do Concurso Eco-P.PORTO",
+						participants: "Estudantes da ESHT",
+						evaluation_indicator: "Divulgação no facebook e no instagram",
+						evaluation_method: "Registo Fotográfico",
+						images: ["dasdas"],
+					};
+
+					test("should respond with a 400 status code", async () => {
+						const response = await supertest(app)
+							.post(`/api/activities?fields=activity`)
+							.send(bodyActivity)
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.statusCode).toBe(400);
+					});
+
+					test("should respond with JSON", async () => {
+						const response = await supertest(app)
+							.post(`/api/activities?fields=activity`)
+							.send(bodyActivity)
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.type).toBe("application/json");
+					});
+
+					test("should response with a message", async () => {
+						const response = await supertest(app)
+							.post(`/api/activities?fields=activity`)
+							.send(bodyActivity)
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.body.success).toBe(false);
+						expect(response.body.error).toBe("images must be a valid base64 string");
+					});
+				});
+
+				describe("when the initial date is before the current date", () => {
+					const bodyActivity = {
+						theme_id: 5,
+						title: "colocação de caixotes de água 2",
+						complexity: 3,
+						initial_date: "2023-05-12",
+						final_date: "2023-07-12",
+						objective: "Sensibilizar a comunidade escolar para a necessidade de poupar água",
+						diagnostic: "Excesso de água dispendida em tarefas domésticas",
+						meta: "Divulgação, nas redes sociais, de informação de sensibilização para a poupança de água",
+						resources: "Material de divulgação produzido ao abrigo do Concurso Eco-P.PORTO",
+						participants: "Estudantes da ESHT",
+						evaluation_indicator: "Divulgação no facebook e no instagram",
+						evaluation_method: "Registo Fotográfico",
+						images: ["dasdas"],
+					};
+
+					test("should respond with a 400 status code", async () => {
+						const response = await supertest(app)
+							.post(`/api/activities?fields=activity`)
+							.send(bodyActivity)
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.statusCode).toBe(400);
+					});
+
+					test("should respond with JSON", async () => {
+						const response = await supertest(app)
+							.post(`/api/activities?fields=activity`)
+							.send(bodyActivity)
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.type).toBe("application/json");
+					});
+
+					test("should response with a message", async () => {
+						const response = await supertest(app)
+							.post(`/api/activities?fields=activity`)
+							.send(bodyActivity)
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.body.success).toBe(false);
+						expect(response.body.error).toBe("initial_date must be after the current date");
+					});
+				});
+
+				describe("when requesting not found theme", () => {
+					const bodyActivity = {
+						theme_id: 10,
+						title: "colocação de caixotes de água 2",
+						complexity: 3,
+						initial_date: "2023-06-12",
+						final_date: "2023-07-12",
+						objective: "Sensibilizar a comunidade escolar para a necessidade de poupar água",
+						diagnostic: "Excesso de água dispendida em tarefas domésticas",
+						meta: "Divulgação, nas redes sociais, de informação de sensibilização para a poupança de água",
+						resources: "Material de divulgação produzido ao abrigo do Concurso Eco-P.PORTO",
+						participants: "Estudantes da ESHT",
+						evaluation_indicator: "Divulgação no facebook e no instagram",
+						evaluation_method: "Registo Fotográfico",
+						images: [`${base64Data.activityImg1}`],
+					};
+
+					test("should respond with a 404 status code", async () => {
+						const response = await supertest(app)
+							.post(`/api/activities?fields=activity`)
+							.send(bodyActivity)
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.statusCode).toBe(404);
+					});
+
+					test("should respond with JSON", async () => {
+						const response = await supertest(app)
+							.post(`/api/activities?fields=activity`)
+							.send(bodyActivity)
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.type).toBe("application/json");
+					});
+
+					test("should response with a message", async () => {
+						const response = await supertest(app)
+							.post(`/api/activities?fields=activity`)
+							.send(bodyActivity)
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.body.success).toBe(false);
+						expect(response.body.error).toBe("theme not found");
+					});
+				});
+
+				describe("when requesting a theme that is not active", () => {
+					const bodyActivity = {
+						theme_id: 5,
+						title: "colocação de caixotes de água 2",
+						complexity: 3,
+						initial_date: "2023-06-12",
+						final_date: "2023-07-12",
+						objective: "Sensibilizar a comunidade escolar para a necessidade de poupar água",
+						diagnostic: "Excesso de água dispendida em tarefas domésticas",
+						meta: "Divulgação, nas redes sociais, de informação de sensibilização para a poupança de água",
+						resources: "Material de divulgação produzido ao abrigo do Concurso Eco-P.PORTO",
+						participants: "Estudantes da ESHT",
+						evaluation_indicator: "Divulgação no facebook e no instagram",
+						evaluation_method: "Registo Fotográfico",
+						images: [`${base64Data.activityImg1}`],
+					};
+
+					test("should respond with a 409 status code", async () => {
+						const response = await supertest(app)
+							.post(`/api/activities?fields=activity`)
+							.send(bodyActivity)
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.statusCode).toBe(409);
+					});
+
+					test("should respond with JSON", async () => {
+						const response = await supertest(app)
+							.post(`/api/activities?fields=activity`)
+							.send(bodyActivity)
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.type).toBe("application/json");
+					});
+
+					test("should response with a message", async () => {
+						const response = await supertest(app)
+							.post(`/api/activities?fields=activity`)
+							.send(bodyActivity)
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.body.success).toBe(false);
+						expect(response.body.error).toBe("Theme is not active");
+					});
+				});
+
+				describe("when requesting an activity with a title that already exists", () => {
+					const bodyActivity = {
+						theme_id: 3,
+						title: "Colocação de Caixotes do Lixo",
+						complexity: 3,
+						initial_date: "2023-06-12",
+						final_date: "2023-07-12",
+						objective: "Sensibilizar a comunidade escolar para a necessidade de poupar água",
+						diagnostic: "Excesso de água dispendida em tarefas domésticas",
+						meta: "Divulgação, nas redes sociais, de informação de sensibilização para a poupança de água",
+						resources: "Material de divulgação produzido ao abrigo do Concurso Eco-P.PORTO",
+						participants: "Estudantes da ESHT",
+						evaluation_indicator: "Divulgação no facebook e no instagram",
+						evaluation_method: "Registo Fotográfico",
+						images: [`${base64Data.activityImg1}`],
+					};
+
+					test("should respond with a 409 status code", async () => {
+						const response = await supertest(app)
+							.post(`/api/activities?fields=activity`)
+							.send(bodyActivity)
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.statusCode).toBe(409);
+					});
+
+					test("should respond with JSON", async () => {
+						const response = await supertest(app)
+							.post(`/api/activities?fields=activity`)
+							.send(bodyActivity)
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.type).toBe("application/json");
+					});
+
+					test("should response with a message", async () => {
+						const response = await supertest(app)
+							.post(`/api/activities?fields=activity`)
+							.send(bodyActivity)
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.body.success).toBe(false);
+						expect(response.body.error).toBe("Activity already exists");
+					});
+				});
+			});
+
+			describe("when creating an activity with valid data", () => {
+				const bodyActivity = {
+					theme_id: 3,
+					title: "colocação de caixotes de água",
+					complexity: 3,
+					initial_date: "2023-06-12",
+					final_date: "2023-07-12",
+					objective: "Sensibilizar a comunidade escolar para a necessidade de poupar água",
+					diagnostic: "Excesso de água dispendida em tarefas domésticas",
+					meta: "Divulgação, nas redes sociais, de informação de sensibilização para a poupança de água",
+					resources: "Material de divulgação produzido ao abrigo do Concurso Eco-P.PORTO",
+					participants: "Estudantes da ESHT",
+					evaluation_indicator: "Divulgação no facebook e no instagram",
+					evaluation_method: "Registo Fotográfico",
+					images: [`${base64Data.activityImg1}`],
+				};
+
+				test("should respond with a 201 status code", async () => {
+					const response = await supertest(app)
+						.post(`/api/activities?fields=activity`)
+						.send(bodyActivity)
+						.set("Authorization", `Bearer ${userToken}`);
+					
+						const lastActivity = await db.activities.findOne({
+							order: [["id", "DESC"]],
+						});
+					
+						expect(response.statusCode).toBe(201);
+					expect(response.body.success).toBe(true);
+					expect(response.body.message).toBe(`activity created ${lastActivity.id}`);
+
+				});
+			});
+		});
+	});
+
 	// creating a theme
 	describe("when creating a theme", () => {
 		describe("when there is no logged user", () => {
