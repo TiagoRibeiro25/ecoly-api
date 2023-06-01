@@ -100,6 +100,12 @@ router.post("/", activitiesValidator.validateQueries, (req, res) => {
 			});
 		});
 	}
+	else{
+		return res.status(400).json({
+			success: false,
+			error: "provide parameters",
+		});
+	}
 });
 
 // PATCH /api/activities/:id => finish an activity/ disable a theme
@@ -123,6 +129,12 @@ router.patch("/:id", activitiesValidator.validateQueries, (req, res) => {
 				// next
 				activitiesController.disabledTheme(req, res);
 			});
+		});
+	}
+	else{
+		return res.status(400).json({
+			success: false,
+			error: "provide parameters",
 		});
 	}
 });

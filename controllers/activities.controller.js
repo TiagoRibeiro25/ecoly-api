@@ -1,6 +1,6 @@
 const db = require("../models/db");
-const colors = require("colors");
 const jwt = require("jsonwebtoken");
+const colors = require("colors");
 const cloudinary = require("../config/cloudinary.config");
 const { Op } = require("sequelize");
 const Activities = db.activities;
@@ -210,7 +210,6 @@ exports.searchActivities = async (req, res) => {
 
 exports.getUnfinishedActivities = async (req, res) => {
 	try {
-		// meta objective participants = description
 		const activities = await Activities.findAll({
 			where: {
 				is_finished: false,
@@ -811,8 +810,6 @@ exports.getThemes = async (req, res) => {
 
 exports.addActivity = async (req, res) => {
 
-	console.log(colors.green("Starting to add activity..."));
-
 	const {
 		title,
 		diagnostic,
@@ -831,7 +828,6 @@ exports.addActivity = async (req, res) => {
 
 	try {
 
-		console.log(colors.green("inside code block"));
 
 		const existingActivity = await Activities.findOne({
 			where: {
@@ -918,10 +914,9 @@ exports.addActivity = async (req, res) => {
 
 		return res.status(201).json({
 			success: true,
-			data: `activity created ${activity.id}`,
+			message: `activity created ${activity.id}`,
 		});
 	} catch (err) {
-		console.log(colors.red(`Error ocurred: ${err}`));
 		if (err.message === "Activity already exists") {
 			return res.status(409).json({
 				success: false,
