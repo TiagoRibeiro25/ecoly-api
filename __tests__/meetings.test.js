@@ -1,10 +1,10 @@
 require("dotenv").config({ path: __dirname + "/../tests.env" });
 const supertest = require("supertest");
 const app = require("../app");
-const colors = require("colors");
 const db = require("../models/db");
 const resetDB = require("../data/resetDB");
 const getToken = require("../utils/generateTokens");
+const base64Data = require("../data/base64");
 let adminToken = "";
 let userToken = "";
 let unsignedToken = "";
@@ -833,6 +833,562 @@ describe("POST /api/meetings", () => {
 					.set("Authorization", `Bearer ${unsignedToken}`);
 				expect(response.body.success).toBe(false);
 				expect(response.body.message).toBe("Require Verified Role!");
+			});
+		});
+	});
+});
+
+// PATCH /api/meetings/:id
+describe("PATCH /api/meetings/:id", () => {
+	// add ata to meeting
+	describe("when adding an ata to a meeting", () => {
+		describe("when there is not logged in user", () => {
+			test("should respond with a 401 status code", async () => {
+				const response = await supertest(app).patch("/api/meetings/3?fields=ata");
+				expect(response.statusCode).toBe(401);
+			});
+
+			test("should respond with a JSON", async () => {
+				const response = await supertest(app).patch("/api/meetings/3?fields=ata");
+				expect(response.type).toBe("application/json");
+			});
+
+			test("should respond with a message", async () => {
+				const response = await supertest(app).patch("/api/meetings/3?fields=ata");
+				expect(response.body.success).toBe(false);
+				expect(response.body.message).toBe("Unauthorized!");
+			});
+		});
+
+		describe("when the user is not verified", () => {
+			test("should respond with a 403 status code", async () => {
+				const response = await supertest(app)
+					.patch("/api/meetings/3?fields=ata")
+					.set("Authorization", `Bearer ${unsignedToken}`);
+				expect(response.statusCode).toBe(403);
+			});
+
+			test("should respond with a JSON", async () => {
+				const response = await supertest(app)
+					.patch("/api/meetings/3?fields=ata")
+					.set("Authorization", `Bearer ${unsignedToken}`);
+				expect(response.type).toBe("application/json");
+			});
+
+			test("should respond with a message", async () => {
+				const response = await supertest(app)
+					.patch("/api/meetings/3?fields=ata")
+					.set("Authorization", `Bearer ${unsignedToken}`);
+				expect(response.body.success).toBe(false);
+				expect(response.body.message).toBe("Require Verified Role!");
+			});
+		});
+
+		describe("when the user is verified", () => {
+			describe("when adding an ata with invalid requested data", () => {
+				describe("when the body is empty", () => {
+					test("should respond with a 400 status code", async () => {
+						const response = await supertest(app)
+							.patch("/api/meetings/3?fields=ata")
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.statusCode).toBe(400);
+					});
+
+					test("should respond with a JSON", async () => {
+						const response = await supertest(app)
+							.patch("/api/meetings/3?fields=ata")
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.type).toBe("application/json");
+					});
+
+					test("should respond with a message", async () => {
+						const response = await supertest(app)
+							.patch("/api/meetings/3?fields=ata")
+							.set("Authorization", `Bearer ${userToken}`);
+						expect(response.body.success).toBe(false);
+						expect(response.body.error).toBe("body is empty");
+					});
+				});
+
+				describe("when keys are invalid instead of the required ones", () => {
+					const ata = {
+						atadsa:
+							"Esta reunião foi um sucesso, todos colaboraram para salvaguardar o meio ambiente :)",
+						imagesdsa: [base64Data.ataImg1],
+					};
+					test("should respond with a 400 status code", async () => {
+						const response = await supertest(app)
+							.patch("/api/meetings/3?fields=ata")
+							.set("Authorization", `Bearer ${userToken}`)
+							.send(ata);
+						expect(response.statusCode).toBe(400);
+					});
+
+					test("should respond with a JSON", async () => {
+						const response = await supertest(app)
+							.patch("/api/meetings/3?fields=ata")
+							.set("Authorization", `Bearer ${userToken}`)
+							.send(ata);
+						expect(response.type).toBe("application/json");
+					});
+
+					test("should respond with a message", async () => {
+						const response = await supertest(app)
+							.patch("/api/meetings/3?fields=ata")
+							.set("Authorization", `Bearer ${userToken}`)
+							.send(ata);
+						expect(response.body.success).toBe(false);
+						expect(response.body.error).toEqual(
+							expect.arrayContaining([
+								"atadsa is a invalid field",
+								"imagesdsa is a invalid field",
+							])
+						);
+					});
+				});
+
+				describe("when the keys are empty", () => {
+					const ata = {
+						ata: "",
+						images: "",
+					};
+
+					test("should respond with a 400 status code", async () => {
+						const response = await supertest(app)
+							.patch("/api/meetings/3?fields=ata")
+							.set("Authorization", `Bearer ${userToken}`)
+							.send(ata);
+						expect(response.statusCode).toBe(400);
+					});
+
+					test("should respond with a JSON", async () => {
+						const response = await supertest(app)
+							.patch("/api/meetings/3?fields=ata")
+							.set("Authorization", `Bearer ${userToken}`)
+							.send(ata);
+						expect(response.type).toBe("application/json");
+					});
+
+					test("should respond with a message", async () => {
+						const response = await supertest(app)
+							.patch("/api/meetings/3?fields=ata")
+							.set("Authorization", `Bearer ${userToken}`)
+							.send(ata);
+						expect(response.body.success).toBe(false);
+						expect(response.body.error).toEqual(
+							expect.arrayContaining(["ata cannot be empty", "images cannot be empty"])
+						);
+					});
+				});
+
+				describe("when the keys are integers instead of strings", () => {
+					const ata = {
+						ata: 1231,
+						images: [base64Data.ataImg1],
+					};
+
+					test("should respond with a 400 status code", async () => {
+						const response = await supertest(app)
+							.patch("/api/meetings/3?fields=ata")
+							.set("Authorization", `Bearer ${userToken}`)
+							.send(ata);
+						expect(response.statusCode).toBe(400);
+					});
+
+					test("should respond with a JSON", async () => {
+						const response = await supertest(app)
+							.patch("/api/meetings/3?fields=ata")
+							.set("Authorization", `Bearer ${userToken}`)
+							.send(ata);
+						expect(response.type).toBe("application/json");
+					});
+
+					test("should respond with a message", async () => {
+						const response = await supertest(app)
+							.patch("/api/meetings/3?fields=ata")
+							.set("Authorization", `Bearer ${userToken}`)
+							.send(ata);
+						expect(response.body.success).toBe(false);
+						expect(response.body.error).toBe("ata must be a string");
+					});
+				});
+
+				describe("when images is not an array", () => {
+					const ata = {
+						ata: "Esta reunião foi um sucesso, todos colaboraram para salvaguardar o meio ambiente :)",
+						images: "base64Data.ataImg1",
+					};
+
+					test("should respond with a 400 status code", async () => {
+						const response = await supertest(app)
+							.patch("/api/meetings/3?fields=ata")
+							.set("Authorization", `Bearer ${userToken}`)
+							.send(ata);
+						expect(response.statusCode).toBe(400);
+					});
+
+					test("should respond with a JSON", async () => {
+						const response = await supertest(app)
+							.patch("/api/meetings/3?fields=ata")
+							.set("Authorization", `Bearer ${userToken}`)
+							.send(ata);
+						expect(response.type).toBe("application/json");
+					});
+
+					test("should respond with a message", async () => {
+						const response = await supertest(app)
+							.patch("/api/meetings/3?fields=ata")
+							.set("Authorization", `Bearer ${userToken}`)
+							.send(ata);
+						expect(response.body.success).toBe(false);
+						expect(response.body.error).toBe("images must be an array or list");
+					});
+				});
+
+				describe("when images are empty", () => {
+					const ata = {
+						ata: "Esta reunião foi um sucesso, todos colaboraram para salvaguardar o meio ambiente :)",
+						images: [],
+					};
+
+					test("should respond with a 400 status code", async () => {
+						const response = await supertest(app)
+							.patch("/api/meetings/3?fields=ata")
+							.set("Authorization", `Bearer ${userToken}`)
+							.send(ata);
+						expect(response.statusCode).toBe(400);
+					});
+
+					test("should respond with a JSON", async () => {
+						const response = await supertest(app)
+							.patch("/api/meetings/3?fields=ata")
+							.set("Authorization", `Bearer ${userToken}`)
+							.send(ata);
+						expect(response.type).toBe("application/json");
+					});
+
+					test("should respond with a message", async () => {
+						const response = await supertest(app)
+							.patch("/api/meetings/3?fields=ata")
+							.set("Authorization", `Bearer ${userToken}`)
+							.send(ata);
+						expect(response.body.success).toBe(false);
+						expect(response.body.error).toBe("images are required");
+					});
+				});
+
+				describe("when images are not an array of strings", () => {
+					const ata = {
+						ata: "Esta reunião foi um sucesso, todos colaboraram para salvaguardar o meio ambiente :)",
+						images: [base64Data.ataImg1, 123],
+					};
+
+					test("should respond with a 400 status code", async () => {
+						const response = await supertest(app)
+							.patch("/api/meetings/3?fields=ata")
+							.set("Authorization", `Bearer ${userToken}`)
+							.send(ata);
+						expect(response.statusCode).toBe(400);
+					});
+
+					test("should respond with a JSON", async () => {
+						const response = await supertest(app)
+							.patch("/api/meetings/3?fields=ata")
+							.set("Authorization", `Bearer ${userToken}`)
+							.send(ata);
+						expect(response.type).toBe("application/json");
+					});
+
+					test("should respond with a message", async () => {
+						const response = await supertest(app)
+							.patch("/api/meetings/3?fields=ata")
+							.set("Authorization", `Bearer ${userToken}`)
+							.send(ata);
+						expect(response.body.success).toBe(false);
+						expect(response.body.error).toBe("images must be an array of strings");
+					});
+				});
+
+				describe("when images haves empty strings", () => {
+					const ata = {
+						ata: "Esta reunião foi um sucesso, todos colaboraram para salvaguardar o meio ambiente :)",
+						images: [base64Data.ataImg1, ""],
+					};
+
+					test("should respond with a 400 status code", async () => {
+						const response = await supertest(app)
+							.patch("/api/meetings/3?fields=ata")
+							.set("Authorization", `Bearer ${userToken}`)
+							.send(ata);
+						expect(response.statusCode).toBe(400);
+					});
+
+					test("should respond with a JSON", async () => {
+						const response = await supertest(app)
+							.patch("/api/meetings/3?fields=ata")
+							.set("Authorization", `Bearer ${userToken}`)
+							.send(ata);
+						expect(response.type).toBe("application/json");
+					});
+
+					test("should respond with a message", async () => {
+						const response = await supertest(app)
+							.patch("/api/meetings/3?fields=ata")
+							.set("Authorization", `Bearer ${userToken}`)
+							.send(ata);
+						expect(response.body.success).toBe(false);
+						expect(response.body.error).toBe("images cannot have empty strings");
+					});
+				});
+
+				describe("when images does not have valid base64 strings", () => {
+					const ata = {
+						ata: "Esta reunião foi um sucesso, todos colaboraram para salvaguardar o meio ambiente :)",
+						images: [base64Data.ataImg1, "invalidBase64String"],
+					};
+
+					test("should respond with a 400 status code", async () => {
+						const response = await supertest(app)
+							.patch("/api/meetings/3?fields=ata")
+							.set("Authorization", `Bearer ${userToken}`)
+							.send(ata);
+						expect(response.statusCode).toBe(400);
+					});
+
+					test("should respond with a JSON", async () => {
+						const response = await supertest(app)
+							.patch("/api/meetings/3?fields=ata")
+							.set("Authorization", `Bearer ${userToken}`)
+							.send(ata);
+						expect(response.type).toBe("application/json");
+					});
+
+					test("should respond with a message", async () => {
+						const response = await supertest(app)
+							.patch("/api/meetings/3?fields=ata")
+							.set("Authorization", `Bearer ${userToken}`)
+							.send(ata);
+						expect(response.body.success).toBe(false);
+						expect(response.body.error).toBe("images must be a valid base64 string");
+					});
+				});
+
+				describe("when haves more then four images", () => {
+					const ata = {
+						ata: "Esta reunião foi um sucesso, todos colaboraram para salvaguardar o meio ambiente :)",
+						images: [
+							base64Data.ataImg1,
+							base64Data.ataImg1,
+							base64Data.ataImg2,
+							base64Data.ataImg3,
+							base64Data.ataImg2,
+						],
+					};
+
+					test("should respond with a 400 status code", async () => {
+						const response = await supertest(app)
+							.patch("/api/meetings/3?fields=ata")
+							.set("Authorization", `Bearer ${userToken}`)
+							.send(ata);
+						expect(response.statusCode).toBe(400);
+					});
+
+					test("should respond with a JSON", async () => {
+						const response = await supertest(app)
+							.patch("/api/meetings/3?fields=ata")
+							.set("Authorization", `Bearer ${userToken}`)
+							.send(ata);
+						expect(response.type).toBe("application/json");
+					});
+
+					test("should respond with a message", async () => {
+						const response = await supertest(app)
+							.patch("/api/meetings/3?fields=ata")
+							.set("Authorization", `Bearer ${userToken}`)
+							.send(ata);
+						expect(response.body.success).toBe(false);
+						expect(response.body.error).toBe("you can only add 4 images");
+					});
+				});
+
+				describe("when body missing keys", () => {
+					const ata = {
+						images: [base64Data.ataImg1],
+					};
+
+					test("should respond with a 400 status code", async () => {
+						const response = await supertest(app)
+							.patch("/api/meetings/3?fields=ata")
+							.set("Authorization", `Bearer ${userToken}`)
+							.send(ata);
+						expect(response.statusCode).toBe(400);
+					});
+
+					test("should respond with a JSON", async () => {
+						const response = await supertest(app)
+							.patch("/api/meetings/3?fields=ata")
+							.set("Authorization", `Bearer ${userToken}`)
+							.send(ata);
+						expect(response.type).toBe("application/json");
+					});
+
+					test("should respond with a message", async () => {
+						const response = await supertest(app)
+							.patch("/api/meetings/3?fields=ata")
+							.set("Authorization", `Bearer ${userToken}`)
+							.send(ata);
+						expect(response.body.success).toBe(false);
+						expect(response.body.error).toBe("ata cannot be null");
+					});
+				});
+
+				describe("when there is an invalid id requested", () => {
+					const ata = {
+						ata: "Esta reunião foi um sucesso, todos colaboraram para salvaguardar o meio ambiente :)",
+						images: [base64Data.ataImg1],
+					};
+
+					test("should respond with a 400 status code", async () => {
+						const response = await supertest(app)
+							.patch("/api/meetings/1assd?fields=ata")
+							.set("Authorization", `Bearer ${userToken}`)
+							.send(ata);
+
+						expect(response.statusCode).toBe(400);
+					});
+
+					test("should respond with a JSON", async () => {
+						const response = await supertest(app)
+							.patch("/api/meetings/1assd?fields=ata")
+							.set("Authorization", `Bearer ${userToken}`)
+							.send(ata);
+						expect(response.type).toBe("application/json");
+					});
+
+					test("should respond with a message", async () => {
+						const response = await supertest(app)
+							.patch("/api/meetings/1assd?fields=ata")
+							.set("Authorization", `Bearer ${userToken}`)
+							.send(ata);
+						expect(response.body.success).toBe(false);
+						expect(response.body.error).toBe("Invalid id.");
+					});
+				});
+
+				describe("when meeting does not exist", () => {
+					const ata = {
+						ata: "Esta reunião foi um sucesso, todos colaboraram para salvaguardar o meio ambiente :)",
+						images: [base64Data.ataImg1],
+					};
+
+					test("should respond with a 404 status code", async () => {
+						const response = await supertest(app)
+							.patch("/api/meetings/100?fields=ata")
+							.set("Authorization", `Bearer ${userToken}`)
+							.send(ata);
+						expect(response.statusCode).toBe(404);
+					});
+
+					test("should respond with a JSON", async () => {
+						const response = await supertest(app)
+							.patch("/api/meetings/100?fields=ata")
+							.set("Authorization", `Bearer ${userToken}`)
+							.send(ata);
+						expect(response.type).toBe("application/json");
+					});
+
+					test("should respond with a message", async () => {
+						const response = await supertest(app)
+							.patch("/api/meetings/100?fields=ata")
+							.set("Authorization", `Bearer ${userToken}`)
+							.send(ata);
+						expect(response.body.success).toBe(false);
+						expect(response.body.error).toBe("Meeting not found.");
+					});
+				});
+
+				describe("when adding ata to a meeting that already has one", () => {
+					const ata = {
+						ata: "Esta reunião foi um sucesso, todos colaboraram para salvaguardar o meio ambiente :)",
+						images: [base64Data.ataImg1],
+					};
+
+					test("should respond with a 409 status code", async () => {
+						const response = await supertest(app)
+							.patch("/api/meetings/1?fields=ata")
+							.set("Authorization", `Bearer ${userToken}`)
+							.send(ata);
+						expect(response.statusCode).toBe(409);
+					});
+
+					test("should respond with a JSON", async () => {
+						const response = await supertest(app)
+							.patch("/api/meetings/1?fields=ata")
+							.set("Authorization", `Bearer ${userToken}`)
+							.send(ata);
+						expect(response.type).toBe("application/json");
+					});
+
+					test("should respond with a message", async () => {
+						const response = await supertest(app)
+							.patch("/api/meetings/1?fields=ata")
+							.set("Authorization", `Bearer ${userToken}`)
+							.send(ata);
+						expect(response.body.success).toBe(false);
+						expect(response.body.error).toBe("ATA already added to this meeting.");
+					});
+				});
+
+				describe("when adding an ata to future meeting", () => {
+					const ata = {
+						ata: "Esta reunião foi um sucesso, todos colaboraram para salvaguardar o meio ambiente :)",
+						images: [base64Data.ataImg1],
+					};
+
+					test("should respond with a 409 status code", async () => {
+						const response = await supertest(app)
+							.patch("/api/meetings/5?fields=ata")
+							.set("Authorization", `Bearer ${userToken}`)
+							.send(ata);
+						expect(response.statusCode).toBe(409);
+					});
+
+					test("should respond with a JSON", async () => {
+						const response = await supertest(app)
+							.patch("/api/meetings/5?fields=ata")
+							.set("Authorization", `Bearer ${userToken}`)
+							.send(ata);
+						expect(response.type).toBe("application/json");
+					});
+
+					test("should respond with a message", async () => {
+						const response = await supertest(app)
+							.patch("/api/meetings/5?fields=ata")
+							.set("Authorization", `Bearer ${userToken}`)
+							.send(ata);
+						expect(response.body.success).toBe(false);
+						expect(response.body.error).toBe("You can only add ATA to past meetings.");
+					});
+				});
+			});
+
+			describe("when adding an ata to meeting with a valid request", () => {
+				const ata = {
+					ata: "Esta reunião foi um sucesso, todos colaboraram para salvaguardar o meio ambiente :)",
+					images: [base64Data.ataImg1],
+				};
+
+                test("should respond with a 200 status code", async () => {
+                    const response = await supertest(app)
+                        .patch("/api/meetings/2?fields=ata")
+                        .set("Authorization", `Bearer ${userToken}`)
+                        .send(ata);                    
+                        expect(response.statusCode).toBe(200);
+                    expect(response.body.success).toBe(true);
+                    expect(response.type).toBe("application/json");
+                    expect(response.body.message).toBe("ATA added to meeting 2");
+                    
+                });
 			});
 		});
 	});

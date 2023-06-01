@@ -166,7 +166,6 @@ exports.getPastMeetings = async (req, res) => {
 			data: pastMeetingsData,
 		});
 	} catch (err) {
-		console.log(colors.red(err.message));
 		if (err.message === "jwt expired") {
 			return res.status(401).json({
 				success: false,
@@ -380,7 +379,6 @@ exports.addAta = async (req, res) => {
 			message: `ATA added to meeting ${updatedMeeting.id}`,
 		});
 	} catch (err) {
-		console.log(colors.red(err.message));
 		if (err.message === "jwt expired") {
 			return res.status(401).json({
 				success: false,

@@ -1,6 +1,5 @@
 const db = require("../models/db");
 const jwt = require("jsonwebtoken");
-const colors = require("colors");
 const cloudinary = require("../config/cloudinary.config");
 const { Op } = require("sequelize");
 const Activities = db.activities;
