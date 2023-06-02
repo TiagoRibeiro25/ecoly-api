@@ -1,6 +1,7 @@
 const db = require("../models/db");
 const jwt = require("jsonwebtoken");
 const cloudinary = require("../config/cloudinary.config");
+const colors = require("colors");
 const { Op } = require("sequelize");
 const Activities = db.activities;
 const activity_images = db.activity_image;
@@ -263,9 +264,8 @@ exports.getUnfinishedActivities = async (req, res) => {
 			const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
 			// check each activity if it's from the logged user's school
-			const isFromUserSchool_ = await Activities.findOne({
+			const isFromUserSchool = await Activities.findAll({
 				where: {
-					id: { [Op.in]: activities.map((activity) => activity.id) },
 					school_id: decoded.schoolId,
 				},
 			});
@@ -279,8 +279,10 @@ exports.getUnfinishedActivities = async (req, res) => {
 			});
 
 			const data = activities.map((activity) => {
+				const canUserEdit = isFromUserSchool.some((a) => a.id === activity.id);
+
 				return {
-					canUserEdit: isFromUserSchool_ ? true : false,
+					canUserEdit: canUserEdit && !isUnsigned ? true : false,
 					id: activity.id,
 					is_finished: activity.is_finished,
 					theme: activity.theme.name,
@@ -299,6 +301,7 @@ exports.getUnfinishedActivities = async (req, res) => {
 			});
 		}
 	} catch (err) {
+		console.log(colors.red(err.message));
 		if (err.message === "jwt expired") {
 			return res.status(401).json({
 				success: false,
@@ -808,7 +811,6 @@ exports.getThemes = async (req, res) => {
 };
 
 exports.addActivity = async (req, res) => {
-
 	const {
 		title,
 		diagnostic,
@@ -826,8 +828,6 @@ exports.addActivity = async (req, res) => {
 	} = req.body;
 
 	try {
-
-
 		const existingActivity = await Activities.findOne({
 			where: {
 				title: title,
@@ -1033,8 +1033,7 @@ exports.finishActivity = async (req, res) => {
 		const creator = await Users.findByPk(req.tokenData.userId);
 		const schoolUser = await Schools.findByPk(req.tokenData.schoolId);
 
-
-		if(isNaN(id)){
+		if (isNaN(id)) {
 			throw new Error("invalid id");
 		}
 
@@ -1102,8 +1101,6 @@ exports.finishActivity = async (req, res) => {
 			});
 		}
 	} catch (err) {
-
-
 		if (err.message === "invalid id") {
 			return res.status(400).json({
 				success: false,
@@ -1153,7 +1150,7 @@ exports.disabledTheme = async (req, res) => {
 			throw new Error("Theme not found");
 		}
 
-		if(isNaN(id)) {
+		if (isNaN(id)) {
 			throw new Error("invalid id");
 		}
 
@@ -1178,8 +1175,7 @@ exports.disabledTheme = async (req, res) => {
 			message: `the theme ${theme.name} is now disabled`,
 		});
 	} catch (err) {
-
-		if(err.message === "invalid id"){
+		if (err.message === "invalid id") {
 			return res.status(400).json({
 				success: false,
 				error: "invalid id",
@@ -1219,8 +1215,7 @@ exports.deleteActivity = async (req, res) => {
 	try {
 		const activity = await Activities.findByPk(id);
 
-
-		if(isNaN(id)) {
+		if (isNaN(id)) {
 			throw new Error("invalid id");
 		}
 
@@ -1250,8 +1245,7 @@ exports.deleteActivity = async (req, res) => {
 			message: `activity deleted successfully`,
 		});
 	} catch (err) {
-
-		if(err.message === "invalid id"){
+		if (err.message === "invalid id") {
 			return res.status(400).json({
 				success: false,
 				error: "invalid id",
