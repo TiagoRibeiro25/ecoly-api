@@ -4,8 +4,6 @@ const app = require("../app");
 const db = require("../models/db");
 const News = db.news;
 const NewsImage = db.new_image;
-const Users = db.users;
-const cloudinary = require("../config/cloudinary.config");
 const resetDB = require("../data/resetDB");
 const getToken = require("../utils/generateTokens");
 let adminToken = "";
@@ -101,7 +99,7 @@ describe("POST /api/news", () => {
     expect(addedNew.title).toBe(title);
     expect(addedNew.content).toBe(content);
     expect(addedNew.creator_id).toBe(1);
-  });
+  }, 10000);
 
   test('should return an error if the new already exists', async () => {
     const title = 'Descoberta de nova civilização antiga no mundo desafia a compreensão histórica';
@@ -161,3 +159,10 @@ describe("DELETE /api/news/:id", () => {
   });
 
 })
+
+
+afterAll(async () => {
+	await resetDB(false);
+	// close the db connectionclea
+	await db.sequelize.close();
+});

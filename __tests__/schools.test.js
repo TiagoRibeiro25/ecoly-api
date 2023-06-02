@@ -128,3 +128,10 @@ describe("PUT /api/schools/:id", () => {
         expect(response.body.message).toBe("School was not found");
       });
 })
+
+
+afterAll(async () => {
+	await resetDB(false);
+	// close the db connectionclea
+	await db.sequelize.close();
+});

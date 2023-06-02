@@ -134,3 +134,9 @@ describe("DELETE /api/subscribe", () => {
     expect(response.body.message).toBe("Email not found");
   });
 })
+
+afterAll(async () => {
+	await resetDB(false);
+	// close the db connectionclea
+	await db.sequelize.close();
+});
