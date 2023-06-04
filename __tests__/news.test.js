@@ -9,6 +9,7 @@ const getToken = require("../utils/generateTokens");
 let adminToken = "";
 let userToken = "";
 let unsignedToken = "";
+const base64Data = require("../data/base64");
 
 beforeAll(async () => {
 	await resetDB(false);
@@ -74,7 +75,7 @@ describe("POST /api/news", () => {
   test('should add a new article', async () => {
     const title = 'Test News';
     const content = 'Lorem ipsum dolor sit amet';
-    const imgs = ['https://api-assets.ua.pt/v1/image/resizer?imageUrl=https://www.ua.pt/contents%2Fimgs%2Fliving%2Fviver_aveiro_6.jpg&height=1920', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSEn9zgyZPPyYDgcnooM5T5EIzC5GFBIQJe_Q&usqp=CAU'];
+    
 
     const existingNew = await News.findOne({ where: { title: title } });
 
@@ -86,10 +87,9 @@ describe("POST /api/news", () => {
       .send({
         title: title,
         content: content,
-        imgs: imgs
+        imgs: [`${base64Data.newImg1}`, `${base64Data.newImg2}`]
       });
     
-      console.log(response);
     expect(response.status).toBe(201);
     expect(response.body.success).toBe(true);
     expect(response.body.message).toBe('New was successfully added');
@@ -104,7 +104,7 @@ describe("POST /api/news", () => {
   test('should return an error if the new already exists', async () => {
     const title = 'Descoberta de nova civilização antiga no mundo desafia a compreensão histórica';
     const content = 'Lorem ipsum dolor sit amet';
-    const imgs = ['https://api-assets.ua.pt/v1/image/resizer?imageUrl=https://www.ua.pt/contents%2Fimgs%2Fliving%2Fviver_aveiro_6.jpg&height=1920', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSEn9zgyZPPyYDgcnooM5T5EIzC5GFBIQJe_Q&usqp=CAU'];
+    
 
     const existingNew = await News.findOne({ where: { title: title } });
 
@@ -116,7 +116,7 @@ describe("POST /api/news", () => {
       .send({
         title: title,
         content: content,
-        imgs: imgs
+        imgs: [`${base64Data.newImg1}`, `${base64Data.newImg2}`]
       });
 
     expect(response.status).toBe(409);
