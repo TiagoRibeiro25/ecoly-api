@@ -10,7 +10,6 @@ const PORT = process.env.PORT;
 if (!checkEnvs()) process.exit(1);
 
 app.listen(PORT, HOST, async () => {
-	// await require("./data/resetDB")(); // Reset the database
 	console.log(
 		colors.green("-> ") +
 			colors.cyan("Server is running on ") +

@@ -1,9 +1,6 @@
 const base64Data = require("./base64");
 
 module.exports = {
-	/**
-	 * @type {Array<{ title: string }>}
-	 * */
 	roles: [
 		{ title: "unsigned" }, // id: 1
 		{ title: "admin" }, // id: 2
@@ -11,9 +8,6 @@ module.exports = {
 		{ title: "professor" }, // id: 4
 	],
 
-	/**
-	 * @type {Array<{ name: string }>}
-	 * */
 	schools: [
 		{ name: "ESMAD" }, // id: 1
 		{ name: "ESAG" }, // id: 2
@@ -29,19 +23,6 @@ module.exports = {
 		{ name: "UTL" }, // id: 12
 	],
 
-	/**
-	 * @type {Array<{
-	 *  email: string,
-	 *  name: string,
-	 *  password: string,
-	 *  photo: string,
-	 *  role_id: number,
-	 *  school_id: number,
-	 *  internal_id?: string,
-	 *  course?: string,
-	 *  year?: number
-	 * }>}
-	 */
 	users: [
 		{
 			email: "Admin@esmad.ipp.pt",
@@ -143,9 +124,6 @@ module.exports = {
 		},
 	],
 
-	/**
-	 * @type {Array<{title: string, description: string, img: string}>}
-	 */
 	badges: [
 		{
 			title: "Novato das atividades",
@@ -189,9 +167,6 @@ module.exports = {
 		},
 	],
 
-	/**
-	 * @type {Array<{user_id: number, badge_id: number, is_highlight: boolean}>}
-	 */
 	user_badge: [
 		//* User 1
 		{
@@ -308,9 +283,6 @@ module.exports = {
 		},
 	],
 
-	/**
-	 * @type {Array<{creator_id: number, title: string, content: string, date_created: string}>}
-	 */
 	news: [
 		{
 			creator_id: 1,
@@ -361,18 +333,8 @@ module.exports = {
 				"Uma equipe de arqueólogos e antropólogos anunciou hoje a descoberta de uma nova civilização antiga em uma região remota do mundo. A descoberta foi feita durante uma série de escavações e incluiu uma variedade de artefactos e estruturas que sugerem a existência de uma sociedade avançada com uma longa história. De acordo com os arqueólogos, a civilização descoberta apresenta características únicas e desconhecidas, incluindo tecnologias avançadas e uma escrita desconhecida. A equipe também encontrou evidências de práticas religiosas e cerimoniais complexas, bem como uma arquitetura monumentais. A descoberta tem gerado grande interesse e especulação entre a comunidade científica e histórica. Alguns especialistas sugerem que a civilização descoberta pode ter tido contacto e influência sobre outras civilizações conhecidas, enquanto outros argumentam que pode ter existido de forma isolada e independente. A equipe de pesquisa agora está trabalhando para traduzir e decifrar a escrita desconhecida e estudar os artefactos e estruturas encontrados, para compreender melhor a história e a cultura da civilização descoberta. A descoberta também tem implicações éticas e políticas significativas, já que a região onde a civilização foi descoberta é habitada atualmente por uma comunidade indígena. A equipe de pesquisa está trabalhando em estreita colaboração com essa comunidade e as autoridades locais para garantir a proteção e preservação dos artefactos e estruturas encontrados, bem como o respeito pelos direitos e cultura da comunidade indígena. A descoberta tem o potencial de mudar radicalmente a compreensão da história humana e do desenvolvimento das civilizações. E também chama a atenção para a importância da preservação da cultura e dos direitos das comunidades indígenas.",
 			date_created: "2022-06-12",
 		},
-		{
-			creator_id: 4,
-			title: "Front End - Notícias Finalizadas",
-			content:
-				'<h3> O que isto significa? </h3><p> A parte das notícias do front end: </p><ul><li> Lista das notícias </li><li> Detalhe de uma notícia </li><li> Criar notícia </li><li> Apagar notícia </li><li> Subscrever newsletter </li></ul><p> foram oficialmente finalizadas e estão 100% funcionais! </p><br /><h3> O que falta fazer? </h3><p> Apesar das notícias estarem feitas, ainda falta bastante coisa para ser finalizada tais como: </p><ul><li> Home View </li><li> Atividades </li><li> Detalhe de uma atividade </li><li> Gestão </li><li> Menu de Administrador </li><li> ... </li></ul><br /><h3> Acompanha o progresso </h3><p> Queres acompanhar o nosso progresso no desenvolvimento de ECOLY? Visita os nossos repositórios do github: </p><ul><li><a href="https://github.com/TiagoRibeiro25/Ecoly-FrontEnd" target="_blank"> Ecoly - Front End </a></li><li><a href="https://github.com/TiagoRibeiro25/ecoly-api" target="_blank"> Ecoly - Back End </a></li></ul><br /><h3> Conclusão </h3><p> O objetivo desta notícia foi testar o visual final de uma notícia usando HTML como formato do conteúdo. </p>',
-			date_created: "2023-05-18",
-		},
 	],
 
-	/**
-	 * @type {Array<{new_id: number, img: string}>}
-	 */
 	new_image: [
 		{
 			new_id: 1,
@@ -442,28 +404,14 @@ module.exports = {
 			new_id: 7,
 			img: "https://res.cloudinary.com/dnfd6se6l/image/upload/v1685112589/news/o5o6e40xxxg9oveiyqve.jpg",
 		},
-		{
-			new_id: 8,
-			img: "https://res.cloudinary.com/dnfd6se6l/image/upload/v1685112589/news/tphuopkziwmngclsipbg.png",
-		},
-		{
-			new_id: 8,
-			img: "https://res.cloudinary.com/dnfd6se6l/image/upload/v1685112589/news/spynnfannv1diqhxsq5l.png",
-		},
 	],
 
-	/** @type {Array<{email: string}>} */
-	news_letter: [{email: "josepprn@gmail.com"}, {email: "User@esmad.ipp.pt"}],
+	news_letter: [
+		{ email: "josepprn@gmail.com" },
+		{ email: "User@esmad.ipp.pt" },
+		{ email: "tiago.d.ribeiro@hotmail.com" },
+	],
 
-	/**
-	 * @type {Array<{
-	 *  school_id: number,
-	 *  creator_id: number,
-	 *  date: string,
-	 *  description: string,
-	 *  room: string,
-	 *  ata?: string}>}
-	 */
 	meetings: [
 		{
 			school_id: 1,
@@ -511,9 +459,6 @@ module.exports = {
 		},
 	],
 
-	/**
-	 * @type {Array<{meeting_id: number, img: string}>}
-	 */
 	meeting_ata_image: [
 		{
 			meeting_id: 1,
@@ -525,9 +470,6 @@ module.exports = {
 		},
 	],
 
-	/**
-	 * @type {Array<{name: string, is_active: boolean}>}
-	 */
 	theme: [
 		{ name: "Mar", is_active: true },
 		{ name: "Espaços Exteriores", is_active: true },
@@ -538,26 +480,6 @@ module.exports = {
 		{ name: "Outro", is_active: true },
 	],
 
-	/**
-	 * @type {Array<{
-	 *  creator_id: number,
-	 *  school_id: number,
-	 *  theme_id: number,
-	 *  title: string,
-	 *  complexity: number,
-	 *  initial_date: string,
-	 *  final_date: string,
-	 *  objective: string,
-	 *  diagnostic: string,
-	 *  meta: string,
-	 *  resources: string,
-	 *  participants: string,
-	 *  evaluation_indicator: string,
-	 *  evaluation_method: string,
-	 *  is_finished: boolean,
-	 *  report?: string,
-	 * }>}
-	 */
 	activities: [
 		{
 			creator_id: 1,
@@ -654,9 +576,6 @@ module.exports = {
 		},
 	],
 
-	/**
-	 * @type {Array<{activity_id: number, img: string}>}
-	 */
 	activity_image: [
 		{
 			activity_id: 1,
@@ -692,9 +611,6 @@ module.exports = {
 		},
 	],
 
-	/**
-	 * @type {Array<{activity_id: number, img: string}>}
-	 */
 	activity_report_image: [
 		{
 			activity_id: 4,
@@ -714,9 +630,6 @@ module.exports = {
 		},
 	],
 
-	/**
-	 * @type {Array<{user_id: number, date: string}>}
-	 */
 	seeds: [
 		{ user_id: 1, amount: 25, date: "2023-02-23" },
 		{ user_id: 1, amount: 50, date: "2023-03-20" },
