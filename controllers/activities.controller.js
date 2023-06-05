@@ -156,7 +156,7 @@ exports.getDetailActivity = async (req, res) => {
 			return res.status(200).json({
 				success: true,
 				isUserVerified: !isUnsigned ? true : false,
-				canUserEdit: isFromUserSchool_ ? true : false,
+				canUserEdit: isFromUserSchool_ && !isUnsigned ? true : false,
 				data: data,
 			});
 		}
@@ -675,7 +675,7 @@ exports.getUnfinishedSchoolActivities = async (req, res) => {
 			// return the data above by setting the isFromLoggedUserSchool_ key
 			const activities_ = data.map((activity) => {
 				return {
-					canUserEdit: isFromUserSchool_ ? true : false,
+					canUserEdit: isFromUserSchool_ && !isUnsigned ? true : false,
 					id: activity.id,
 					is_finished: activity.is_finished,
 					theme: activity.theme,
