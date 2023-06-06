@@ -123,6 +123,9 @@ dist
 .vscode
 .vscode-test
 
+# Stores WebStorm versions used for testing WebStorm plugins
+.idea
+
 # yarn v2
 .yarn/cache
 .yarn/unplugged
