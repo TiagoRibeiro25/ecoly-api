@@ -1,4 +1,5 @@
 const moment = require("moment"); //library to handle dates validations
+const validateImgs = require("../utils/validateImgs");
 
 exports.validateQueries = (req, res, next) => {
 	const validQueries = ["filter", "school", "fields", "search", "year"];
@@ -111,8 +112,6 @@ exports.validateBodyActivity = (req, res, next) => {
 		"evaluation_method",
 		"participants",
 	];
-
-	const formatImages = ["png", "jpg", "jpeg", "gif", "bmp", "webp", "svg", "svg+xml", "tiff"];
 
 	const { theme_id, complexity, initial_date, final_date, images } = req.body;
 
@@ -278,13 +277,7 @@ exports.validateBodyActivity = (req, res, next) => {
 	}
 
 	// check if the images include on of the formatImages array and starting with base64 string
-	if (
-		!images.every(
-			(image) =>
-				formatImages.some((format) => image.startsWith(`data:image/${format};base64`)) &&
-				image.length > 22
-		)
-	) {
+	if (validateImgs(images)) {
 		return res.status(400).json({
 			success: false,
 			error: "images must be a valid base64 string",
@@ -344,8 +337,6 @@ exports.validateBodyTheme = (req, res, next) => {
 // validations for finish activity - create report of activity
 exports.validateBodyReport = (req, res, next) => {
 	const validFields = ["images", "report"];
-
-	const formatImages = ["png", "jpg", "jpeg", "gif", "bmp", "webp", "svg", "svg+xml", "tiff"];
 
 	const { images, report } = req.body;
 
@@ -436,13 +427,7 @@ exports.validateBodyReport = (req, res, next) => {
 	}
 
 	// check if the images include on of the formatImages array and starting with base64 string
-	if (
-		!images.every(
-			(image) =>
-				formatImages.some((format) => image.startsWith(`data:image/${format};base64`)) &&
-				image.length > 22
-		)
-	) {
+	if (validateImgs(images)) {
 		return res.status(400).json({
 			success: false,
 			error: "images must be a valid base64 string",
