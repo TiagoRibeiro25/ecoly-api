@@ -4,7 +4,7 @@
 	"description": "Ecoly API",
 	"main": "server.js",
 	"scripts": {
-		"test": "jest --runInBand --coverage=true",
+		"test": "jest --runInBand --coverage=true --silent",
 		"dev": "nodemon --exec \"cls && node\" server.js",
 		"start": "node server.js",
 		"resetDB": "node ./data/reset.js"
