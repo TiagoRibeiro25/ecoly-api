@@ -122,6 +122,22 @@ module.exports = {
 			role_id: 1,
 			school_id: 2,
 		},
+		{
+			email: "john.doe@email.com",
+			name: "John Doe",
+			password: "123",
+			photo: "https://api.dicebear.com/5.x/personas/svg?seed=john_doe",
+			role_id: 3,
+			school_id: 3,
+		},
+		{
+			email: "jane.done@email.com",
+			name: "Jane Done",
+			password: "123",
+			photo: "https://api.dicebear.com/5.x/personas/svg?seed=jane_done",
+			role_id: 1,
+			school_id: 4,
+		},
 	],
 
 	badges: [
@@ -574,6 +590,40 @@ module.exports = {
 			report:
 				"O projeto foi finalizado com sucesso, atingindo todos os objetivos estabelecidos. Foram substituídas 100 lâmpadas incandescentes por lâmpadas LED, conforme os recursos listados no projeto. Todos os participantes estiveram envolvidos e demonstraram comprometimento durante todo o processo, desde a fase de diagnóstico da falta de lâmpadas LED até a fase de substituição e avaliação das lâmpadas",
 		},
+		{
+			creator_id: 11,
+			school_id: 3,
+			theme_id: 6,
+			title: "Construção de um Sistema de Recolha de Água da Chuva",
+			complexity: 4,
+			initial_date: "2023-07-10",
+			final_date: "2023-07-20",
+			objective: "Construir um sistema de recolha de água da chuva",
+			diagnostic: "Falta de sistema de recolha de água da chuva",
+			meta: "Construção de um sistema de recolha de água da chuva",
+			resources: "Tubos, mangueiras, baldes",
+			participants: "Alunos do curso de Engenharia Informática",
+			evaluation_indicator: "Número de sistemas de recolha de água da chuva construídos",
+			evaluation_method: "Foto dos sistemas de recolha de água da chuva construídos",
+			is_finished: false,
+		},
+		{
+			creator_id: 11,
+			school_id: 3,
+			theme_id: 5,
+			title: "Utilização de Energia Solar",
+			complexity: 4,
+			initial_date: "2023-07-13",
+			final_date: "2023-08-20",
+			objective: "Utilizar energia solar para reduzir o consumo de energia",
+			diagnostic: "Falta de utilização de energia solar",
+			meta: "Utilização de energia solar",
+			resources: "Painéis solares",
+			participants: "Alunos do curso de Engenharia Informática",
+			evaluation_indicator: "Número de painéis solares instalados",
+			evaluation_method: "Foto dos painéis solares instalados",
+			is_finished: false,
+		},
 	],
 
 	activity_image: [
@@ -608,6 +658,14 @@ module.exports = {
 		{
 			activity_id: 5,
 			img: "https://res.cloudinary.com/dnfd6se6l/image/upload/v1685112588/activities/sfq1iy7ev9yxisfofvgv.jpg",
+		},
+		{
+			activity_id: 6,
+			img: "https://res.cloudinary.com/dnfd6se6l/image/upload/v1686163813/activities/images_l3al8o.jpg",
+		},
+		{
+			activity_id: 7,
+			img: "https://res.cloudinary.com/dnfd6se6l/image/upload/v1686164125/activities/photo-1566093097221-ac2335b09e70-129263_big_djzpye.jpg",
 		},
 	],
 

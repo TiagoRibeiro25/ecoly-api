@@ -24,11 +24,10 @@ exports.getNews = async (req, res) => {
 					model: NewsImage,
 					as: "new_images",
 					attributes: ["img"],
-					limit: 1
-				}
-			]
+					limit: 1,
+				},
+			],
 		});
-
 
 		const newsJSON = news.map((item) => {
 			return {
@@ -37,16 +36,16 @@ exports.getNews = async (req, res) => {
 				content: item.content,
 				date_created: item.date_created,
 				creator_id: item.creator_id,
-				image: item.new_images[0].img
+				image: item.new_images[0].img,
 			};
 		});
-
 
 		let isUserLogged = false;
 		let isUserAdmin = false;
 
 		// Check if the person that made the request is an admin
-		const token = req.headers["x-access-token"] || req.headers.authorization?.replace("Bearer ", "");
+		const token =
+			req.headers["x-access-token"] || req.headers.authorization?.replace("Bearer ", "");
 
 		if (token) {
 			try {
@@ -65,17 +64,15 @@ exports.getNews = async (req, res) => {
 			}
 		}
 
-
 		res.status(200).json({ success: true, data: { isUserAdmin, isUserLogged, news: newsJSON } });
 	} catch (error) {
 		console.log(error);
 		res.status(500).send({
 			success: false,
-			message: "Failed to fetch news"
+			message: "Failed to fetch news",
 		});
 	}
 };
-
 
 exports.getSingleNew = async (req, res) => {
 	const { id } = req.params;
@@ -122,7 +119,7 @@ exports.getSingleNew = async (req, res) => {
 
 		res.status(500).json({
 			success: false,
-			message: "Failed to fetch New" + " " + error
+			message: "Failed to fetch New" + " " + error,
 		});
 	}
 };
@@ -146,7 +143,7 @@ exports.deleteNew = async (req, res) => {
 
 		res.status(500).json({
 			success: false,
-			message: "Failed to delete new"
+			message: "Failed to delete new",
 		});
 	}
 };
@@ -164,12 +161,13 @@ exports.addNew = async (req, res) => {
 			title: title,
 			content: content,
 			date_created: new Date().toISOString().split("T")[0],
-			creator_id: creator.id
+			creator_id: creator.id,
 		});
 
 		for (const img of imgs) {
 			const response = await cloudinary.uploader.upload(img, {
-				folder: "news", crop: "scale"
+				folder: "news",
+				crop: "scale",
 			});
 
 			await NewsImage.create({ img: response.secure_url, new_id: newNew.id });
@@ -177,7 +175,7 @@ exports.addNew = async (req, res) => {
 
 		res.status(201).json({
 			success: true,
-			message: "New was successfully added"
+			message: "New was successfully added",
 		});
 
 		await Promise.all([
@@ -186,8 +184,8 @@ exports.addNew = async (req, res) => {
 			sendNewsLetter({
 				newId: newNew.id,
 				title: `${title}`,
-				author: { id: `${creator.id}`, name: `${creator.name}` }
-			})
+				author: { id: `${creator.id}`, name: `${creator.name}` },
+			}),
 		]);
 	} catch (error) {
 		if (error.message === "The new already exists") {
@@ -196,8 +194,7 @@ exports.addNew = async (req, res) => {
 
 		res.status(500).send({
 			success: false,
-			message: "Failed to add the new"
+			message: "Failed to add the new",
 		});
 	}
 };
-
