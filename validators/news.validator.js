@@ -24,15 +24,17 @@ exports.validateNews = async (req, res, next) => {
         message: "invalid content"
     })}
 
-    if (!imgs) {return res.status(400).send({
+    if (!imgs || imgs.length == 0) {return res.status(400).send({
         success: false,
         message: "images of the new not given"
     })}
+    
 
     if (validateImgs(imgs)) {
 		return res.status(400).json({
 			success: false,
 			error: "images must be a valid base64 string",
 		});
-	}
+    }
+    next()
 }
