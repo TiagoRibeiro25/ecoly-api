@@ -7,6 +7,8 @@ const Schools = db.schools;
 const Users = db.users;
 const unlockBadge = require("../utils/unlockBadge");
 const addSeeds = require("../utils/addSeeds");
+const sendEmail = require("../utils/emailSender");
+const meetingTemplate = require("../data/newMeetingTemplate");
 
 function fixDate(date) {
 	const Date = date.toISOString().split("T")[0];
@@ -298,7 +300,33 @@ exports.createMeeting = async (req, res) => {
 			addSeeds({ userId: creator.id, amount: 40 });
 		}
 
-		return res.status(201).json({
+		// contact all users from the same school except the creator
+		const users = await Users.findAll({
+			where: { school_id: creator.school_id, id: { [Op.ne]: creator.id } },
+		});
+
+		const usersData = users.map((user) => {
+			return { name: user.name, email: user.email };
+		});
+
+		// convert to dd/mm/yyyy hh:mm
+		const meetingDate = new Date(date);
+		const meetingDateDay = meetingDate.getUTCDate();
+		const meetingDateMonth = meetingDate.getUTCMonth() + 1;
+		const meetingDateYear = meetingDate.getUTCFullYear();
+		const meetingDateHour = meetingDate.getUTCHours() + 1;
+		const meetingDateMinutes = meetingDate.getUTCMinutes();
+
+		const meetingData = {
+			message: description,
+			creator: creator.name,
+			date: `${meetingDateDay}/${meetingDateMonth}/${meetingDateYear} ${meetingDateHour}:${meetingDateMinutes}`,
+			room: room,
+		};
+
+		await sendEmail(creator.email, usersData, "Nova reunião", meetingTemplate(meetingData));
+
+		res.status(201).json({
 			success: true,
 			message: `meeting created ${newMeeting.id}`,
 		});

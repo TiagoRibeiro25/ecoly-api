@@ -7,6 +7,7 @@ const colors = require("colors");
  * @param {Array<{name: string, email: string}>} toEmails - the names and email addresses of the recipients
  * @param {string} subject - the subject of the email
  * @param {string} body - the body of the email (html is supported)
+ * @returns {Promise<boolean>} - true if the email was sent successfully, false otherwise
  */
 async function sendEmail(from, toEmails, subject, body) {
 	const uri = process.env.SEND_EMAIL_URI;
