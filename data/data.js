@@ -491,7 +491,7 @@ module.exports = {
 		{ name: "Espaços Exteriores", is_active: true },
 		{ name: "Água", is_active: true },
 		{ name: "Resíduos", is_active: true },
-		{ name: "Energia", is_active: false },
+		{ name: "Energia", is_active: true },
 		{ name: "Mobilidade / Transportes", is_active: false },
 		{ name: "Outro", is_active: true },
 	],
@@ -593,7 +593,7 @@ module.exports = {
 		{
 			creator_id: 11,
 			school_id: 3,
-			theme_id: 6,
+			theme_id: 3,
 			title: "Construção de um Sistema de Recolha de Água da Chuva",
 			complexity: 4,
 			initial_date: "2023-07-10",
