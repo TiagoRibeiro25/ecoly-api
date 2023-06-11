@@ -44,7 +44,7 @@ module.exports = {
 			year: 2,
 		},
 		{
-			email: "jorgelima@esmad.ipp.pt",
+			email: "jorgelima123@esmad.ipp.pt",
 			name: "Jorge Lima",
 			password: "123",
 			photo: "https://api.dicebear.com/5.x/personas/svg?seed=jorge_lima",
@@ -85,7 +85,7 @@ module.exports = {
 			year: 2,
 		},
 		{
-			email: "manuela.santos@outlook.pt",
+			email: "manuela.santos123@esmad.ipp.pt",
 			name: "Manuela Santos",
 			password: "123",
 			photo: "https://api.dicebear.com/5.x/personas/svg?seed=manuela_santos",
@@ -96,7 +96,7 @@ module.exports = {
 			year: 1,
 		},
 		{
-			email: "joaquim.honesto@email.pt",
+			email: "joaquim.honesto@esmad.ipp.pt",
 			name: "Joaquim Honesto",
 			password: "123",
 			photo: "https://api.dicebear.com/5.x/personas/svg?seed=joaquim_honesto",
@@ -107,7 +107,7 @@ module.exports = {
 			year: 3,
 		},
 		{
-			email: "mariopinto@esmad.ipp.pt",
+			email: "mariopinto123@esmad.ipp.pt",
 			name: "Mário Pinto",
 			password: "123",
 			photo: "https://api.dicebear.com/5.x/personas/svg?seed=mario_pinto",
