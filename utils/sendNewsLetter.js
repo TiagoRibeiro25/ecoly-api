@@ -4,8 +4,6 @@ const sendEmail = require("./emailSender");
 const db = require("../models/db");
 const NewsLetter = db.news_letter;
 
-const reduceText = (text) => (text.length > 200 ? text.slice(0, 200) + "..." : text);
-
 /** @param {{title: string, author: {id: number, name: string}, newId: number}} latestNew */
 async function sendNewsLetter(latestNew) {
 	/** @type {Array<{email: string, delete_key: string}>} */
