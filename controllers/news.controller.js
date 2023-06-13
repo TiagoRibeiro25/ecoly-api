@@ -157,12 +157,7 @@ exports.addNew = async (req, res) => {
 
 		if (existingNew) throw new Error("The new already exists");
 
-		const newNew = await News.create({
-			title: title,
-			content: content,
-			date_created: new Date().toISOString().split("T")[0],
-			creator_id: creator.id,
-		});
+		const images = [];
 
 		for (const img of imgs) {
 			const response = await cloudinary.uploader.upload(img, {
@@ -170,7 +165,18 @@ exports.addNew = async (req, res) => {
 				crop: "scale",
 			});
 
-			await NewsImage.create({ img: response.secure_url, new_id: newNew.id });
+			images.push(response.secure_url);
+		}
+
+		const newNew = await News.create({
+			title: title,
+			content: content,
+			date_created: new Date().toISOString().split("T")[0],
+			creator_id: creator.id,
+		});
+
+		for (const img of images) {
+			await NewsImage.create({ img, new_id: newNew.id });
 		}
 
 		res.status(201).json({
