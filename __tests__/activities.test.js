@@ -1605,8 +1605,8 @@ describe("POST /api/activities", () => {
 						theme_ids: 3,
 						titles: "colocação de caixotes de água",
 						complexitys: 3,
-						initialDdate: "2023-06-12",
-						finalfdate: "2023-07-12",
+						initialDdate: "2023-12-12",
+						finalfdate: "2024-07-12",
 						objectivesaa:
 							"Sensibilizar a comunidade escolar para a necessidade de poupar água",
 						diagnosticdsa: "Excesso de água dispendida em tarefas domésticas",
@@ -1667,8 +1667,8 @@ describe("POST /api/activities", () => {
 						theme_id: "3",
 						title: "colocação de caixotes de água",
 						complexity: 3,
-						initial_date: "2023-06-12",
-						final_date: "2023-07-12",
+						initial_date: "2023-12-12",
+						final_date: "2024-07-12",
 						objective: "Sensibilizar a comunidade escolar para a necessidade de poupar água",
 						diagnostic: "Excesso de água dispendida em tarefas domésticas",
 						meta: "Divulgação, nas redes sociais, de informação de sensibilização para a poupança de água",
@@ -1710,8 +1710,8 @@ describe("POST /api/activities", () => {
 						theme_id: 3,
 						title: "colocação de caixotes de água",
 						complexity: "3",
-						initial_date: "2023-06-12",
-						final_date: "2023-07-12",
+						initial_date: "2023-12-12",
+						final_date: "2024-07-12",
 						objective: "Sensibilizar a comunidade escolar para a necessidade de poupar água",
 						diagnostic: "Excesso de água dispendida em tarefas domésticas",
 						meta: "Divulgação, nas redes sociais, de informação de sensibilização para a poupança de água",
@@ -1753,8 +1753,8 @@ describe("POST /api/activities", () => {
 						theme_id: 3,
 						title: "colocação de caixotes de água",
 						complexity: 6,
-						initial_date: "2023-06-12",
-						final_date: "2023-07-12",
+						initial_date: "2023-12-12",
+						final_date: "2024-07-12",
 						objective: "Sensibilizar a comunidade escolar para a necessidade de poupar água",
 						diagnostic: "Excesso de água dispendida em tarefas domésticas",
 						meta: "Divulgação, nas redes sociais, de informação de sensibilização para a poupança de água",
@@ -1796,8 +1796,8 @@ describe("POST /api/activities", () => {
 						theme_id: 1,
 						title: "Colocação de Caixotes de água 13",
 						complexity: 4,
-						initial_date: "2023-06-12",
-						final_date: "2023-07-12",
+						initial_date: "2023-12-12",
+						final_date: "2024-07-12",
 						objective: "aa",
 						diagnostic: "aa",
 						meta: "aa",
@@ -1931,8 +1931,8 @@ describe("POST /api/activities", () => {
 						theme_id: 3,
 						title: "colocação de caixotes de água",
 						complexity: 3,
-						initial_date: "2023-06-12",
-						final_date: "2023-07-12",
+						initial_date: "2023-12-12",
+						final_date: "2024-07-12",
 						objective: 123,
 						diagnostic: 123,
 						meta: "Divulgação, nas redes sociais, de informação de sensibilização para a poupança de água",
@@ -1979,8 +1979,8 @@ describe("POST /api/activities", () => {
 						theme_id: 3,
 						title: "colocação de caixotes de água",
 						complexity: 3,
-						initial_date: "2023-06-12",
-						final_date: "2023-07-12",
+						initial_date: "2023-12-12",
+						final_date: "2024-07-12",
 						objective: "Sensibilizar a comunidade escolar para a necessidade de poupar água",
 						diagnostic: "Excesso de água dispendida em tarefas domésticas",
 						meta: "Divulgação, nas redes sociais, de informação de sensibilização para a poupança de água",
@@ -2022,8 +2022,8 @@ describe("POST /api/activities", () => {
 						theme_id: 3,
 						title: "colocação de caixotes de água",
 						complexity: 3,
-						initial_date: "2023-06-12",
-						final_date: "2023-07-12",
+						initial_date: "2023-12-12",
+						final_date: "2024-07-12",
 						objective: "Sensibilizar a comunidade escolar para a necessidade de poupar água",
 						diagnostic: "Excesso de água dispendida em tarefas domésticas",
 						meta: "Divulgação, nas redes sociais, de informação de sensibilização para a poupança de água",
@@ -2065,8 +2065,8 @@ describe("POST /api/activities", () => {
 						theme_id: 3,
 						title: "colocação de caixotes de água",
 						complexity: 3,
-						initial_date: "2023-06-12",
-						final_date: "2023-07-12",
+						initial_date: "2023-12-12",
+						final_date: "2024-07-12",
 						objective: "Sensibilizar a comunidade escolar para a necessidade de poupar água",
 						diagnostic: "Excesso de água dispendida em tarefas domésticas",
 						meta: "Divulgação, nas redes sociais, de informação de sensibilização para a poupança de água",
@@ -2108,8 +2108,8 @@ describe("POST /api/activities", () => {
 						theme_id: 3,
 						title: "colocação de caixotes de água",
 						complexity: 3,
-						initial_date: "2023-06-12",
-						final_date: "2023-07-12",
+						initial_date: "2023-12-12",
+						final_date: "2024-07-12",
 						objective: "Sensibilizar a comunidade escolar para a necessidade de poupar água",
 						diagnostic: "Excesso de água dispendida em tarefas domésticas",
 						meta: "Divulgação, nas redes sociais, de informação de sensibilização para a poupança de água",
@@ -2151,7 +2151,7 @@ describe("POST /api/activities", () => {
 						theme_id: 5,
 						title: "colocação de caixotes de água 2",
 						complexity: 3,
-						initial_date: "2023-05-12",
+						initial_date: "2023-04-12",
 						final_date: "2023-07-12",
 						objective: "Sensibilizar a comunidade escolar para a necessidade de poupar água",
 						diagnostic: "Excesso de água dispendida em tarefas domésticas",
@@ -2194,8 +2194,8 @@ describe("POST /api/activities", () => {
 						theme_id: 10,
 						title: "colocação de caixotes de água 2",
 						complexity: 3,
-						initial_date: "2023-06-12",
-						final_date: "2023-07-12",
+						initial_date: "2023-12-12",
+						final_date: "2024-07-12",
 						objective: "Sensibilizar a comunidade escolar para a necessidade de poupar água",
 						diagnostic: "Excesso de água dispendida em tarefas domésticas",
 						meta: "Divulgação, nas redes sociais, de informação de sensibilização para a poupança de água",
@@ -2234,11 +2234,11 @@ describe("POST /api/activities", () => {
 
 				describe("when requesting a theme that is not active", () => {
 					const bodyActivity = {
-						theme_id: 5,
+						theme_id: 6,
 						title: "colocação de caixotes de água 2",
 						complexity: 3,
-						initial_date: "2023-06-12",
-						final_date: "2023-07-12",
+						initial_date: "2023-12-12",
+						final_date: "2024-07-12",
 						objective: "Sensibilizar a comunidade escolar para a necessidade de poupar água",
 						diagnostic: "Excesso de água dispendida em tarefas domésticas",
 						meta: "Divulgação, nas redes sociais, de informação de sensibilização para a poupança de água",
@@ -2280,8 +2280,8 @@ describe("POST /api/activities", () => {
 						theme_id: 3,
 						title: "Colocação de Caixotes do Lixo",
 						complexity: 3,
-						initial_date: "2023-06-12",
-						final_date: "2023-07-12",
+						initial_date: "2023-12-12",
+						final_date: "2024-07-12",
 						objective: "Sensibilizar a comunidade escolar para a necessidade de poupar água",
 						diagnostic: "Excesso de água dispendida em tarefas domésticas",
 						meta: "Divulgação, nas redes sociais, de informação de sensibilização para a poupança de água",
@@ -2324,8 +2324,8 @@ describe("POST /api/activities", () => {
 					theme_id: 3,
 					title: "colocação de caixotes de água",
 					complexity: 3,
-					initial_date: "2023-06-12",
-					final_date: "2023-07-12",
+					initial_date: "2023-12-12",
+					final_date: "2024-07-12",
 					objective: "Sensibilizar a comunidade escolar para a necessidade de poupar água",
 					diagnostic: "Excesso de água dispendida em tarefas domésticas",
 					meta: "Divulgação, nas redes sociais, de informação de sensibilização para a poupança de água",
@@ -2675,21 +2675,21 @@ describe("PATCH /api/activities/:id", () => {
 			describe("when disable an disable theme", () => {
 				test("should respond with a 409 status code", async () => {
 					const response = await supertest(app)
-						.patch(`/api/activities/5?fields=theme`)
+						.patch(`/api/activities/6?fields=theme`)
 						.set("Authorization", `Bearer ${userToken}`);
 					expect(response.statusCode).toBe(409);
 				});
 
 				test("should respond with JSON", async () => {
 					const response = await supertest(app)
-						.patch(`/api/activities/5?fields=theme`)
+						.patch(`/api/activities/6?fields=theme`)
 						.set("Authorization", `Bearer ${userToken}`);
 					expect(response.type).toBe("application/json");
 				});
 
 				test("should respond with a message", async () => {
 					const response = await supertest(app)
-						.patch(`/api/activities/5?fields=theme`)
+						.patch(`/api/activities/6?fields=theme`)
 						.set("Authorization", `Bearer ${userToken}`);
 					expect(response.body.success).toBe(false);
 					expect(response.body.error).toBe("Theme is already disabled");
