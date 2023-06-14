@@ -29,7 +29,7 @@ npm install
 
 ### Running the application
 
-Before starting the application, ensure you have created a .env file in the root directory of the project. The .env file should contain the configuration variables for the application. See the .env-example file for the required variables.
+Before starting the application, ensure you have created a .env file in the root directory of the project. The .env file should contain the configuration variables for the application. See the .env.example file for the required variables.
 
 After creating the .env file, run the following command to start the application
 
