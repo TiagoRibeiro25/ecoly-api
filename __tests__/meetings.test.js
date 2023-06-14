@@ -430,7 +430,7 @@ describe("POST /api/meetings", () => {
 		describe("when there is a verified user logged", () => {
 			describe("when creating a meeting with valid data", () => {
 				const meetingData = {
-					date: "2023-06-20 09:30:00",
+					date: "2023-12-20 09:30:00",
 					description: "reunião com o coordenador de curso de TSIW prof.Mário Pinto",
 					room: "B108",
 				};
@@ -516,7 +516,7 @@ describe("POST /api/meetings", () => {
 						const response = await supertest(app)
 							.post("/api/meetings")
 							.set("Authorization", `Bearer ${userToken}`)
-							.send({ date: "2023-06-20 09:30:00" });
+							.send({ date: "2023-12-20 09:30:00" });
 						expect(response.statusCode).toBe(400);
 					});
 
@@ -524,7 +524,7 @@ describe("POST /api/meetings", () => {
 						const response = await supertest(app)
 							.post("/api/meetings")
 							.set("Authorization", `Bearer ${userToken}`)
-							.send({ date: "2023-06-20 09:30:00" });
+							.send({ date: "2023-12-20 09:30:00" });
 						expect(response.type).toBe("application/json");
 					});
 
@@ -532,7 +532,7 @@ describe("POST /api/meetings", () => {
 						const response = await supertest(app)
 							.post("/api/meetings")
 							.set("Authorization", `Bearer ${userToken}`)
-							.send({ date: "2023-06-20 09:30:00" });
+							.send({ date: "2023-12-20 09:30:00" });
 						expect(response.body.success).toBe(false);
 						expect(response.body.error).toEqual(
 							expect.arrayContaining(["description cannot be null", "room cannot be null"])
@@ -546,7 +546,7 @@ describe("POST /api/meetings", () => {
 							.post("/api/meetings")
 							.set("Authorization", `Bearer ${userToken}`)
 							.send({
-								datess: "2023-06-20 09:30:00",
+								datess: "2023-12-20 09:30:00",
 								descriptionssad: "test",
 								roomdsa: "test",
 							});
@@ -558,7 +558,7 @@ describe("POST /api/meetings", () => {
 							.post("/api/meetings")
 							.set("Authorization", `Bearer ${userToken}`)
 							.send({
-								datess: "2023-06-20 09:30:00",
+								datess: "2023-12-20 09:30:00",
 								descriptionssad: "test",
 								roomdsa: "test",
 							});
@@ -570,7 +570,7 @@ describe("POST /api/meetings", () => {
 							.post("/api/meetings")
 							.set("Authorization", `Bearer ${userToken}`)
 							.send({
-								datess: "2023-06-20 09:30:00",
+								datess: "2023-12-20 09:30:00",
 								descriptionssad: "test",
 								roomdsa: "test",
 							});
@@ -720,7 +720,7 @@ describe("POST /api/meetings", () => {
 							.post("/api/meetings")
 							.set("Authorization", `Bearer ${userToken}`)
 							.send({
-								date: "2020-06-20 09:30:00",
+								date: "2020-03-20 09:30:00",
 								description: "test",
 								room: "test",
 							});
@@ -732,7 +732,7 @@ describe("POST /api/meetings", () => {
 							.post("/api/meetings")
 							.set("Authorization", `Bearer ${userToken}`)
 							.send({
-								date: "2020-06-20 09:30:00",
+								date: "2020-03-20 09:30:00",
 								description: "test",
 								room: "test",
 							});
@@ -744,7 +744,7 @@ describe("POST /api/meetings", () => {
 							.post("/api/meetings")
 							.set("Authorization", `Bearer ${userToken}`)
 							.send({
-								date: "2020-06-20 09:30:00",
+								date: "2020-03-20 09:30:00",
 								description: "test",
 								room: "test",
 							});
