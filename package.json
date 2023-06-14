@@ -14,9 +14,9 @@
 	"license": "ISC",
 	"jest": {
 		"testPathIgnorePatterns": [
-			"*/node_modules/",
-			"*/data/createData.js",
-			"*/data/resetDB.js"
+			"/node_modules/",
+			"/data/createData.js",
+			"/data/resetDB.js"
 		]
 	},
 	"dependencies": {
