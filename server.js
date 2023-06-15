@@ -9,7 +9,7 @@ const PORT = process.env.PORT;
 
 if (!checkEnvs()) process.exit(1);
 
-app.listen(PORT, HOST, async () => {
+app.listen(PORT, HOST, () => {
 	console.log(
 		colors.green("-> ") +
 			colors.cyan("Server is running on ") +

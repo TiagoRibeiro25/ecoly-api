@@ -4,19 +4,40 @@ const db = require("../models/db");
 const Roles = db.role;
 
 exports.verifyToken = (req, res, next) => {
-	// search token in the request header
-	const header = req.headers["x-access-token"] || req.headers["authorization"];
+	// get auth token from the request headers
+	let token = req.headers["x-access-token"] || req.headers["authorization"];
 
 	try {
-		if (!header) {
+		//if token is not present
+		if (!token) {
 			throw new Error("No token provided!");
 		}
 
-		const bearer = header.split(" ");
-		const token = bearer[1];
+		// if token is present, remove the Bearer from the token
+		if (token.startsWith("Bearer ")) {
+			token = token.slice(7, token.length);
+		}
 
+		// verify the token
 		const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
+		// if the token was generated 30seconds ago, generate a new token
+		if (decoded.iat + 30 < Date.now() / 1000) {
+			const newToken = jwt.sign(
+				{
+					userId: decoded.userId,
+					roleId: decoded.roleId,
+					schoolId: decoded.schoolId,
+				},
+				process.env.JWT_SECRET,
+				{ expiresIn: 1209600 } // 2 weeks (if the token is not used for 2 weeks, it will expire)
+			);
+
+			// set the new token in the response header
+			res.setHeader("authorization", `Bearer ${newToken}`);
+		}
+
+		// set the token data in the request object
 		req.tokenData = {};
 		req.tokenData.userId = decoded.userId;
 		req.tokenData.roleId = decoded.roleId;
@@ -24,6 +45,10 @@ exports.verifyToken = (req, res, next) => {
 
 		next();
 	} catch (err) {
+		if (err.name === "TokenExpiredError") {
+			return res.status(401).json({ success: false, message: "Token expired!" });
+		}
+
 		return res.status(401).json({ success: false, message: "Unauthorized!" });
 	}
 };
