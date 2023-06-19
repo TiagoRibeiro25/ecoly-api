@@ -30,7 +30,7 @@ exports.verifyToken = (req, res, next) => {
 					schoolId: decoded.schoolId,
 				},
 				process.env.JWT_SECRET,
-				{ expiresIn: 1209600 } // 2 weeks (if the token is not used for 2 weeks, it will expire)
+				{ expiresIn: "7d" } // 1 week (if the token is not used for 1 week, it will expire)
 			);
 
 			// set the new token in the response header
